@@ -17,39 +17,44 @@ import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 // import { prisma } from "../prisma/prisma-client/index";
 import { mongoDbProvider, addMockUsersAsync } from "../db";
 import { ObjectId } from "mongodb";
+
+import User from "../models/User";
 import * as authFns from "./utils/Auth";
+import mongoose from "mongoose";
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+  useFindAndModify: true,
+});
 
-(async () => {
-  await mongoDbProvider.connectAsync(process.env.DATABASE);
-  // await addMockUsersAsync(); // TODO: Remove in PROD.
+const mongo = mongoose.connection;
+mongo.on("error", console.error.bind(console, "connection error:"));
+mongo.once("open", function() {
+  console.log("Database connected!");
+});
 
-  const mongoHelpers = {
-    ObjectId,
-  };
+const server = new ApolloServer({
+  typeDefs: [userTypes, eventTypes, troopTypes, authTypes],
+  resolvers: [userResolvers, eventResolvers, troopResolvers, authResolvers],
+  context: async ({ req }) => {
+    const user = await authFns.getUserFromToken(
+      authFns.getTokenFromReq(req),
+      User
+    );
+    return {
+      User,
+      req,
+      authFns,
+      user,
+    };
+  },
+  introspection: true,
+  playground: true,
+});
 
-  const server = new ApolloServer({
-    typeDefs: [userTypes, eventTypes, troopTypes, authTypes],
-    resolvers: [userResolvers, eventResolvers, troopResolvers, authResolvers],
-    context: async ({ req }) => {
-      const user = await authFns.getUserFromToken(
-        authFns.getTokenFromReq(req),
-        mongoDbProvider
-      );
-      return {
-        mongoDbProvider,
-        mongoHelpers,
-        req,
-        authFns,
-        user,
-      };
-    },
-    introspection: true,
-    playground: true,
-  });
-
-  server
-    .listen({
-      port: process.env.PORT || 4000,
-    })
-    .then(({ url }) => console.log(`Server started at ${url}`));
-})();
+server
+  .listen({
+    port: process.env.PORT || 4000,
+  })
+  .then(({ url }) => console.log(`Server started at ${url}`));

@@ -20,9 +20,7 @@ const createToken = ({ id, role }) =>
 const getUserFromToken = async (token, db) => {
   try {
     const jwtUserInfo = jwt.verify(token, secret);
-    const user = await db.usersCollection.findOne({
-      _id: ObjectId(jwtUserInfo.id),
-    });
+    const user = await db.findById(jwtUserInfo.id);
     return user;
   } catch (e) {
     return null;
@@ -37,14 +35,6 @@ const getTokenFromReq = (req) => {
   }
   return authReq.replace("Bearer ", "");
 };
-
-const hashPassword = (password) => {
-  if (password.length < 8) {
-    throw new Error("Password must be 8 characters or longer!");
-  }
-  return bcrypt.hash(password, 10);
-};
-
 /**
  * checks if the user is on the context object
  * continues to the next resolver if true
@@ -75,7 +65,6 @@ const authorized = (role, next) => (root, args, context, info) => {
 module.exports = {
   getUserFromToken,
   getTokenFromReq,
-  hashPassword,
   authenticated,
   authorized,
   createToken,

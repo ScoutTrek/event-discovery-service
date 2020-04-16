@@ -1,5 +1,5 @@
 const { gql } = require("apollo-server");
-const { authenticated, hashPassword, authorized } = require("../utils/Auth");
+const { authenticated, authorized } = require("../utils/Auth");
 
 export const typeDefs = gql`
   enum ROLE {
