@@ -82,6 +82,12 @@ const userSchema = mongoose.Schema(
   }
 );
 
+userSchema.virtual("age").get(function() {
+  let n = Date.now();
+  let d = new Date(this.birthday);
+  return Math.floor((n - d) / 1000 / 60 / 60 / 24 / 365);
+});
+
 userSchema.pre("save", async function(next) {
   if (!this.isModified("password")) return next();
 

@@ -18,6 +18,7 @@ export const typeDefs = gql`
     email: String!
     phone: String
     birthday: String
+    age: Int
     troop: Troop!
     patrol: Patrol!
     role: ROLE!
@@ -56,10 +57,8 @@ export const resolvers = {
     },
   },
   Query: {
-    users: authenticated(async (_, { limit, skip }, { mongoDbProvider }) => {
-      return await mongoDbProvider.usersCollection
-        .find({}, { limit, skip })
-        .toArray();
+    users: authenticated(async (_, { limit, skip }, { User }) => {
+      return await User.find({}, null, { limit, skip });
     }),
     user: authenticated(
       async (_, { id }, { mongoDbProvider, mongoHelpers }) =>
@@ -72,14 +71,15 @@ export const resolvers = {
 
   Mutation: {
     updateUser: authenticated(
-      authorized("ADMIN", async (_, { input, id }, { prisma }) => {
+      authorized("SCOUT_MASTER", async (_, { input, id }, { User }) => {
         if (typeof input.password === "string") {
-          input.password = await hashPassword(input.password);
+          input.password = await User.findById(id, function(err, doc) {
+            if (err) return false;
+            doc.password = input.password;
+            doc.save();
+          });
         }
-        return await prisma.mutation.updateUser({
-          where: { id },
-          data: { ...input },
-        });
+        return await User.findByIdAndUpdate(id, { ...input });
       })
     ),
     deleteUser: authenticated(

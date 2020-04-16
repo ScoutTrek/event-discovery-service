@@ -14,11 +14,10 @@ import {
 } from "./ScoutHierarchy/TroopAndPatrol";
 import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 
-// import { prisma } from "../prisma/prisma-client/index";
-import { mongoDbProvider, addMockUsersAsync } from "../db";
-import { ObjectId } from "mongodb";
-
+// Models
 import User from "../models/User";
+import Event from "../models/Event";
+
 import * as authFns from "./utils/Auth";
 import mongoose from "mongoose";
 mongoose.connect(process.env.MONGO_URL, {
@@ -44,6 +43,7 @@ const server = new ApolloServer({
     );
     return {
       User,
+      Event,
       req,
       authFns,
       user,
