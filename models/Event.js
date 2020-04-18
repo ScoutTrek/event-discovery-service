@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const tourSchema = new mongoose.Schema(
+const eventSchema = new mongoose.Schema(
   {
     type: {
       type: String,
@@ -39,7 +39,7 @@ const tourSchema = new mongoose.Schema(
     },
     distance: Number,
     published: Boolean,
-    owner: {
+    creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
@@ -51,10 +51,42 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
-tourSchema.post("save", function(doc, next) {
-  console.log(doc);
+eventSchema.virtual("time").get(function() {
+  let date = new Date(this.datetime);
+  const formattedDate =
+    date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+  return formattedDate;
 });
 
-const Tour = mongoose.model("Tour", tourSchema);
+eventSchema.virtual("date").get(function() {
+  let date = new Date(this.datetime);
+  const monthNames = [
+    "Jan.",
+    "Feb.",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "Aug.",
+    "Sept.",
+    "Oct.",
+    "Nov.",
+    "Dec.",
+  ];
+  const formattedDate =
+    monthNames[date.getMonth()] +
+    " " +
+    date.getDay() +
+    ", " +
+    date.getFullYear();
+  return formattedDate;
+});
 
-export default Tour;
+eventSchema.post("save", function(doc, next) {
+  next();
+});
+
+const Event = mongoose.model("Event", eventSchema);
+
+export default Event;

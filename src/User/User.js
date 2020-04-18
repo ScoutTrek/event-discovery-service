@@ -26,7 +26,17 @@ export const typeDefs = gql`
     scoutMeetings: [ScoutMeeting!]
   }
 
-  input UserInput {
+  input AddUserInput {
+    name: String
+    email: String
+    password: String
+    phone: String
+    birthday: String
+    troop: ID
+    role: ROLE
+  }
+
+  input UpdateUserInput {
     name: String
     email: String
     password: String
@@ -43,9 +53,9 @@ export const typeDefs = gql`
   }
 
   type Mutation {
-    updateUser(input: UserInput!, id: ID!): User
+    updateUser(input: UpdateUserInput!, id: ID!): User
     deleteUser(id: ID!): User
-    updateCurrUser(input: UserInput!): User
+    updateCurrUser(input: UpdateUserInput!): User
     deleteCurrUser: User
   }
 `;
@@ -60,12 +70,7 @@ export const resolvers = {
     users: authenticated(async (_, { limit, skip }, { User }) => {
       return await User.find({}, null, { limit, skip });
     }),
-    user: authenticated(
-      async (_, { id }, { mongoDbProvider, mongoHelpers }) =>
-        await mongoDbProvider.usersCollection.findOne({
-          _id: mongoHelpers.ObjectId(id),
-        })
-    ),
+    user: authenticated(async (_, { id }, { User }) => await User.findById(id)),
     currUser: authenticated(async (_, __, { user }) => user),
   },
 
@@ -84,21 +89,16 @@ export const resolvers = {
     ),
     deleteUser: authenticated(
       authorized(
-        "ADMIN",
-        async (_, { id }, { prisma }) =>
-          await prisma.mutation.deleteUser({ where: { id } })
+        "SCOUT_MASTER",
+        async (_, { id }, { User }) => await User.findByIdAndDelete(id)
       )
     ),
     updateCurrUser: authenticated(
-      async (_, { input }, { user, prisma }) =>
-        await prisma.mutation.updateUser({
-          where: { id: user.id },
-          data: { ...input },
-        })
+      async (_, { input }, { User, user }) =>
+        await User.findByIdAndUpdate(user.id, { ...input })
     ),
     deleteCurrUser: authenticated(
-      async (_, { id }, { prisma }) =>
-        await prisma.query.user({ where: { id } })
+      async (_, { id }, { User }) => await User.findByIdAndDelete(id)
     ),
   },
 };

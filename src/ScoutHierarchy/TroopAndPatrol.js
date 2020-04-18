@@ -11,15 +11,38 @@ export const typeDefs = gql`
     events: [Event!]
   }
 
+  input AddTroopInput {
+    council: String!
+    state: String!
+    unitNumber: Int
+    patrols: [ID]
+    events: [ID]
+  }
+
+  input UpdateTroopInput {
+    council: String
+    state: String
+    unitNumber: Int
+    patrols: [ID]
+    events: [ID]
+  }
+
   type Patrol {
     id: ID!
+    troop: Troop!
     name: String!
     members: [User!]!
     events: [Event!]
   }
 
-  input UpdatePatrol {
+  input AddPatrolInput {
     name: String!
+    members: [ID!]
+    events: [ID!]
+  }
+
+  input UpdatePatrolInput {
+    name: String
     members: [ID!]
     events: [ID!]
   }
@@ -31,7 +54,12 @@ export const typeDefs = gql`
   }
 
   extend type Mutation {
-    addPatrol(input: UpdatePatrol): Patrol
+    addTroop(input: AddTroopInput): Troop
+    updateTroop(id: ID!, input: UpdateTroopInput): Troop
+    updateCurrTroop(input: UpdateTroopInput): Troop
+    deleteTroop(id: ID!): Troop
+    deleteCurrTroop: Troop
+    addPatrol(troopId: ID!, input: AddPatrolInput): Patrol
     updatePatrol: Patrol
     updateCurrPatrol: Patrol
     deletePatrol: Patrol
@@ -41,35 +69,31 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Query: {
-    patrols: async (_, __, { prisma }, info) =>
-      await prisma.query.patrols(null, info),
+    patrols: async (_, __, { Troop, user }) => {
+      const myTroop = await Troop.findById(user.troop);
+      return myTroop.patrols;
+    },
     patrol: async (_, { id }, { prisma }) =>
       await prisma.query.patrol({ where: { id } }),
     currPatrol: authenticated(
       async (_, __, { user }) =>
         await prisma.query.patrols({ where: { members_some: { id: user.id } } })
-    )
+    ),
   },
 
   Mutation: {
-    addPatrol: authenticated(async (_, { input }, { prisma }) => {
-      const { members, events, ...rest } = input;
-      const membersWithIDLabel = [];
-      members.map(id => membersWithIDLabel.push({ id }));
+    addTroop: authenticated(async (_, { input }, { Troop }) =>
+      Troop.create(input)
+    ),
+    addPatrol: authenticated(async (_, { troopId, input }, { Troop }) => {
+      const troop = await Troop.findById(troopId);
+      troop.patrols.push(input);
 
-      const eventsWithIDLabel = [];
-      events.map(id => eventsWithIDLabel.push({ id }));
+      troop.save(function(err) {
+        if (err) return new Error(err);
+      });
 
-      const patrolMutation = {
-        ...rest,
-        members: {
-          connect: membersWithIDLabel
-        },
-        events: {
-          connect: eventsWithIDLabel
-        }
-      };
-      return await prisma.mutation.createPatrol({ data: patrolMutation });
+      return troop.patrols[troop.patrols.length - 1].populate("members");
     }),
     updatePatrol: authenticated(
       authorized(
@@ -77,7 +101,7 @@ export const resolvers = {
         async (_, { input, id }, { prisma }) =>
           await prisma.mutation.updatePatrol({
             where: { id },
-            data: { ...input }
+            data: { ...input },
           })
       )
     ),
@@ -92,12 +116,12 @@ export const resolvers = {
       async (_, { input }, { user, prisma }) =>
         await prisma.mutation.updatePatrol({
           where: { members_some: { id: user.id } },
-          data: { ...input }
+          data: { ...input },
         })
     ),
     deleteCurrPatrol: authenticated(
       async (_, __, { user, prisma }) =>
         await prisma.query.patrol({ where: { members_some: { id: user.id } } })
-    )
-  }
+    ),
+  },
 };

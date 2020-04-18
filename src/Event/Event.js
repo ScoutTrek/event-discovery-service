@@ -21,6 +21,7 @@ export const typeDefs = gql`
     troop: Troop
     title: String!
     description: String
+    datetime: String
     date: String
     time: String
     location: Location!
@@ -31,21 +32,31 @@ export const typeDefs = gql`
     day: WEEK_DAY
     distance: Int
     published: Boolean!
-    owner: User
+    creator: User
   }
 
   type Hike {
     id: ID!
-    owner: User!
+    creator: User!
     title: String!
     description: String!
-    date: String!
+    date: String
+    time: String
     location: Location
     meetLocation: Location
     distance: Int
   }
 
-  input HikeInput {
+  input AddHikeInput {
+    title: String!
+    description: String!
+    datetime: String!
+    location: CreateLocationInput
+    meetLocation: CreateLocationInput
+    distance: Int
+  }
+
+  input UpdateHikeInput {
     title: String
     description: String
     date: String
@@ -107,8 +118,8 @@ export const typeDefs = gql`
   }
 
   extend type Mutation {
-    addHike(input: HikeInput!): Hike
-    updateHike(input: HikeInput!, id: ID!): Hike
+    addHike(input: AddHikeInput!): Hike
+    updateHike(input: UpdateHikeInput!, id: ID!): Hike
     deleteHike(id: ID!): Hike
     addScoutMeeting(input: ScoutMeetingInput!): ScoutMeeting
     updateScoutMeeting(input: ScoutMeetingInput!, id: ID!): ScoutMeeting
@@ -129,44 +140,35 @@ export const resolvers = {
   // },
   // ScoutMeeting: {
   //   location: async (parent, args, { prisma }, info) => {
-  //     console.log(await prisma.query.events({ id: parent.id }));
   //     return await prisma.events({ id: parent.id }).location;
   //   }
   // },
   Query: {
-    events: async (_, { first, skip }, { prisma }, info) =>
-      await prisma.query.events({ first, skip }, info),
-    hike: async (_, { id }, { prisma }, info) =>
-      await prisma.query.users(null, info),
-    hikes: async (_, __, { prisma }, info) =>
-      await prisma.query.events({ where: { type: "Hike" } }, info),
-    scoutMeetings: async (_, { id }, { prisma }, info) =>
-      await prisma.query.users(null, info),
-    scoutMeeting: async (_, __, { prisma }, info) =>
-      await prisma.query.users(null, info)
+    events: async (_, { first, skip }, { Event }) =>
+      await Event.find({}, null, { first, skip }),
+    hike: async (_, { id }, { Event }) => await Event.findById(id),
+    hikes: async (_, { first, skip }, { Event }) =>
+      await Event.find({ type: "Hike" }, null, { first, skip }),
+    scoutMeeting: async (_, { id }, { Event }) => await Event.findById(id),
+    scoutMeetings: async (_, { first, skip }, { Event }) =>
+      await Event.find({ type: "ScoutMeeting" }, null, { first, skip }),
   },
   Mutation: {
-    addHike: authenticated(async (_, { input }, { user, prisma }) => {
+    addHike: authenticated(async (_, { input }, { Event, user }) => {
       const hikeMutation = {
         ...input,
         type: "Hike",
-        owner: {
-          connect: {
-            id: user.id
-          }
-        }
+        creator: user.id,
       };
 
-      return await prisma.mutation.createEvent({
-        data: hikeMutation
-      });
+      return await Event.create(hikeMutation);
     }),
 
     updateHike: authenticated(
       async (_, { input, id }, { prisma }) =>
         await prisma.mutation.updateEvent({
           where: { id },
-          data: { ...input }
+          data: { ...input },
         })
     ),
     deleteHike: authenticated(
@@ -177,27 +179,27 @@ export const resolvers = {
       const scoutMeetingMutation = {
         ...input,
         type: "Scout Meeting",
-        owner: {
+        creator: {
           connect: {
-            id: user.id
-          }
-        }
+            id: user.id,
+          },
+        },
       };
 
       return await prisma.createEvent({
-        data: scoutMeetingMutation
+        data: scoutMeetingMutation,
       });
     }),
     updateScoutMeeting: authenticated(
       async (_, { input, id }, { prisma }) =>
         await prisma.mutation.updateEvent({
           where: { id },
-          data: { ...input }
+          data: { ...input },
         })
     ),
     deleteScoutMeeting: authenticated(
       async (_, { id }, { prisma }) =>
         await prisma.mutation.deleteEvent({ where: { id } })
-    )
-  }
+    ),
+  },
 };
