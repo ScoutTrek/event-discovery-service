@@ -9,10 +9,12 @@ const eventSchema = new mongoose.Schema(
     troop: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Troop",
+      required: true,
     },
     patrol: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patrol",
+      required: "true",
     },
     title: {
       type: String,
@@ -81,10 +83,6 @@ eventSchema.virtual("date").get(function() {
     ", " +
     date.getFullYear();
   return formattedDate;
-});
-
-eventSchema.post("save", function(doc, next) {
-  next();
 });
 
 const Event = mongoose.model("Event", eventSchema);

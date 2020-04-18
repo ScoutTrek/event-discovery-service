@@ -48,6 +48,9 @@ export const typeDefs = gql`
   }
 
   extend type Query {
+    troops: [Troop]
+    troop(id: ID!): Troop!
+    currTroop: Troop!
     patrols: [Patrol]
     patrol(id: ID!): Patrol!
     currPatrol: Patrol!
@@ -69,23 +72,34 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Query: {
+    troops: async (_, { limit, skip }, { Troop }) =>
+      await Troop.find({}, null, { limit, skip }),
+    troop: async (_, { id }, { Troop }) =>
+      await Troop.findById(id, null, { limit, skip }),
+    currTroop: authenticated(
+      async (_, __, { Troop, user }) =>
+        await Troop.findById(user.troop, null, { limit, skip })
+    ),
     patrols: async (_, __, { Troop, user }) => {
       const myTroop = await Troop.findById(user.troop);
       return myTroop.patrols;
     },
-    patrol: async (_, { id }, { prisma }) =>
-      await prisma.query.patrol({ where: { id } }),
-    currPatrol: authenticated(
-      async (_, __, { user }) =>
-        await prisma.query.patrols({ where: { members_some: { id: user.id } } })
-    ),
+    patrol: async (_, { id }, { Troop, user }) => {
+      const myTroop = await Troop.findById(user.troop);
+      return myTroop.patrols.id(id);
+    },
+    currPatrol: authenticated(async (_, __, { Troop, user }) => {
+      const myTroop = await Troop.findById(user.troop);
+      return myTroop.patrols.id(user.patrol);
+    }),
   },
 
   Mutation: {
     addTroop: authenticated(async (_, { input }, { Troop }) =>
       Troop.create(input)
     ),
-    addPatrol: authenticated(async (_, { troopId, input }, { Troop }) => {
+    // Will need to figure out how to create a Troop and a Patrol at the same time.
+    addPatrol: authenticated(async (_, { troopId, input }, { Troop, user }) => {
       const troop = await Troop.findById(troopId);
       troop.patrols.push(input);
 
@@ -96,32 +110,34 @@ export const resolvers = {
       return troop.patrols[troop.patrols.length - 1].populate("members");
     }),
     updatePatrol: authenticated(
-      authorized(
-        "PATROL_LEADER",
-        async (_, { input, id }, { prisma }) =>
-          await prisma.mutation.updatePatrol({
-            where: { id },
-            data: { ...input },
-          })
-      )
+      authorized("PATROL_LEADER", async (_, { id, input }, { Troop, user }) => {
+        const troop = await Troop.findById(user.troop);
+        const patrol = troop.patrols.id(id);
+        const index = troop.patrols.indexOf(patrol);
+        const updatedPatrol = { ...patrol, ...input };
+        troop.patrols[index] = updatedPatrol;
+        return await troop.save();
+      })
     ),
     deletePatrol: authenticated(
-      authorized(
-        "PATROL_LEADER",
-        async (_, { id }, { prisma }) =>
-          await prisma.mutation.deletePatrol({ where: { id } })
-      )
+      authorized("PATROL_LEADER", async (_, { id }, { Troop }) => {
+        // Not tested because I don't have very much data in the DB yet.
+        const troop = await Troop.findById(user.troop);
+        return troop.patrols.id(id).remove();
+      })
     ),
-    updateCurrPatrol: authenticated(
-      async (_, { input }, { user, prisma }) =>
-        await prisma.mutation.updatePatrol({
-          where: { members_some: { id: user.id } },
-          data: { ...input },
-        })
-    ),
-    deleteCurrPatrol: authenticated(
-      async (_, __, { user, prisma }) =>
-        await prisma.query.patrol({ where: { members_some: { id: user.id } } })
-    ),
+    updateCurrPatrol: authenticated(async (_, { input }, { Troop, user }) => {
+      const troop = await Troop.findById(user.troop);
+      const patrol = troop.patrols.id(user.patrol);
+      const index = troop.patrols.indexOf(patrol);
+      const updatedPatrol = { ...patrol, ...input };
+      troop.patrols[index] = updatedPatrol;
+      return await troop.save();
+    }),
+    deleteCurrPatrol: authenticated(async (_, __, { Troop, user }) => {
+      // Not tested because I don't have very much data in the DB yet.
+      const troop = await Troop.findById(user.troop);
+      return troop.patrols.id(user.patrol).remove();
+    }),
   },
 };

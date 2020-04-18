@@ -33,6 +33,7 @@ export const typeDefs = gql`
     phone: String
     birthday: String
     troop: ID
+    patrol: ID
     role: ROLE
   }
 
@@ -43,6 +44,7 @@ export const typeDefs = gql`
     phone: String
     birthday: String
     troop: ID
+    patrol: ID
     role: ROLE
   }
 

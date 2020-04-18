@@ -45,6 +45,8 @@ export const typeDefs = gql`
     location: Location
     meetLocation: Location
     distance: Int
+    troop: ID!
+    patrol: ID!
   }
 
   input AddHikeInput {
@@ -54,6 +56,8 @@ export const typeDefs = gql`
     location: CreateLocationInput
     meetLocation: CreateLocationInput
     distance: Int
+    troop: ID!
+    patrol: ID!
   }
 
   input UpdateHikeInput {
@@ -63,31 +67,52 @@ export const typeDefs = gql`
     location: CreateLocationInput
     meetLocation: CreateLocationInput
     distance: Int
+    troop: ID
+    patrol: ID
   }
 
   type ScoutMeeting {
     id: ID!
+    creator: User!
     title: String!
     description: String!
-    date: String
     location: Location!
     meetLocation: Location
+    time: String!
     startDate: String!
-    endDate: String
+    endDate: String!
     recurring: Boolean
     day: WEEK_DAY
+    troop: ID!
+    patrol: ID!
   }
 
-  input ScoutMeetingInput {
-    title: String
-    description: String
-    date: String
+  input AddScoutMeetingInput {
+    title: String!
+    description: String!
     location: CreateLocationInput
     meetLocation: CreateLocationInput
+    time: String!
+    startDate: String!
+    endDate: String!
+    recurring: Boolean
+    day: WEEK_DAY
+    troop: ID!
+    patrol: ID!
+  }
+
+  input UpdateScoutMeetingInput {
+    title: String
+    description: String
+    location: CreateLocationInput
+    meetLocation: CreateLocationInput
+    time: String
     startDate: String
     endDate: String
     recurring: Boolean
     day: WEEK_DAY
+    troop: ID
+    patrol: ID
   }
 
   type Location {
@@ -121,31 +146,23 @@ export const typeDefs = gql`
     addHike(input: AddHikeInput!): Hike
     updateHike(input: UpdateHikeInput!, id: ID!): Hike
     deleteHike(id: ID!): Hike
-    addScoutMeeting(input: ScoutMeetingInput!): ScoutMeeting
-    updateScoutMeeting(input: ScoutMeetingInput!, id: ID!): ScoutMeeting
+    addScoutMeeting(input: AddScoutMeetingInput!): ScoutMeeting
+    updateScoutMeeting(input: UpdateScoutMeetingInput!, id: ID!): ScoutMeeting
     deleteScoutMeeting(id: ID!): ScoutMeeting
   }
 `;
 
 export const resolvers = {
-  // Event: {
-  //   location: async (parent, args, { prisma }, info) => {
-  //     return await prisma.query.events({ id: parent.id }).location();
-  //   }
-  // },
-  // Hike: {
-  //   location: async (parent, args, { prisma }, info) => {
-  //     return await prisma.query.events({ id: parent.id }).location();
-  //   }
-  // },
-  // ScoutMeeting: {
-  //   location: async (parent, args, { prisma }, info) => {
-  //     return await prisma.events({ id: parent.id }).location;
-  //   }
-  // },
   Query: {
-    events: async (_, { first, skip }, { Event }) =>
-      await Event.find({}, null, { first, skip }),
+    events: async (_, { first, skip }, { Event, user }) => {
+      return await Event.find({}, null, {
+        first,
+        skip,
+      })
+        .populate("users")
+        .populate("troop");
+    },
+
     hike: async (_, { id }, { Event }) => await Event.findById(id),
     hikes: async (_, { first, skip }, { Event }) =>
       await Event.find({ type: "Hike" }, null, { first, skip }),
@@ -158,6 +175,8 @@ export const resolvers = {
       const hikeMutation = {
         ...input,
         type: "Hike",
+        troop: user.troop,
+        patrol: user.patrol,
         creator: user.id,
       };
 
@@ -165,41 +184,33 @@ export const resolvers = {
     }),
 
     updateHike: authenticated(
-      async (_, { input, id }, { prisma }) =>
-        await prisma.mutation.updateEvent({
-          where: { id },
-          data: { ...input },
-        })
+      async (_, { input, id }, { Event }) =>
+        await Event.findByIdAndUpdate(id, { ...input })
     ),
     deleteHike: authenticated(
-      async (_, { id }, { prisma }) =>
-        await prisma.mutation.deleteEvent({ where: { id } })
+      async (_, { id }, { Event }) =>
+        await Event.findByIdAndDelete(id, { ...input })
     ),
-    addScoutMeeting: authenticated(async (_, { input }, { user, prisma }) => {
+    addScoutMeeting: authenticated(async (_, { input }, { Event, user }) => {
       const scoutMeetingMutation = {
         ...input,
-        type: "Scout Meeting",
-        creator: {
-          connect: {
-            id: user.id,
-          },
-        },
+        type: "ScoutMeeting",
+        creator: user.id,
       };
 
-      return await prisma.createEvent({
-        data: scoutMeetingMutation,
-      });
+      const newEvent = await Event.create(scoutMeetingMutation);
+
+      return await Event.findById(newEvent.id)
+        .populate("creator")
+        .populate("troop");
     }),
     updateScoutMeeting: authenticated(
-      async (_, { input, id }, { prisma }) =>
-        await prisma.mutation.updateEvent({
-          where: { id },
-          data: { ...input },
-        })
+      async (_, { input, id }, { Event }) =>
+        await Event.findByIdAndUpdate(id, { ...input })
     ),
     deleteScoutMeeting: authenticated(
-      async (_, { id }, { prisma }) =>
-        await prisma.mutation.deleteEvent({ where: { id } })
+      async (_, { id }, { Event }) =>
+        await Event.findByIdAndDelete(id, { ...input })
     ),
   },
 };
