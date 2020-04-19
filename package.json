@@ -4,7 +4,7 @@
   "description": "Testing a GraphQL server on GCP",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node -r dotenv/config src/index.js",
+    "start": "babel-node -r dotenv/config src/index.js"
   },
   "engines": {
     "node": "*"
@@ -21,8 +21,6 @@
     "dotenv": "^8.2.0",
     "email-validator": "^2.0.4",
     "global": "^4.4.0",
-    "graphql-cli": "^3.0.14",
-    "graphql-import": "^1.0.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.9"
   },
