@@ -1,7 +1,0 @@
-endpoint: http://34.94.55.250:4466/
-datamodel: datamodel.prisma
-secret: ottovanschnitzelpusskrakingeschitemeyer
-
-generate:
-  - generator: javascript-client
-    output: ./prisma-client/

@@ -22,8 +22,7 @@ export const typeDefs = gql`
     troop: Troop!
     patrol: Patrol!
     role: ROLE!
-    hikes: [Hike!]
-    scoutMeetings: [ScoutMeeting!]
+    events: Event
   }
 
   input AddUserInput {

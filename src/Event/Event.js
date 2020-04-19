@@ -35,20 +35,6 @@ export const typeDefs = gql`
     creator: User
   }
 
-  type Hike {
-    id: ID!
-    creator: User!
-    title: String!
-    description: String!
-    date: String
-    time: String
-    location: Location
-    meetLocation: Location
-    distance: Int
-    troop: ID!
-    patrol: ID!
-  }
-
   input AddHikeInput {
     title: String!
     description: String!
@@ -56,8 +42,8 @@ export const typeDefs = gql`
     location: CreateLocationInput
     meetLocation: CreateLocationInput
     distance: Int
-    troop: ID!
-    patrol: ID!
+    troop: ID
+    patrol: ID
   }
 
   input UpdateHikeInput {
@@ -71,22 +57,6 @@ export const typeDefs = gql`
     patrol: ID
   }
 
-  type ScoutMeeting {
-    id: ID!
-    creator: User!
-    title: String!
-    description: String!
-    location: Location!
-    meetLocation: Location
-    time: String!
-    startDate: String!
-    endDate: String!
-    recurring: Boolean
-    day: WEEK_DAY
-    troop: ID!
-    patrol: ID!
-  }
-
   input AddScoutMeetingInput {
     title: String!
     description: String!
@@ -97,8 +67,8 @@ export const typeDefs = gql`
     endDate: String!
     recurring: Boolean
     day: WEEK_DAY
-    troop: ID!
-    patrol: ID!
+    troop: ID
+    patrol: ID
   }
 
   input UpdateScoutMeetingInput {
@@ -136,31 +106,39 @@ export const typeDefs = gql`
 
   extend type Query {
     events(first: Int, skip: Int): [Event]
-    hikes: [Hike]
-    hike(id: ID!): Hike
-    scoutMeetings: [ScoutMeeting]
-    scoutMeeting(id: ID!): ScoutMeeting
+    hikes: [Event]
+    hike(id: ID!): Event
+    scoutMeetings: [Event]
+    scoutMeeting(id: ID!): Event
   }
 
   extend type Mutation {
-    addHike(input: AddHikeInput!): Hike
-    updateHike(input: UpdateHikeInput!, id: ID!): Hike
-    deleteHike(id: ID!): Hike
-    addScoutMeeting(input: AddScoutMeetingInput!): ScoutMeeting
-    updateScoutMeeting(input: UpdateScoutMeetingInput!, id: ID!): ScoutMeeting
-    deleteScoutMeeting(id: ID!): ScoutMeeting
+    addHike(input: AddHikeInput!): Event
+    updateHike(input: UpdateHikeInput!, id: ID!): Event
+    deleteHike(id: ID!): Event
+    addScoutMeeting(input: AddScoutMeetingInput!): Event
+    updateScoutMeeting(input: UpdateScoutMeetingInput!, id: ID!): Event
+    deleteScoutMeeting(id: ID!): Event
   }
 `;
 
 export const resolvers = {
+  Event: {
+    troop: async (parent, __, { Troop }) => await Troop.findById(parent.troop),
+    patrol: async (parent, __, { Troop }) => {
+      const myTroop = await Troop.findById(parent.troop);
+      const myPatrol = await myTroop.patrols.id(parent.patrol);
+      return myPatrol;
+    },
+    creator: async (parent, __, { User }) =>
+      await User.findById(parent.creator),
+  },
   Query: {
     events: async (_, { first, skip }, { Event, user }) => {
       return await Event.find({}, null, {
         first,
         skip,
-      })
-        .populate("users")
-        .populate("troop");
+      });
     },
 
     hike: async (_, { id }, { Event }) => await Event.findById(id),
