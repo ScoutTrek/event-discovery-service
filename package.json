@@ -4,25 +4,43 @@
   "description": "Testing a GraphQL server on GCP",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node -r dotenv/config src/index.js"
+    "start": "babel-node -r dotenv/config src/index.js",
+    "test": "jest --watchAll"
+  },
+  "jest": {
+    "globalSetup": "./tests/jest/globalSetup.js",
+    "globalTeardown": "./tests/jest/globalTeardown.js",
+    "setupFiles": [
+      "dotenv/config"
+    ]
   },
   "engines": {
     "node": "*"
   },
   "license": "MIT",
   "dependencies": {
+    "@apollo/react-hooks": "^3.1.5",
     "@babel/core": "^7.8.7",
     "@babel/helper-plugin-utils": "^7.8.3",
     "@babel/node": "^7.8.7",
+    "@babel/polyfill": "^7.8.7",
     "@babel/preset-env": "^7.9.0",
+    "@babel/register": "^7.9.0",
+    "apollo-boost": "^0.4.7",
     "apollo-server": "^2.11.0",
     "babel-plugin-graphql-tag": "^2.5.0",
     "bcryptjs": "^2.4.3",
     "dotenv": "^8.2.0",
     "email-validator": "^2.0.4",
     "global": "^4.4.0",
+    "graphql": "^15.0.0",
+    "jest": "^25.3.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.9.9"
+    "mongoose": "^5.9.9",
+    "node": "^13.13.0",
+    "regenerator-runtime": "^0.13.5",
+    "unfetch": "^4.1.0",
+    "validator": "^13.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4"
