@@ -66,6 +66,12 @@ export const resolvers = {
     id: (parent) => {
       return parent._id;
     },
+    troop: async (parent, __, { Troop }) => await Troop.findById(parent.troop),
+    patrol: async (parent, __, { Troop }) => {
+      const myTroop = await Troop.findById(parent.troop);
+      const myPatrol = await myTroop.patrols.id(parent.patrol);
+      return myPatrol;
+    },
   },
   Query: {
     users: authenticated(async (_, { limit, skip }, { User }) => {
@@ -79,13 +85,13 @@ export const resolvers = {
     updateUser: authenticated(
       authorized("SCOUT_MASTER", async (_, { input, id }, { User }) => {
         if (typeof input.password === "string") {
-          input.password = await User.findById(id, function(err, doc) {
+          input.password = await User.findById(id, function (err, doc) {
             if (err) return false;
             doc.password = input.password;
             doc.save();
           });
         }
-        return await User.findByIdAndUpdate(id, { ...input });
+        return await User.findByIdAndUpdate(id, { ...input }, { new: true });
       })
     ),
     deleteUser: authenticated(
@@ -96,7 +102,7 @@ export const resolvers = {
     ),
     updateCurrUser: authenticated(
       async (_, { input }, { User, user }) =>
-        await User.findByIdAndUpdate(user.id, { ...input })
+        await User.findByIdAndUpdate(user.id, { ...input }, { new: true })
     ),
     deleteCurrUser: authenticated(
       async (_, { id }, { User }) => await User.findByIdAndDelete(id)

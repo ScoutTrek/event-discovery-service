@@ -14,6 +14,11 @@ import {
 } from "./ScoutHierarchy/TroopAndPatrol";
 import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 
+// Models
+import User from "../models/User";
+import Event from "../models/Event";
+import Troop from "../models/TroopAndPatrol";
+
 import * as authFns from "./utils/Auth";
 import mongoose from "mongoose";
 mongoose.connect(process.env.MONGO_URL, {
@@ -22,6 +27,7 @@ mongoose.connect(process.env.MONGO_URL, {
   useUnifiedTopology: true,
   useFindAndModify: true,
 });
+mongoose.set("useFindAndModify", false);
 
 const mongo = mongoose.connection;
 mongo.on("error", console.error.bind(console, "connection error:"));

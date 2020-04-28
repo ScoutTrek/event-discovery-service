@@ -73,20 +73,14 @@ export const typeDefs = gql`
 export const resolvers = {
   Troop: {},
   Patrol: {
-    troop: async (parent, __, { Troop, user }) =>
-      await Troop.findById(user.troop),
+    troop: async (_, __, { Troop, user }) => await Troop.findById(user.troop),
     members: async (parent, __, { User }) => {
-      const members = await User.find()
-        .where("_id")
-        .in(parent.members);
+      const members = await User.find().where("_id").in(parent.members);
       return members;
     },
 
-    // For some reason populating events is different from members ???
     events: async (parent, __, { Event }) => {
-      const events = await Event.find()
-        .where("_id")
-        .in(parent.events);
+      const events = await Event.find().where("_id").in(parent.events);
       return events;
     },
   },
@@ -123,7 +117,7 @@ export const resolvers = {
       const troop = await Troop.findById(troopId);
       troop.patrols.push(input);
 
-      troop.save(function(err) {
+      troop.save(function (err) {
         if (err) return new Error(err);
       });
 

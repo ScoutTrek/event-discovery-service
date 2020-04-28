@@ -33,7 +33,7 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
       validate: {
-        validator: function(el) {
+        validator: function (el) {
           return el === this.password;
         },
         message: "Passwords are not equal :(",
@@ -50,7 +50,6 @@ const userSchema = mongoose.Schema(
     },
     birthday: {
       type: Date,
-      required: true,
     },
     troop: {
       type: mongoose.Schema.Types.ObjectId,
@@ -82,13 +81,13 @@ const userSchema = mongoose.Schema(
   }
 );
 
-userSchema.virtual("age").get(function() {
+userSchema.virtual("age").get(function () {
   let n = Date.now();
   let d = new Date(this.birthday);
   return Math.floor((n - d) / 1000 / 60 / 60 / 24 / 365);
 });
 
-userSchema.pre("save", async function(next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
@@ -96,7 +95,7 @@ userSchema.pre("save", async function(next) {
   next();
 });
 
-userSchema.methods.isValidPassword = async function(submittedPass, realPass) {
+userSchema.methods.isValidPassword = async function (submittedPass, realPass) {
   return await bcrypt.compare(submittedPass, realPass);
 };
 

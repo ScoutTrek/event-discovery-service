@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+const pointSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ["Point"],
+    required: true,
+  },
+  coordinates: {
+    type: [Number],
+    required: true,
+  },
+});
+
 const eventSchema = new mongoose.Schema(
   {
     type: {
@@ -22,8 +34,8 @@ const eventSchema = new mongoose.Schema(
     },
     description: String,
     datetime: Date,
-    location: String,
-    meetLocation: String,
+    location: pointSchema,
+    meetLocation: pointSchema,
     startDate: Date,
     endDate: Date,
     recurring: Boolean,
@@ -39,7 +51,9 @@ const eventSchema = new mongoose.Schema(
         "SUNDAY",
       ],
     },
+    numDays: Number,
     distance: Number,
+    shakedown: Boolean,
     published: Boolean,
     creator: {
       type: mongoose.Schema.Types.ObjectId,
@@ -53,14 +67,14 @@ const eventSchema = new mongoose.Schema(
   }
 );
 
-eventSchema.virtual("time").get(function() {
+eventSchema.virtual("time").get(function () {
   let date = new Date(this.datetime);
   const formattedDate =
     date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
   return formattedDate;
 });
 
-eventSchema.virtual("date").get(function() {
+eventSchema.virtual("date").get(function () {
   let date = new Date(this.datetime);
   const monthNames = [
     "Jan.",
