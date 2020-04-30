@@ -15,8 +15,9 @@ export const typeDefs = gql`
     passwordConfirm: String!
     phone: String
     birthday: String
-    troopId: String
-    role: ROLE
+    troop: ID!
+    patrol: ID!
+    role: ROLE!
   }
 
   type AuthPayload {

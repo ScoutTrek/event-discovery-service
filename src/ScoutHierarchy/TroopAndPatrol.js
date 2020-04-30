@@ -52,6 +52,7 @@ export const typeDefs = gql`
     troop(id: ID!): Troop!
     currTroop: Troop!
     patrols: [Patrol]
+    patrolsOfTroop(id: ID!): [Patrol]
     patrol(id: ID!): Patrol!
     currPatrol: Patrol!
   }
@@ -98,6 +99,10 @@ export const resolvers = {
       // console.log(JSON.stringify(myTroop.patrols, null, 2));
       return myTroop.patrols;
     },
+    patrolsOfTroop: async (_, { id }, { Troop }) => {
+      const myTroop = await Troop.findById(id);
+      return myTroop.patrols;
+    },
     patrol: async (_, { id }, { Troop, user }) => {
       const myTroop = await Troop.findById(user.troop);
       return myTroop.patrols.id(id);
@@ -109,11 +114,9 @@ export const resolvers = {
   },
 
   Mutation: {
-    addTroop: authenticated(async (_, { input }, { Troop }) =>
-      Troop.create(input)
-    ),
+    addTroop: async (_, { input }, { Troop }) => Troop.create(input),
     // Will need to figure out how to create a Troop and a Patrol at the same time.
-    addPatrol: authenticated(async (_, { troopId, input }, { Troop, user }) => {
+    addPatrol: async (_, { troopId, input }, { Troop, user }) => {
       const troop = await Troop.findById(troopId);
       troop.patrols.push(input);
 
@@ -121,8 +124,8 @@ export const resolvers = {
         if (err) return new Error(err);
       });
 
-      return troop.patrols[troop.patrols.length - 1].populate("members");
-    }),
+      return troop.patrols[troop.patrols.length - 1];
+    },
     updatePatrol: authenticated(
       authorized("PATROL_LEADER", async (_, { id, input }, { Troop, user }) => {
         const troop = await Troop.findById(user.troop);
