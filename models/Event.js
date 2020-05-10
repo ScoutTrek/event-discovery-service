@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const pointSchema = new mongoose.Schema({
+export const pointSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: ["Point"],
@@ -36,8 +36,8 @@ const eventSchema = new mongoose.Schema(
     datetime: Date,
     location: pointSchema,
     meetLocation: pointSchema,
-    startDate: Date,
-    endDate: Date,
+    startDatetime: Date,
+    endDatetime: Date,
     recurring: Boolean,
     day: {
       type: String,

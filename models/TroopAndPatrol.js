@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+import { pointSchema } from "./Event";
+
 const patrolSchema = new mongoose.Schema(
   {
     name: {
@@ -36,6 +38,9 @@ const troopSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    city: String,
+    scoutMaster: String,
+    meetLocation: pointSchema,
     patrols: [patrolSchema],
     events: {
       type: [mongoose.Schema.Types.ObjectId],

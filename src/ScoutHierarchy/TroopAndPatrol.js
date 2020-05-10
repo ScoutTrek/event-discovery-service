@@ -7,6 +7,9 @@ export const typeDefs = gql`
     council: String!
     state: String!
     unitNumber: Int
+    city: String!
+    scoutMaster: String
+    meetLocation: Location
     patrols: [Patrol]
     events: [Event!]
   }
@@ -15,6 +18,9 @@ export const typeDefs = gql`
     council: String!
     state: String!
     unitNumber: Int
+    city: String!
+    scoutMaster: String
+    meetLocation: Location
     patrols: [ID]
     events: [ID]
   }
@@ -23,6 +29,9 @@ export const typeDefs = gql`
     council: String
     state: String
     unitNumber: Int
+    city: String
+    scoutMaster: String
+    meetLocation: Location
     patrols: [ID]
     events: [ID]
   }

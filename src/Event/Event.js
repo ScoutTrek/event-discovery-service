@@ -25,6 +25,8 @@ export const typeDefs = gql`
     date: String
     time: String
     numDays: Int
+    startDatetime: String
+    endDatetime: String
     location: Location
     meetLocation: Location
     startDate: String
@@ -65,7 +67,9 @@ export const typeDefs = gql`
     datetime: String
     location: AddLocationInput
     meetLocation: AddLocationInput
-    numDays: Int!
+    numDays: Int
+    startDatetime: String!
+    endDatetime: String!
     # Add a packing list
     troop: ID
     patrol: ID
@@ -78,6 +82,8 @@ export const typeDefs = gql`
     location: AddLocationInput
     meetLocation: AddLocationInput
     numDays: Int
+    startDatetime: String
+    endDatetime: String
     # Add a packing list
     troop: ID
     patrol: ID
