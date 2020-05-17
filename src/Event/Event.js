@@ -22,11 +22,15 @@ export const typeDefs = gql`
     title: String!
     description: String
     datetime: String!
+    meetTime: String!
+    leaveTime: String!
     date: String
     time: String
-    numDays: Int
+
     startDatetime: String
     endDatetime: String
+    numDays: Int
+
     location: Location
     meetLocation: Location
     startDate: String
@@ -43,6 +47,8 @@ export const typeDefs = gql`
     title: String!
     description: String!
     datetime: String!
+    meetTime: String!
+    leaveTime: String!
     location: AddLocationInput
     meetLocation: AddLocationInput
     distance: Int
@@ -54,6 +60,8 @@ export const typeDefs = gql`
     title: String
     description: String
     datetime: String
+    meetTime: String
+    leaveTime: String
     location: AddLocationInput
     meetLocation: AddLocationInput
     distance: Int
@@ -65,6 +73,8 @@ export const typeDefs = gql`
     title: String!
     description: String!
     datetime: String
+    meetTime: String!
+    leaveTime: String!
     location: AddLocationInput
     meetLocation: AddLocationInput
     numDays: Int
@@ -79,6 +89,8 @@ export const typeDefs = gql`
     title: String
     description: String
     datetime: String
+    meetTime: String
+    leaveTime: String
     location: AddLocationInput
     meetLocation: AddLocationInput
     numDays: Int
@@ -95,6 +107,8 @@ export const typeDefs = gql`
     location: AddLocationInput
     meetLocation: AddLocationInput
     datetime: String!
+    meetTime: String!
+    leaveTime: String!
     time: String!
     startDate: String
     endDate: String
@@ -111,6 +125,8 @@ export const typeDefs = gql`
     location: AddLocationInput
     meetLocation: AddLocationInput
     datetime: String
+    meetTime: String
+    leaveTime: String
     time: String
     startDate: String
     endDate: String
@@ -138,6 +154,7 @@ export const typeDefs = gql`
 
   extend type Query {
     events(first: Int, skip: Int): [Event]
+    upcomingEvents(first: Int, skip: Int): [Event]
     event(id: ID!): Event
 
     hikes: [Event]
@@ -200,6 +217,22 @@ export const resolvers = {
         first,
         skip,
       });
+      return events;
+    },
+    upcomingEvents: async (_, { first, skip }, { Event, user }) => {
+      const events = await Event.find(
+        {
+          datetime: {
+            $gte: new Date(),
+            $lte: new Date(Date.now() + 6.04e8 * 2),
+          },
+        },
+        null,
+        {
+          first,
+          skip,
+        }
+      ).sort({ datetime: 1 });
       return events;
     },
     event: async (_, { id }, { Event }) => await Event.findById(id),

@@ -20,7 +20,7 @@ export const typeDefs = gql`
     unitNumber: Int
     city: String!
     scoutMaster: String
-    meetLocation: Location
+    meetLocation: AddLocationInput
     patrols: [ID]
     events: [ID]
   }
@@ -31,7 +31,7 @@ export const typeDefs = gql`
     unitNumber: Int
     city: String
     scoutMaster: String
-    meetLocation: Location
+    meetLocation: AddLocationInput
     patrols: [ID]
     events: [ID]
   }

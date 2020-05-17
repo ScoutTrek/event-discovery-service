@@ -34,6 +34,8 @@ const eventSchema = new mongoose.Schema(
     },
     description: String,
     datetime: Date,
+    meetTime: Date,
+    leaveTime: Date,
     location: pointSchema,
     meetLocation: pointSchema,
     startDatetime: Date,
