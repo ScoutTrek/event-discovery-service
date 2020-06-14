@@ -3,8 +3,8 @@ const { authenticated, authorized } = require("../utils/Auth");
 
 export const typeDefs = gql`
   enum ROLE {
-    SCOUT_MASTER
-    SR_PATROL_LEADER
+    SCOUTMASTER
+    SENIOR_PATROL_LEADER
     PATROL_LEADER
     SCOUT
     PARENT
@@ -12,6 +12,7 @@ export const typeDefs = gql`
 
   type User {
     id: ID!
+    expoNotificationToken: String
     createdAt: String
     updatedAt: String
     name: String!
@@ -26,19 +27,21 @@ export const typeDefs = gql`
   }
 
   input AddUserInput {
-    name: String
-    email: String
-    password: String
+    name: String!
+    email: String!
+    expoNotificationToken: String
+    password: String!
     phone: String
     birthday: String
-    troop: ID
+    troop: ID!
     patrol: ID
-    role: ROLE
+    role: ROLE!
   }
 
   input UpdateUserInput {
     name: String
     email: String
+    expoNotificationToken: String
     password: String
     phone: String
     birthday: String
@@ -83,7 +86,7 @@ export const resolvers = {
 
   Mutation: {
     updateUser: authenticated(
-      authorized("SCOUT_MASTER", async (_, { input, id }, { User }) => {
+      authorized("SCOUTMASTER", async (_, { input, id }, { User }) => {
         if (typeof input.password === "string") {
           input.password = await User.findById(id, function (err, doc) {
             if (err) return false;
@@ -96,7 +99,7 @@ export const resolvers = {
     ),
     deleteUser: authenticated(
       authorized(
-        "SCOUT_MASTER",
+        "SCOUTMASTER",
         async (_, { id }, { User }) => await User.findByIdAndDelete(id)
       )
     ),

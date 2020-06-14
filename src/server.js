@@ -21,13 +21,14 @@ import Troop from "../models/TroopAndPatrol";
 
 import * as authFns from "./utils/Auth";
 import mongoose from "mongoose";
+import { getTokens } from "./Notifications/Expo.js";
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useUnifiedTopology: true,
   useFindAndModify: true,
 });
-mongoose.set("useFindAndModify", false);
+mongoose.set("useFindAndModify", true);
 
 const mongo = mongoose.connection;
 mongo.on("error", console.error.bind(console, "connection error:"));
@@ -43,10 +44,12 @@ const server = new ApolloServer({
       authFns.getTokenFromReq(req),
       User
     );
+    const tokens = await getTokens(Troop, User);
     return {
       User,
       Event,
       Troop,
+      tokens,
       req,
       authFns,
       user,

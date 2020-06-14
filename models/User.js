@@ -39,6 +39,9 @@ const userSchema = mongoose.Schema(
         message: "Passwords are not equal :(",
       },
     },
+    expoNotificationToken: {
+      type: String,
+    },
     phone: {
       type: String,
       validate: [
@@ -62,7 +65,7 @@ const userSchema = mongoose.Schema(
     role: {
       type: String,
       enum: [
-        "SCOUT_MASTER",
+        "SCOUTMASTER",
         "SR_PATROL_LEADER",
         "PATROL_LEADER",
         "SCOUT",

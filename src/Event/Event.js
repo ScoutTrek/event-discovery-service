@@ -1,3 +1,7 @@
+import Troop from "../../models/TroopAndPatrol";
+
+import { sendNotifications } from "../Notifications/Expo";
+
 const { gql } = require("apollo-server");
 const { authenticated, authorized } = require("../utils/Auth");
 
@@ -10,6 +14,14 @@ export const typeDefs = gql`
     THURSDAY
     FRIDAY
     SATURDAY
+  }
+
+  type Message {
+    _id: ID!
+    text: String!
+    image: String!
+    createdAt: String!
+    user: User!
   }
 
   type Event {
@@ -26,6 +38,7 @@ export const typeDefs = gql`
     leaveTime: String!
     date: String
     time: String
+    messages: [Message]
 
     startDatetime: String
     endDatetime: String
@@ -35,6 +48,7 @@ export const typeDefs = gql`
     meetLocation: Location
     startDate: String
     endDate: String
+    checkoutTime: String
     recurring: Boolean
     day: WEEK_DAY
     distance: Int
@@ -101,14 +115,46 @@ export const typeDefs = gql`
     patrol: ID
   }
 
+  input AddSummerCampInput {
+    title: String!
+    description: String!
+    datetime: String
+    meetTime: String!
+    leaveTime: String!
+    location: AddLocationInput
+    meetLocation: AddLocationInput
+    numDays: Int
+    startDatetime: String!
+    endDatetime: String!
+    # Add a packing list
+    troop: ID
+    patrol: ID
+  }
+
+  input UpdateSummerCampInput {
+    title: String
+    description: String
+    datetime: String
+    meetTime: String
+    leaveTime: String
+    location: AddLocationInput
+    meetLocation: AddLocationInput
+    numDays: Int
+    startDatetime: String
+    endDatetime: String
+    # Add a packing list
+    troop: ID
+    patrol: ID
+  }
+
   input AddScoutMeetingInput {
     title: String!
     description: String!
     location: AddLocationInput
     meetLocation: AddLocationInput
     datetime: String!
-    meetTime: String!
-    leaveTime: String!
+    meetTime: String
+    leaveTime: String
     time: String!
     startDate: String
     endDate: String
@@ -163,8 +209,13 @@ export const typeDefs = gql`
     campouts: [Event]
     campout(id: ID!): Event
 
+    summerCamps: [Event]
+    summerCamp(id: ID!): Event
+
     scoutMeetings: [Event]
     scoutMeeting(id: ID!): Event
+
+    messages(id: ID!): [Message]
   }
 
   extend type Mutation {
@@ -176,9 +227,15 @@ export const typeDefs = gql`
     updateCampout(input: UpdateCampoutInput!, id: ID!): Event
     deleteCampout(id: ID!): Event
 
+    addSummerCamp(input: AddSummerCampInput!): Event
+    updateSummerCamp(input: UpdateSummerCampInput!, id: ID!): Event
+    deleteSummerCamp(id: ID!): Event
+
     addScoutMeeting(input: AddScoutMeetingInput!): Event
     updateScoutMeeting(input: UpdateScoutMeetingInput!, id: ID!): Event
     deleteScoutMeeting(id: ID!): Event
+
+    addMessage(eventId: ID!, name: String, message: String!): Message
   }
 `;
 
@@ -211,6 +268,9 @@ export const resolvers = {
       return null;
     },
   },
+  // Message: {
+  //   user: async (_, { user }, { User }) => await User.findById(user),
+  // },
   Query: {
     events: async (_, { first, skip }, { Event, user }) => {
       const events = await Event.find({}, null, {
@@ -224,7 +284,7 @@ export const resolvers = {
         {
           datetime: {
             $gte: new Date(),
-            $lte: new Date(Date.now() + 6.04e8 * 2),
+            $lte: new Date(Date.now() + 6.04e8 * 8),
           },
         },
         null,
@@ -242,12 +302,19 @@ export const resolvers = {
     campout: async (_, { id }, { Event }) => await Event.findById(id),
     campouts: async (_, { first, skip }, { Event }) =>
       await Event.find({ type: "Campout" }, null, { first, skip }),
+    summerCamp: async (_, { id }, { Event }) => await Event.findById(id),
+    summerCamps: async (_, { first, skip }, { Event }) =>
+      await Event.find({ type: "Campout" }, null, { first, skip }),
     scoutMeeting: async (_, { id }, { Event }) => await Event.findById(id),
     scoutMeetings: async (_, { first, skip }, { Event }) =>
       await Event.find({ type: "ScoutMeeting" }, null, { first, skip }),
+    messages: async (_, { id }, { Event }) => {
+      const event = await Event.findById(id);
+      return event.messages;
+    },
   },
   Mutation: {
-    addHike: authenticated(async (_, { input }, { Event, user }) => {
+    addHike: authenticated(async (_, { input }, { Event, user, tokens }) => {
       const hikeMutation = {
         ...input,
         type: "Hike",
@@ -263,20 +330,25 @@ export const resolvers = {
           coordinates: [input.location.lng, input.location.lat],
         },
       };
+      sendNotifications(
+        tokens,
+        `${input.title} event has been created. See details.`
+      );
       return await Event.create(hikeMutation);
     }),
-    updateHike: authenticated(async (_, { input, id }, { Event }) => {
+    updateHike: authenticated(async (_, { input, id }, { Event, tokens }) => {
       const newEvent = await Event.findOneAndUpdate(
         { _id: id },
         { ...input },
         { new: true }
       );
+      sendNotifications(tokens, `${input.title} event has been updated!`);
       return newEvent;
     }),
     deleteHike: authenticated(
       async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
     ),
-    addCampout: authenticated(async (_, { input }, { Event, user }) => {
+    addCampout: authenticated(async (_, { input }, { Event, user, tokens }) => {
       const campoutMutation = {
         ...input,
         type: "Campout",
@@ -292,44 +364,128 @@ export const resolvers = {
           coordinates: [input.location.lng, input.location.lat],
         },
       };
+      sendNotifications(
+        tokens,
+        `${input.title} event has been created. See details.`
+      );
       return await Event.create(campoutMutation);
     }),
-    updateCampout: authenticated(async (_, { input, id }, { Event }) => {
-      const newEvent = await Event.findOneAndUpdate(
-        { _id: id },
-        { ...input },
-        { new: true }
-      );
-      return newEvent;
-    }),
+    updateCampout: authenticated(
+      async (_, { input, id }, { Event, Troop, tokens }) => {
+        const newEvent = await Event.findOneAndUpdate(
+          { _id: id },
+          { ...input },
+          { new: true }
+        );
+
+        sendNotifications(tokens, `${input.title} event has been updated!`);
+
+        return newEvent;
+      }
+    ),
     deleteCampout: authenticated(
       async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
     ),
-    addScoutMeeting: authenticated(async (_, { input }, { Event, user }) => {
-      const scoutMeetingMutation = {
-        ...input,
-        type: "ScoutMeeting",
-        creator: user.id,
-        troop: user.troop,
-        patrol: user.patrol,
-        location: {
-          type: "Point",
-          coordinates: [input.location.lng, input.location.lat],
-        },
-      };
+    addSummerCamp: authenticated(
+      async (_, { input }, { Event, user, tokens }) => {
+        const campoutMutation = {
+          ...input,
+          type: "SummerCamp",
+          troop: user.troop,
+          patrol: user.patrol,
+          creator: user.id,
+          location: {
+            type: "Point",
+            coordinates: [input.location.lng, input.location.lat],
+          },
+          meetLocation: {
+            type: "Point",
+            coordinates: [input.location.lng, input.location.lat],
+          },
+        };
+        sendNotifications(
+          tokens,
+          `${input.title} event has been created. See details.`
+        );
+        return await Event.create(campoutMutation);
+      }
+    ),
+    updateSummerCamp: authenticated(
+      async (_, { input, id }, { Event, Troop, tokens }) => {
+        const newEvent = await Event.findOneAndUpdate(
+          { _id: id },
+          { ...input },
+          { new: true }
+        );
 
-      const newEvent = await Event.create(scoutMeetingMutation);
+        sendNotifications(tokens, `${input.title} event has been updated!`);
 
-      return await Event.findById(newEvent.id)
-        .populate("creator")
-        .populate("troop");
-    }),
+        return newEvent;
+      }
+    ),
+    deleteSummerCamp: authenticated(
+      async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
+    ),
+    addScoutMeeting: authenticated(
+      async (_, { input }, { Event, user, tokens }) => {
+        const scoutMeetingMutation = {
+          ...input,
+          type: "ScoutMeeting",
+          creator: user.id,
+          troop: user.troop,
+          patrol: user.patrol,
+          location: {
+            type: "Point",
+            coordinates: [input.location.lng, input.location.lat],
+          },
+        };
+
+        sendNotifications(
+          tokens,
+          `${input.title} event has been created. See details.`
+        );
+
+        return await Event.create(scoutMeetingMutation);
+      }
+    ),
     updateScoutMeeting: authenticated(
-      async (_, { input, id }, { Event }) =>
-        await Event.findByIdAndUpdate(id, { ...input })
+      async (_, { input, id }, { Event, tokens }) => {
+        const newEvent = await Event.findOneAndUpdate(
+          { _id: id },
+          { ...input },
+          { new: true }
+        );
+
+        sendNotifications(tokens, `${input.title} event has been updated!`);
+
+        return newEvent;
+      }
     ),
     deleteScoutMeeting: authenticated(
       async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
+    ),
+
+    addMessage: authenticated(
+      async (_, { eventId, name, message }, { user, Event, tokens }) => {
+        const curr_event = await Event.findById(eventId);
+        const newMessage = {
+          text: message,
+          user: {
+            _id: user.id,
+            name: user.name,
+          },
+        };
+
+        sendNotifications(tokens, `ScoutTrek message about ${name}.`);
+
+        curr_event.messages.push(newMessage);
+
+        curr_event.save(function (err) {
+          if (err) return new Error(err);
+        });
+
+        return curr_event.messages[curr_event.messages.length - 1];
+      }
     ),
   },
 };

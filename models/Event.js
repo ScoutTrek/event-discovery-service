@@ -12,6 +12,25 @@ export const pointSchema = new mongoose.Schema({
   },
 });
 
+export const messageUserSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+});
+
+export const messageSchema = new mongoose.Schema({
+  text: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  user: messageUserSchema,
+});
+
 const eventSchema = new mongoose.Schema(
   {
     type: {
@@ -38,6 +57,8 @@ const eventSchema = new mongoose.Schema(
     leaveTime: Date,
     location: pointSchema,
     meetLocation: pointSchema,
+    messages: [messageSchema],
+
     startDatetime: Date,
     endDatetime: Date,
     recurring: Boolean,
@@ -53,6 +74,7 @@ const eventSchema = new mongoose.Schema(
         "SUNDAY",
       ],
     },
+    checkoutTime: Date,
     numDays: Number,
     distance: Number,
     shakedown: Boolean,
