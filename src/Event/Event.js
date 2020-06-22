@@ -283,7 +283,7 @@ export const resolvers = {
       const events = await Event.find(
         {
           datetime: {
-            $gte: new Date(),
+            $gte: new Date(Date.now() - 86400),
             $lte: new Date(Date.now() + 6.04e8 * 8),
           },
         },
@@ -476,9 +476,11 @@ export const resolvers = {
           },
         };
 
-        sendNotifications(tokens, `ScoutTrek message about ${name}.`);
-
         curr_event.messages.push(newMessage);
+
+        tokens = tokens.filter((token) => token !== user.token);
+
+        sendNotifications(tokens, `ScoutTrek message about ${name}.`);
 
         curr_event.save(function (err) {
           if (err) return new Error(err);

@@ -44,7 +44,7 @@ const server = new ApolloServer({
       authFns.getTokenFromReq(req),
       User
     );
-    const tokens = await getTokens(Troop, User);
+    const tokens = await getTokens(Troop, User, user);
     return {
       User,
       Event,

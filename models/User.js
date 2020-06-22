@@ -66,7 +66,7 @@ const userSchema = mongoose.Schema(
       type: String,
       enum: [
         "SCOUTMASTER",
-        "SR_PATROL_LEADER",
+        "SENIOR_PATROL_LEADER",
         "PATROL_LEADER",
         "SCOUT",
         "PARENT",

@@ -12,7 +12,7 @@ export const typeDefs = gql`
 
   type User {
     id: ID!
-    expoNotificationToken: String
+    expoNotificationToken: String!
     createdAt: String
     updatedAt: String
     name: String!

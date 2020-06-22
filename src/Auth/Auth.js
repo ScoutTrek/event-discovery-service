@@ -6,7 +6,6 @@ export const typeDefs = gql`
   input LoginInput {
     email: String!
     password: String!
-    expoNotificationToken: String
   }
 
   input SignupInput {
@@ -42,6 +41,11 @@ export const resolvers = {
 
       const user = await User.create({ ...input });
 
+      const troop = await Troop.findById(input.troop);
+      const patrol = await troop.patrols.id(user.patrol);
+      patrol.members.push(user.id);
+      await troop.save();
+
       if (input.role === "SCOUTMASTER" || input.role === "Scoutmaster") {
         await Troop.findByIdAndUpdate(input.troop, {
           scoutMaster: user.id,
@@ -68,13 +72,13 @@ export const resolvers = {
         throw new Error("Invalid login");
       }
 
-      console.log(user.id);
-      console.log(input.expoNotificationToken, user.expoNotificationToken);
-      if (input.expoNotificationToken !== user.expoNotificationToken) {
-        await User.findByIdAndUpdate(user.id, {
-          expoNotificationToken: input.expoNotificationToken,
-        });
-      }
+      // if (input.expoNotificationToken) {
+      //   if (input.expoNotificationToken !== user.expoNotificationToken) {
+      //     await User.findByIdAndUpdate(user.id, {
+      //       expoNotificationToken: input.expoNotificationToken,
+      //     });
+      //   }
+      // }
 
       const token = authFns.createToken(user);
       return { token, user };

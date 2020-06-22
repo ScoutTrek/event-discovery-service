@@ -3,28 +3,37 @@ let expo = new Expo();
 
 // fill messages
 
-export const getTokens = async (Troop, User) => {
+export const getTokens = async (Troop, User, user) => {
   const tokens = [];
 
-  const troop = await Troop.findById("5e99f952a0d2524ecb6ceef8");
+  let troop;
+  if (user) {
+    troop = await Troop.findById(user.troop);
+  }
 
-  const validPatrols = troop.patrols.filter((patrol) => patrol.members.length);
+  if (troop) {
+    const validPatrols = troop.patrols.filter(
+      (patrol) => patrol.members.length
+    );
 
-  const functionWithPromise = (user) => {
-    tokens.push(user.expoNotificationToken);
-    return Promise.resolve("ok");
-  };
+    const functionWithPromise = (user) => {
+      if (user && user.expoNotificationToken) {
+        tokens.push(user.expoNotificationToken);
+      }
+      return Promise.resolve("ok");
+    };
 
-  const getUser = async (member) => {
-    const user = await User.findById(member);
-    return functionWithPromise(user);
-  };
+    const getUser = async (member) => {
+      const user = await User.findById(member);
+      return functionWithPromise(user);
+    };
 
-  await Promise.all(
-    validPatrols.map((patrol) =>
-      Promise.all(patrol.members.map((member) => getUser(member)))
-    )
-  );
+    await Promise.all(
+      validPatrols.map((patrol) =>
+        Promise.all(patrol.members.map((member) => getUser(member)))
+      )
+    );
+  }
 
   return tokens;
 };
