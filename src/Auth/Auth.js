@@ -6,6 +6,7 @@ export const typeDefs = gql`
   input LoginInput {
     email: String!
     password: String!
+    expoNotificationToken: String
   }
 
   input SignupInput {
@@ -72,13 +73,13 @@ export const resolvers = {
         throw new Error("Invalid login");
       }
 
-      // if (input.expoNotificationToken) {
-      //   if (input.expoNotificationToken !== user.expoNotificationToken) {
-      //     await User.findByIdAndUpdate(user.id, {
-      //       expoNotificationToken: input.expoNotificationToken,
-      //     });
-      //   }
-      // }
+      if (input.expoNotificationToken) {
+        if (input.expoNotificationToken !== user.expoNotificationToken) {
+          await User.findByIdAndUpdate(user.id, {
+            expoNotificationToken: input.expoNotificationToken,
+          });
+        }
+      }
 
       const token = authFns.createToken(user);
       return { token, user };

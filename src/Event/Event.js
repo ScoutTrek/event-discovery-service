@@ -279,22 +279,25 @@ export const resolvers = {
       });
       return events;
     },
-    upcomingEvents: async (_, { first, skip }, { Event, user }) => {
-      const events = await Event.find(
-        {
-          datetime: {
-            $gte: new Date(Date.now() - 86400),
-            $lte: new Date(Date.now() + 6.04e8 * 8),
+    upcomingEvents: authenticated(
+      async (_, { first, skip }, { Event, user }) => {
+        const events = await Event.find(
+          {
+            datetime: {
+              $gte: new Date(Date.now() - 86400),
+              $lte: new Date(Date.now() + 6.04e8 * 8),
+            },
+            troop: user.troop,
           },
-        },
-        null,
-        {
-          first,
-          skip,
-        }
-      ).sort({ datetime: 1 });
-      return events;
-    },
+          null,
+          {
+            first,
+            skip,
+          }
+        ).sort({ datetime: 1 });
+        return events;
+      }
+    ),
     event: async (_, { id }, { Event }) => await Event.findById(id),
     hike: async (_, { id }, { Event }) => await Event.findById(id),
     hikes: async (_, { first, skip }, { Event }) =>
@@ -478,7 +481,9 @@ export const resolvers = {
 
         curr_event.messages.push(newMessage);
 
-        tokens = tokens.filter((token) => token !== user.token);
+        const otherUsers = tokens.filter(
+          (token) => token !== user.expoNotificationToken
+        );
 
         sendNotifications(tokens, `ScoutTrek message about ${name}.`);
 
