@@ -18,8 +18,8 @@ export const typeDefs = gql`
 
   type Message {
     _id: ID!
-    text: String!
-    image: String!
+    text: String
+    image: String
     createdAt: String!
     user: User!
   }
@@ -235,7 +235,12 @@ export const typeDefs = gql`
     updateScoutMeeting(input: UpdateScoutMeetingInput!, id: ID!): Event
     deleteScoutMeeting(id: ID!): Event
 
-    addMessage(eventId: ID!, name: String, message: String!): Message
+    addMessage(
+      eventId: ID!
+      name: String
+      message: String!
+      image: String
+    ): Message
   }
 `;
 
@@ -272,13 +277,13 @@ export const resolvers = {
   //   user: async (_, { user }, { User }) => await User.findById(user),
   // },
   Query: {
-    events: async (_, { first, skip }, { Event, user }) => {
-      const events = await Event.find({}, null, {
+    events: authenticated(async (_, { first, skip }, { Event, user }) => {
+      const events = await Event.find({ troop: user.troop }, null, {
         first,
         skip,
       });
       return events;
-    },
+    }),
     upcomingEvents: authenticated(
       async (_, { first, skip }, { Event, user }) => {
         const events = await Event.find(
@@ -469,15 +474,27 @@ export const resolvers = {
     ),
 
     addMessage: authenticated(
-      async (_, { eventId, name, message }, { user, Event, tokens }) => {
+      async (_, { eventId, name, message, image }, { user, Event, tokens }) => {
         const curr_event = await Event.findById(eventId);
-        const newMessage = {
-          text: message,
-          user: {
-            _id: user.id,
-            name: user.name,
-          },
-        };
+        let newMessage;
+        if (!image) {
+          newMessage = {
+            text: message,
+            user: {
+              _id: user.id,
+              name: user.name,
+            },
+          };
+        } else {
+          newMessage = {
+            text: message,
+            image: image,
+            user: {
+              _id: user.id,
+              name: user.name,
+            },
+          };
+        }
 
         curr_event.messages.push(newMessage);
 
@@ -485,7 +502,7 @@ export const resolvers = {
           (token) => token !== user.expoNotificationToken
         );
 
-        sendNotifications(tokens, `ScoutTrek message about ${name}.`);
+        sendNotifications(otherUsers, `ScoutTrek message about ${name}.`);
 
         curr_event.save(function (err) {
           if (err) return new Error(err);

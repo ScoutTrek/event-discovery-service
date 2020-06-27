@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "scouttrek-node-api",
+  "private_key_id": "88194ad11d84910cf88d84cb808d6325cd833857",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCfuNnsLMFSr1Hm\nBWXvOdGn85wF6wQBQQchpyxTVHJk/JrA8g1S6oi+7JIzx4KdNSDhGRbTk2dV03my\nfHaZKDOk27FkNfcAALLBrxQjxMnYHrJ00CGZEBB+LQ8piXo0clyfLbrx98brIEIR\nDqm6Iy6wndoVBhYK21oU0qMNDQScxLbD+NFXax+oKnEWkQ5scZ4gVRsbD5M3Nb5d\nq6UcObV5z7xzN+M4mUUvHNdWnydzHMoBGKcDE4oH/CvKKrEhQAuVVLWYAuuYtwAM\nEi+x8mK59LXetqwnEZsoEB3M9n0y008s9FPk298GAiJfx0IpL/5M3sU3JIzvKgO/\nTeJrf0xFAgMBAAECggEAEcF1bGVfSmdWBemkts7pKTASMLA7Hj6R4eJZMZxKKULR\nm1BtPcH32K2o5RuxP/O3h36IBJY23xomxbpDXuxSrWmE01ySbEwnkxN4/C70t1NW\nSFkY2xCnnLc6n8X6MVljRYjKZvrCAMJxxb6pDJm7p4OsyjiGe8d9wKHX4WwIjrq8\ndhelk9AX0DPyoghcR4+6/TeD9l3FkL+0jvmXU/5AmtuYiM6Pkv6OvLxKWYeAujVw\nLXtOQm2V/S4qtc5jDMlB5aVk0Jcc4fMuHc4y6Trd65kOZy5BbZWH18noySXAtXrA\n3HyUPE+78qrK9ZEM44zO1W8GWXdOYeUaPkVY4zAycQKBgQDaJFJ3vaGyt5CbazWJ\nanpLFjvh/lIfCkputgtcXd7mlHCmnSYUuSkyoZj0osRXvwWrt36NPwRKHgZ6yD5T\nqBe8IjIxsGpDgXG+9L/ABLU596+bEzLgOfH12Nww643CoCfv3VpiRkaZGG8UOsDr\nvHkfiUKj6BI6GUbDAcgZmuns+QKBgQC7cQj6KqNvxpD8TfpMa5LqOUoBnZD9G9Cc\n4eXP6uhBAPKrflxtTajmiCNXEb/Z69lU5S1kUjMKeg5uwVXxc7xA8ObwjYWYVES1\nEMZ0i74KioqbsQPWMTkbImkEQ1aRPfzLFtZotPwdIszsbzOLaOCZ2XQLgYHSm9t7\ng3iRHo1orQKBgGJjVYrKTf8kiiV/QmNbUhNB0PqKUZHMe2vZ0d/0Os/3DaQoZv+b\nz/gVKL7WFwaYkr8zgPHGBXJEfpmsbWgf/ayOI+ODdTpDTQFatI2v0el2TI7+Jsk5\neWdwS0gJRiQNRlYKmXSPy9HLUnZmVZM9q8fMifERf/8SXXcg+5aI549JAoGBAK4w\n1Y7moQv3FDXkoX7zWYyhwMzPiTYu6ydgJxmZzEzcfKgyveI2EYhra6w2qnvyWf4z\nHIPmf9h0pYT31s6UJ5aSSYuzeTue1FsQQ917IBjbtwQI9O/QvqkgyUdU7NX9LTfu\n+UJFLyZEePwgO16LEG7pTpaCvArlHIskGp+CLRfhAoGBAInf1RBa70ZwmkrH5vDM\nEWNiiU4vft7NtkJhCiSA0BDq19g5t9vPp3ZklCkk0Ltk+795gvvHbZ8Mp3jr6FG9\n3SetLSiEAsNQKJwA2t1jRrCs3HbHRDhY6FZTqws4U2eaHC6umA3UpM2V1gmI1hra\ngYYQjQ6jMt2RFoIxridmX2LH\n-----END PRIVATE KEY-----\n",
+  "client_email": "scouttrek-storage-manager@scouttrek-node-api.iam.gserviceaccount.com",
+  "client_id": "103245711784869954538",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/scouttrek-storage-manager%40scouttrek-node-api.iam.gserviceaccount.com"
+}

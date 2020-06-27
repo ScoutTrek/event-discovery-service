@@ -1,4 +1,6 @@
 const { ApolloServer } = require("apollo-server");
+import Express from "express";
+import { graphqlUploadExpress } from "graphql-upload";
 
 import {
   typeDefs as userTypes,
@@ -12,6 +14,10 @@ import {
   typeDefs as troopTypes,
   resolvers as troopResolvers,
 } from "./ScoutHierarchy/TroopAndPatrol";
+import {
+  typeDefs as fileTypes,
+  resolvers as fileResolvers,
+} from "./Event/SharedAssets";
 import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 
 // Models
@@ -36,9 +42,15 @@ mongo.once("open", function () {
   console.log("Database connected!");
 });
 
-const server = new ApolloServer({
-  typeDefs: [userTypes, eventTypes, troopTypes, authTypes],
-  resolvers: [userResolvers, eventResolvers, troopResolvers, authResolvers],
+const apolloServer = new ApolloServer({
+  typeDefs: [userTypes, fileTypes, eventTypes, troopTypes, authTypes],
+  resolvers: [
+    userResolvers,
+    fileResolvers,
+    eventResolvers,
+    troopResolvers,
+    authResolvers,
+  ],
   context: async ({ req }) => {
     const user = await authFns.getUserFromToken(
       authFns.getTokenFromReq(req),
@@ -59,4 +71,4 @@ const server = new ApolloServer({
   playground: true,
 });
 
-export default server;
+export default apolloServer;
