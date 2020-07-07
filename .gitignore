@@ -82,5 +82,4 @@ web_modules/
 .yarn/build-state.yml
 .pnp.*
 
-./scouttrek-storage.json
-./app.yaml
+app.yaml
