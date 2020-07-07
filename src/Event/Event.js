@@ -284,25 +284,23 @@ export const resolvers = {
       });
       return events;
     }),
-    upcomingEvents: authenticated(
-      async (_, { first, skip }, { Event, user }) => {
-        const events = await Event.find(
-          {
-            datetime: {
-              $gte: new Date(Date.now() - 86400),
-              $lte: new Date(Date.now() + 6.04e8 * 8),
-            },
-            troop: user.troop,
+    upcomingEvents: async (_, { first, skip }, { Event, user }) => {
+      const events = await Event.find(
+        {
+          datetime: {
+            $gte: new Date(Date.now() - 86400),
+            $lte: new Date(Date.now() + 6.04e8 * 8),
           },
-          null,
-          {
-            first,
-            skip,
-          }
-        ).sort({ datetime: 1 });
-        return events;
-      }
-    ),
+          troop: user.troop,
+        },
+        null,
+        {
+          first,
+          skip,
+        }
+      ).sort({ datetime: 1 });
+      return events;
+    },
     event: async (_, { id }, { Event }) => await Event.findById(id),
     hike: async (_, { id }, { Event }) => await Event.findById(id),
     hikes: async (_, { first, skip }, { Event }) =>
