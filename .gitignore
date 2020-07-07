@@ -83,3 +83,4 @@ web_modules/
 .pnp.*
 
 ./scouttrek-storage.json
+./app.yaml
