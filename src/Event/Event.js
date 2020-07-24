@@ -221,19 +221,17 @@ export const typeDefs = gql`
   extend type Mutation {
     addHike(input: AddHikeInput!): Event
     updateHike(input: UpdateHikeInput!, id: ID!): Event
-    deleteHike(id: ID!): Event
 
     addCampout(input: AddCampoutInput!): Event
     updateCampout(input: UpdateCampoutInput!, id: ID!): Event
-    deleteCampout(id: ID!): Event
 
     addSummerCamp(input: AddSummerCampInput!): Event
     updateSummerCamp(input: UpdateSummerCampInput!, id: ID!): Event
-    deleteSummerCamp(id: ID!): Event
 
     addScoutMeeting(input: AddScoutMeetingInput!): Event
     updateScoutMeeting(input: UpdateScoutMeetingInput!, id: ID!): Event
-    deleteScoutMeeting(id: ID!): Event
+
+    deleteEvent(id: ID!): Event
 
     addMessage(
       eventId: ID!
@@ -351,7 +349,7 @@ export const resolvers = {
       sendNotifications(tokens, `${input.title} event has been updated!`);
       return newEvent;
     }),
-    deleteHike: authenticated(
+    deleteEvent: authenticated(
       async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
     ),
     addCampout: authenticated(async (_, { input }, { Event, user, tokens }) => {
@@ -389,9 +387,7 @@ export const resolvers = {
         return newEvent;
       }
     ),
-    deleteCampout: authenticated(
-      async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
-    ),
+
     addSummerCamp: authenticated(
       async (_, { input }, { Event, user, tokens }) => {
         const campoutMutation = {
@@ -429,9 +425,7 @@ export const resolvers = {
         return newEvent;
       }
     ),
-    deleteSummerCamp: authenticated(
-      async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
-    ),
+
     addScoutMeeting: authenticated(
       async (_, { input }, { Event, user, tokens }) => {
         const scoutMeetingMutation = {
@@ -466,9 +460,6 @@ export const resolvers = {
 
         return newEvent;
       }
-    ),
-    deleteScoutMeeting: authenticated(
-      async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
     ),
 
     addMessage: authenticated(

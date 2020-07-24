@@ -4,10 +4,7 @@ const { authenticated, authorized } = require("../utils/Auth");
 
 const { Storage } = require("@google-cloud/storage");
 
-const projectId = "scouttrek-node-api";
-const keyFilename = __dirname + "../../../scouttrek-storage.json";
-
-const gcs = new Storage({ projectId, keyFilename });
+const gcs = new Storage();
 
 const bucketName = "shared_assets";
 const bucket = gcs.bucket(bucketName);

@@ -15,7 +15,7 @@ const userSchema = mongoose.Schema(
         true,
         "To create a valid user you must enter an email address.",
       ],
-      unique: true,
+      unique: false,
       lowercase: true,
       validate: [validator.isEmail, "Please provide a valid email."],
     },
