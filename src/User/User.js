@@ -77,10 +77,10 @@ export const resolvers = {
     },
   },
   Query: {
+    user: authenticated(async (_, { id }, { User }) => await User.findById(id)),
     users: authenticated(async (_, { limit, skip }, { User }) => {
       return await User.find({}, null, { limit, skip });
     }),
-    user: authenticated(async (_, { id }, { User }) => await User.findById(id)),
     currUser: authenticated(async (_, __, { user }) => user),
   },
 

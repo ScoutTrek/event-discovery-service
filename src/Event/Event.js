@@ -46,8 +46,7 @@ export const typeDefs = gql`
 
     location: Location
     meetLocation: Location
-    startDate: String
-    endDate: String
+    pickupTime: String
     checkoutTime: String
     recurring: Boolean
     day: WEEK_DAY
@@ -63,6 +62,8 @@ export const typeDefs = gql`
     datetime: String!
     meetTime: String!
     leaveTime: String!
+    endDatetime: String
+    pickupTime: String
     location: AddLocationInput
     meetLocation: AddLocationInput
     distance: Int
@@ -89,11 +90,11 @@ export const typeDefs = gql`
     datetime: String
     meetTime: String!
     leaveTime: String!
+    endDatetime: String!
+    pickupTime: String
     location: AddLocationInput
     meetLocation: AddLocationInput
     numDays: Int
-    startDatetime: String!
-    endDatetime: String!
     # Add a packing list
     troop: ID
     patrol: ID
@@ -120,11 +121,10 @@ export const typeDefs = gql`
     description: String!
     datetime: String
     meetTime: String!
-    leaveTime: String!
+    pickupTime: String
     location: AddLocationInput
     meetLocation: AddLocationInput
     numDays: Int
-    startDatetime: String!
     endDatetime: String!
     # Add a packing list
     troop: ID
@@ -155,7 +155,8 @@ export const typeDefs = gql`
     datetime: String!
     meetTime: String
     leaveTime: String
-    time: String!
+    endTime: String!
+    pickupTime: String
     startDate: String
     endDate: String
     recurring: Boolean
@@ -186,16 +187,19 @@ export const typeDefs = gql`
   type Location {
     lat: Float!
     lng: Float!
+    address: String
   }
 
   input AddLocationInput {
     lat: Float!
     lng: Float!
+    address: String
   }
 
   input UpdateLocationInput {
     lat: Float
     lng: Float
+    address: String
   }
 
   extend type Query {
@@ -333,6 +337,7 @@ export const resolvers = {
           type: "Point",
           coordinates: [input.location.lng, input.location.lat],
         },
+        notification: new Date(input.meetTime) - 86400000,
       };
       sendNotifications(
         tokens,
@@ -367,6 +372,7 @@ export const resolvers = {
           type: "Point",
           coordinates: [input.location.lng, input.location.lat],
         },
+        notification: new Date(input.meetTime) - 86400000,
       };
       sendNotifications(
         tokens,
@@ -404,6 +410,7 @@ export const resolvers = {
             type: "Point",
             coordinates: [input.location.lng, input.location.lat],
           },
+          notification: new Date(input.meetTime) - 86400000,
         };
         sendNotifications(
           tokens,
@@ -438,6 +445,7 @@ export const resolvers = {
             type: "Point",
             coordinates: [input.location.lng, input.location.lat],
           },
+          notification: new Date(input.meetTime) - 86400000,
         };
 
         sendNotifications(

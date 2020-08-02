@@ -57,6 +57,8 @@ const eventSchema = new mongoose.Schema(
     datetime: Date,
     meetTime: Date,
     leaveTime: Date,
+    endTime: Date,
+    pickupTime: Date,
     location: pointSchema,
     meetLocation: pointSchema,
     messages: [messageSchema],
@@ -85,6 +87,7 @@ const eventSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    notification: Date,
   },
   {
     toJSON: { virtuals: true },

@@ -1,6 +1,5 @@
 const { ApolloServer } = require("apollo-server");
-import Express from "express";
-import { graphqlUploadExpress } from "graphql-upload";
+import cron from "node-cron";
 
 import {
   typeDefs as userTypes,
@@ -27,7 +26,7 @@ import Troop from "../models/TroopAndPatrol";
 
 import * as authFns from "./utils/Auth";
 import mongoose from "mongoose";
-import { getTokens } from "./Notifications/Expo.js";
+import { getTokens, sendNotifications } from "./Notifications/Expo.js";
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
   useCreateIndex: true,
@@ -40,6 +39,23 @@ const mongo = mongoose.connection;
 mongo.on("error", console.error.bind(console, "connection error:"));
 mongo.once("open", function () {
   console.log("Database connected!");
+});
+
+cron.schedule("* * * * *", async () => {
+  const oneDayReminderEvents = await Event.find({
+    notification: { $lte: new Date() },
+  });
+  if (oneDayReminderEvents !== []) {
+    oneDayReminderEvents.map(async (event) => {
+      const tokens = await getTokens(Troop, User, { troop: event.troop });
+      sendNotifications(
+        tokens,
+        `Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`
+      );
+      event.notification = null;
+      event.save();
+    });
+  }
 });
 
 const apolloServer = new ApolloServer({
