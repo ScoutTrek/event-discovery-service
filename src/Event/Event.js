@@ -56,6 +56,33 @@ export const typeDefs = gql`
     shakedown: Boolean
   }
 
+  input UpdateEventInput {
+    createdAt: String
+    updatedAt: String
+    title: String
+    description: String
+    datetime: String
+    meetTime: String
+    leaveTime: String
+    date: String
+    time: String
+
+    startDatetime: String
+    endDatetime: String
+    numDays: Int
+
+    location: UpdateLocationInput
+    meetLocation: UpdateLocationInput
+    pickupTime: String
+    checkoutTime: String
+    recurring: Boolean
+    day: WEEK_DAY
+    distance: Int
+    published: Boolean
+    creator: UpdateUserInput
+    shakedown: Boolean
+  }
+
   input AddHikeInput {
     title: String!
     description: String!
@@ -64,19 +91,6 @@ export const typeDefs = gql`
     leaveTime: String!
     endDatetime: String
     pickupTime: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    distance: Int
-    troop: ID
-    patrol: ID
-  }
-
-  input UpdateHikeInput {
-    title: String
-    description: String
-    datetime: String
-    meetTime: String
-    leaveTime: String
     location: AddLocationInput
     meetLocation: AddLocationInput
     distance: Int
@@ -100,22 +114,6 @@ export const typeDefs = gql`
     patrol: ID
   }
 
-  input UpdateCampoutInput {
-    title: String
-    description: String
-    datetime: String
-    meetTime: String
-    leaveTime: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    numDays: Int
-    startDatetime: String
-    endDatetime: String
-    # Add a packing list
-    troop: ID
-    patrol: ID
-  }
-
   input AddSummerCampInput {
     title: String!
     description: String!
@@ -131,22 +129,6 @@ export const typeDefs = gql`
     patrol: ID
   }
 
-  input UpdateSummerCampInput {
-    title: String
-    description: String
-    datetime: String
-    meetTime: String
-    leaveTime: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    numDays: Int
-    startDatetime: String
-    endDatetime: String
-    # Add a packing list
-    troop: ID
-    patrol: ID
-  }
-
   input AddScoutMeetingInput {
     title: String!
     description: String!
@@ -157,24 +139,6 @@ export const typeDefs = gql`
     leaveTime: String
     endTime: String!
     pickupTime: String
-    startDate: String
-    endDate: String
-    recurring: Boolean
-    shakedown: Boolean
-    day: WEEK_DAY
-    troop: ID
-    patrol: ID
-  }
-
-  input UpdateScoutMeetingInput {
-    title: String
-    description: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    datetime: String
-    meetTime: String
-    leaveTime: String
-    time: String
     startDate: String
     endDate: String
     recurring: Boolean
@@ -224,17 +188,11 @@ export const typeDefs = gql`
 
   extend type Mutation {
     addHike(input: AddHikeInput!): Event
-    updateHike(input: UpdateHikeInput!, id: ID!): Event
-
     addCampout(input: AddCampoutInput!): Event
-    updateCampout(input: UpdateCampoutInput!, id: ID!): Event
-
     addSummerCamp(input: AddSummerCampInput!): Event
-    updateSummerCamp(input: UpdateSummerCampInput!, id: ID!): Event
-
     addScoutMeeting(input: AddScoutMeetingInput!): Event
-    updateScoutMeeting(input: UpdateScoutMeetingInput!, id: ID!): Event
 
+    updateEvent(input: UpdateEventInput, id: ID!): Event
     deleteEvent(id: ID!): Event
 
     addMessage(
@@ -332,10 +290,12 @@ export const resolvers = {
         location: {
           type: "Point",
           coordinates: [input.location.lng, input.location.lat],
+          address: input.location.address,
         },
         meetLocation: {
           type: "Point",
-          coordinates: [input.location.lng, input.location.lat],
+          coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+          address: input.meetLocation.address,
         },
         notification: new Date(input.meetTime) - 86400000,
       };
@@ -345,10 +305,22 @@ export const resolvers = {
       );
       return await Event.create(hikeMutation);
     }),
-    updateHike: authenticated(async (_, { input, id }, { Event, tokens }) => {
+    updateEvent: authenticated(async (_, { input, id }, { Event, tokens }) => {
       const newEvent = await Event.findOneAndUpdate(
         { _id: id },
-        { ...input },
+        {
+          ...input,
+          location: {
+            type: "Point",
+            coordinates: [input.location.lng, input.location.lat],
+            address: input.location.address,
+          },
+          meetLocation: {
+            type: "Point",
+            coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+            address: input.meetLocation.address,
+          },
+        },
         { new: true }
       );
       sendNotifications(tokens, `${input.title} event has been updated!`);
@@ -367,10 +339,12 @@ export const resolvers = {
         location: {
           type: "Point",
           coordinates: [input.location.lng, input.location.lat],
+          address: input.location.address,
         },
         meetLocation: {
           type: "Point",
-          coordinates: [input.location.lng, input.location.lat],
+          coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+          address: input.meetLocation.address,
         },
         notification: new Date(input.meetTime) - 86400000,
       };
@@ -380,20 +354,6 @@ export const resolvers = {
       );
       return await Event.create(campoutMutation);
     }),
-    updateCampout: authenticated(
-      async (_, { input, id }, { Event, Troop, tokens }) => {
-        const newEvent = await Event.findOneAndUpdate(
-          { _id: id },
-          { ...input },
-          { new: true }
-        );
-
-        sendNotifications(tokens, `${input.title} event has been updated!`);
-
-        return newEvent;
-      }
-    ),
-
     addSummerCamp: authenticated(
       async (_, { input }, { Event, user, tokens }) => {
         const campoutMutation = {
@@ -405,10 +365,12 @@ export const resolvers = {
           location: {
             type: "Point",
             coordinates: [input.location.lng, input.location.lat],
+            address: input.location.address,
           },
           meetLocation: {
             type: "Point",
-            coordinates: [input.location.lng, input.location.lat],
+            coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+            address: input.meetLocation.address,
           },
           notification: new Date(input.meetTime) - 86400000,
         };
@@ -417,19 +379,6 @@ export const resolvers = {
           `${input.title} event has been created. See details.`
         );
         return await Event.create(campoutMutation);
-      }
-    ),
-    updateSummerCamp: authenticated(
-      async (_, { input, id }, { Event, Troop, tokens }) => {
-        const newEvent = await Event.findOneAndUpdate(
-          { _id: id },
-          { ...input },
-          { new: true }
-        );
-
-        sendNotifications(tokens, `${input.title} event has been updated!`);
-
-        return newEvent;
       }
     ),
 
@@ -444,6 +393,7 @@ export const resolvers = {
           location: {
             type: "Point",
             coordinates: [input.location.lng, input.location.lat],
+            address: input.location.address,
           },
           notification: new Date(input.meetTime) - 86400000,
         };
@@ -454,19 +404,6 @@ export const resolvers = {
         );
 
         return await Event.create(scoutMeetingMutation);
-      }
-    ),
-    updateScoutMeeting: authenticated(
-      async (_, { input, id }, { Event, tokens }) => {
-        const newEvent = await Event.findOneAndUpdate(
-          { _id: id },
-          { ...input },
-          { new: true }
-        );
-
-        sendNotifications(tokens, `${input.title} event has been updated!`);
-
-        return newEvent;
       }
     ),
 
