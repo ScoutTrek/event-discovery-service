@@ -72,6 +72,7 @@ const userSchema = mongoose.Schema(
         "PARENT",
       ],
     },
+    children: [String],
     events: [
       {
         type: mongoose.Schema.Types.ObjectId,

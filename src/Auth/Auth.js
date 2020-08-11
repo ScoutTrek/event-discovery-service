@@ -1,5 +1,4 @@
 const { gql } = require("apollo-server");
-const bcrypt = require("bcryptjs");
 const validator = require("email-validator");
 
 export const typeDefs = gql`
@@ -18,8 +17,9 @@ export const typeDefs = gql`
     phone: String
     birthday: String
     troop: ID!
-    patrol: ID!
+    patrol: ID
     role: ROLE!
+    children: [String]
   }
 
   type AuthPayload {
@@ -43,8 +43,11 @@ export const resolvers = {
       const user = await User.create({ ...input });
 
       const troop = await Troop.findById(input.troop);
-      const patrol = await troop.patrols.id(user.patrol);
-      patrol.members.push(user.id);
+      if (input.patrol) {
+        const patrol = await troop.patrols.id(user.patrol);
+        patrol.members.push(user.id);
+      }
+
       await troop.save();
 
       if (input.role === "SCOUTMASTER" || input.role === "Scoutmaster") {

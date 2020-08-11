@@ -50,7 +50,8 @@ cron.schedule("* * * * *", async () => {
       const tokens = await getTokens(Troop, User, { troop: event.troop });
       sendNotifications(
         tokens,
-        `Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`
+        `Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`,
+        { type: "event", eventType: event.type, ID: event.id }
       );
       event.notification = null;
       event.save();

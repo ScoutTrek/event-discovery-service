@@ -8,6 +8,7 @@ export const typeDefs = gql`
     PATROL_LEADER
     SCOUT
     PARENT
+    ADULT_VOLUNTEER
   }
 
   type User {
@@ -21,9 +22,10 @@ export const typeDefs = gql`
     birthday: String
     age: Int
     troop: Troop!
-    patrol: Patrol!
+    patrol: Patrol
     role: ROLE!
     events: Event
+    children: [String]
   }
 
   input AddUserInput {
@@ -36,6 +38,7 @@ export const typeDefs = gql`
     troop: ID!
     patrol: ID
     role: ROLE!
+    children: [String]
   }
 
   input UpdateUserInput {
@@ -48,6 +51,7 @@ export const typeDefs = gql`
     troop: ID
     patrol: ID
     role: ROLE
+    children: [String]
   }
 
   type Query {

@@ -119,6 +119,7 @@ export const typeDefs = gql`
     description: String!
     datetime: String
     meetTime: String!
+    leaveTime: String!
     pickupTime: String
     location: AddLocationInput
     meetLocation: AddLocationInput
@@ -248,7 +249,7 @@ export const resolvers = {
       const events = await Event.find(
         {
           datetime: {
-            $gte: new Date(Date.now() - 86400),
+            $gte: new Date(Date.now() - 86400000 * 1.5),
             $lte: new Date(Date.now() + 6.04e8 * 8),
           },
           troop: user.troop,
@@ -270,7 +271,7 @@ export const resolvers = {
       await Event.find({ type: "Campout" }, null, { first, skip }),
     summerCamp: async (_, { id }, { Event }) => await Event.findById(id),
     summerCamps: async (_, { first, skip }, { Event }) =>
-      await Event.find({ type: "Campout" }, null, { first, skip }),
+      await Event.find({ type: "SummerCamp" }, null, { first, skip }),
     scoutMeeting: async (_, { id }, { Event }) => await Event.findById(id),
     scoutMeetings: async (_, { first, skip }, { Event }) =>
       await Event.find({ type: "ScoutMeeting" }, null, { first, skip }),
@@ -299,11 +300,13 @@ export const resolvers = {
         },
         notification: new Date(input.meetTime) - 86400000,
       };
+      const event = await Event.create(hikeMutation);
       sendNotifications(
         tokens,
-        `${input.title} event has been created. See details.`
+        `${input.title} event has been created. See details.`,
+        { type: "event", eventType: event.type, ID: event.id }
       );
-      return await Event.create(hikeMutation);
+      return event;
     }),
     updateEvent: authenticated(async (_, { input, id }, { Event, tokens }) => {
       const newEvent = await Event.findOneAndUpdate(
@@ -323,7 +326,11 @@ export const resolvers = {
         },
         { new: true }
       );
-      sendNotifications(tokens, `${input.title} event has been updated!`);
+      sendNotifications(tokens, `${input.title} event has been updated!`, {
+        type: "event",
+        eventType: newEvent.type,
+        ID: newEvent.id,
+      });
       return newEvent;
     }),
     deleteEvent: authenticated(
@@ -348,11 +355,13 @@ export const resolvers = {
         },
         notification: new Date(input.meetTime) - 86400000,
       };
+      const event = await Event.create(campoutMutation);
       sendNotifications(
         tokens,
-        `${input.title} event has been created. See details.`
+        `${input.title} event has been created. See details.`,
+        { type: "event", eventType: event.type, ID: event.id }
       );
-      return await Event.create(campoutMutation);
+      return event;
     }),
     addSummerCamp: authenticated(
       async (_, { input }, { Event, user, tokens }) => {
@@ -374,11 +383,13 @@ export const resolvers = {
           },
           notification: new Date(input.meetTime) - 86400000,
         };
+        const event = await Event.create(campoutMutation);
         sendNotifications(
           tokens,
-          `${input.title} event has been created. See details.`
+          `${input.title} event has been created. See details.`,
+          { type: "event", eventType: event.type, ID: event.id }
         );
-        return await Event.create(campoutMutation);
+        return event;
       }
     ),
 
@@ -398,12 +409,15 @@ export const resolvers = {
           notification: new Date(input.meetTime) - 86400000,
         };
 
+        const event = await Event.create(scoutMeetingMutation);
+
         sendNotifications(
           tokens,
-          `${input.title} event has been created. See details.`
+          `${input.title} event has been created. See details.`,
+          { type: "event", eventType: event.type, ID: event.id }
         );
 
-        return await Event.create(scoutMeetingMutation);
+        return event;
       }
     ),
 
@@ -436,7 +450,11 @@ export const resolvers = {
           (token) => token !== user.expoNotificationToken
         );
 
-        sendNotifications(otherUsers, `ScoutTrek message about ${name}.`);
+        sendNotifications(otherUsers, `ScoutTrek message about ${name}.`, {
+          type: "message",
+          eventType: curr_event.type,
+          ID: curr_event.id,
+        });
 
         curr_event.save(function (err) {
           if (err) return new Error(err);
