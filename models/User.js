@@ -66,10 +66,13 @@ const userSchema = mongoose.Schema(
       type: String,
       enum: [
         "SCOUTMASTER",
+        "ASST_SCOUTMASTER",
         "SENIOR_PATROL_LEADER",
+        "ASST_PATROL_LEADER",
         "PATROL_LEADER",
         "SCOUT",
         "PARENT",
+        "ADULT_VOLUNTEER",
       ],
     },
     children: [String],

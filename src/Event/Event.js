@@ -4,16 +4,40 @@ import { sendNotifications } from "../Notifications/Expo";
 
 const { gql } = require("apollo-server");
 const { authenticated, authorized } = require("../utils/Auth");
+import moment from "moment";
+
+export const weekDays = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+};
+
+export const getInitialDate = (target, current) => {
+  target = +target;
+  current = +current;
+  if (target === current) {
+    return 7;
+  }
+  if (target > current) {
+    return target - current;
+  } else {
+    return 7 + target - current;
+  }
+};
 
 export const typeDefs = gql`
   enum WEEK_DAY {
-    SUNDAY
-    MONDAY
-    TUESDAY
-    WEDNESDAY
-    THURSDAY
-    FRIDAY
-    SATURDAY
+    Sunday
+    Monday
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
   }
 
   type Message {
@@ -131,20 +155,20 @@ export const typeDefs = gql`
   }
 
   input AddScoutMeetingInput {
-    title: String!
-    description: String!
+    title: String
+    description: String
     location: AddLocationInput
     meetLocation: AddLocationInput
     datetime: String!
     meetTime: String
     leaveTime: String
-    endTime: String!
+    endTime: String
     pickupTime: String
     startDate: String
     endDate: String
-    recurring: Boolean
     shakedown: Boolean
     day: WEEK_DAY
+    numWeeksRepeat: Int
     troop: ID
     patrol: ID
   }
@@ -220,6 +244,7 @@ export const resolvers = {
         return {
           lng: parent.location.coordinates[0],
           lat: parent.location.coordinates[1],
+          address: parent.location.address,
         };
       }
       return null;
@@ -229,6 +254,7 @@ export const resolvers = {
         return {
           lng: parent.meetLocation.coordinates[0],
           lat: parent.meetLocation.coordinates[1],
+          address: parent.location.addess,
         };
       }
       return null;
@@ -309,24 +335,26 @@ export const resolvers = {
       return event;
     }),
     updateEvent: authenticated(async (_, { input, id }, { Event, tokens }) => {
-      const newEvent = await Event.findOneAndUpdate(
-        { _id: id },
-        {
-          ...input,
-          location: {
-            type: "Point",
-            coordinates: [input.location.lng, input.location.lat],
-            address: input.location.address,
-          },
-          meetLocation: {
-            type: "Point",
-            coordinates: [input.meetLocation.lng, input.meetLocation.lat],
-            address: input.meetLocation.address,
-          },
-        },
-        { new: true }
-      );
-      sendNotifications(tokens, `${input.title} event has been updated!`, {
+      const newVals = { ...input };
+      if (input.location) {
+        newVals.location = {
+          type: "Point",
+          coordinates: [input.location.lng, input.location.lat],
+          address: input.location.address,
+        };
+      }
+      if (input.meetLocation) {
+        newVals.meetLocation = {
+          type: "Point",
+          coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+          address: input.meetLocation.address,
+        };
+      }
+
+      const newEvent = await Event.findOneAndUpdate({ _id: id }, newVals, {
+        new: true,
+      });
+      sendNotifications(tokens, `${newEvent.title} event has been updated!`, {
         type: "event",
         eventType: newEvent.type,
         ID: newEvent.id,
@@ -393,33 +421,37 @@ export const resolvers = {
       }
     ),
 
-    addScoutMeeting: authenticated(
-      async (_, { input }, { Event, user, tokens }) => {
-        const scoutMeetingMutation = {
+    addScoutMeeting: authenticated(async (_, { input }, { Event, user }) => {
+      for (let i = 0; i < +input.numWeeksRepeat; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() + 7 * i);
+        d.setDate(
+          d.getDate() + getInitialDate(weekDays[input.day], d.getDay())
+        );
+        const datetime = new Date(
+          `${moment(d).format("MMMM D, YYYY")} ${moment(input.datetime).format(
+            "hh:mm:ss"
+          )}`
+        );
+        const troopMeetingMutation = {
           ...input,
-          type: "ScoutMeeting",
+          type: "TroopMeeting",
           creator: user.id,
           troop: user.troop,
           patrol: user.patrol,
+          title: `Troop Meeting`,
+          datetime,
           location: {
             type: "Point",
             coordinates: [input.location.lng, input.location.lat],
             address: input.location.address,
           },
-          notification: new Date(input.meetTime) - 86400000,
+          notification: new Date(datetime) - 86400000,
         };
-
-        const event = await Event.create(scoutMeetingMutation);
-
-        sendNotifications(
-          tokens,
-          `${input.title} event has been created. See details.`,
-          { type: "event", eventType: event.type, ID: event.id }
-        );
-
-        return event;
+        await Event.create(troopMeetingMutation);
       }
-    ),
+      return;
+    }),
 
     addMessage: authenticated(
       async (_, { eventId, name, message, image }, { user, Event, tokens }) => {

@@ -4,6 +4,7 @@ const { authenticated, authorized } = require("../utils/Auth");
 export const typeDefs = gql`
   enum ROLE {
     SCOUTMASTER
+    ASST_SCOUTMASTER
     SENIOR_PATROL_LEADER
     PATROL_LEADER
     SCOUT

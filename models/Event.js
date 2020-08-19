@@ -10,6 +10,10 @@ export const pointSchema = new mongoose.Schema({
     type: [Number],
     required: true,
   },
+  address: {
+    type: String,
+    required: true,
+  },
 });
 
 export const messageUserSchema = new mongoose.Schema({
@@ -69,13 +73,13 @@ const eventSchema = new mongoose.Schema(
     day: {
       type: String,
       enum: [
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY",
-        "SUNDAY",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
       ],
     },
     checkoutTime: Date,
