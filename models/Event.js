@@ -12,7 +12,6 @@ export const pointSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    required: true,
   },
 });
 

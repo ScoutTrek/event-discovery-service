@@ -53,7 +53,7 @@ cron.schedule("* * * * *", async () => {
         `Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`,
         { type: "event", eventType: event.type, ID: event.id }
       );
-      event.notification = null;
+      event.notification = undefined;
       event.save();
     });
   }
