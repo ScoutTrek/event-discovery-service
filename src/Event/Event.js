@@ -264,7 +264,9 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Event: {
-    troop: async (parent, __, { Troop }) => await Troop.findById(parent.troop),
+    troop: async (parent, __, { Troop }) => {
+      await Troop.findById(parent.troop);
+    },
     patrol: async (parent, __, { Troop }) => {
       const myTroop = await Troop.findById(parent.troop);
       const myPatrol = await myTroop.patrols.id(parent.patrol);
@@ -506,7 +508,7 @@ export const resolvers = {
         );
         const datetime = new Date(
           `${moment(d).format("MMMM D, YYYY")} ${moment(input.datetime).format(
-            "hh:mm:ss"
+            "hh:mm:ss a"
           )}`
         );
         const troopMeetingMutation = {

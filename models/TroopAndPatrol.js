@@ -2,6 +2,30 @@ import mongoose from "mongoose";
 
 import { pointSchema } from "./Event";
 
+export const membership = new mongoose.Schema({
+  troop: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Troop",
+  },
+  patrol: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Patrol",
+  },
+  role: {
+    type: String,
+    enum: [
+      "SCOUTMASTER",
+      "ASST_SCOUTMASTER",
+      "SENIOR_PATROL_LEADER",
+      "ASST_PATROL_LEADER",
+      "PATROL_LEADER",
+      "SCOUT",
+      "PARENT",
+      "ADULT_VOLUNTEER",
+    ],
+  },
+});
+
 const patrolSchema = new mongoose.Schema(
   {
     name: {

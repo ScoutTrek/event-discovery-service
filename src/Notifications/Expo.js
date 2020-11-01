@@ -49,6 +49,7 @@ export const sendNotifications = (somePushTokens, body, data) => {
     messages.push({
       to: pushToken,
       sound: "default",
+      vibrate: true,
       body,
       data,
     });

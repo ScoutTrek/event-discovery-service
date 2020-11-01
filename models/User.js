@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
+import { membership } from "./TroopAndPatrol";
 
 const userSchema = mongoose.Schema(
   {
@@ -54,6 +55,7 @@ const userSchema = mongoose.Schema(
     birthday: {
       type: Date,
     },
+    groups: [membership],
     troop: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Troop",
@@ -61,19 +63,6 @@ const userSchema = mongoose.Schema(
     patrol: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patrol",
-    },
-    role: {
-      type: String,
-      enum: [
-        "SCOUTMASTER",
-        "ASST_SCOUTMASTER",
-        "SENIOR_PATROL_LEADER",
-        "ASST_PATROL_LEADER",
-        "PATROL_LEADER",
-        "SCOUT",
-        "PARENT",
-        "ADULT_VOLUNTEER",
-      ],
     },
     children: [String],
     events: [

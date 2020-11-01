@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const secret = "themfingsuperobvioussting";
 const bcrypt = require("bcryptjs");
+import jwt_decode from "jwt-decode";
 const { ObjectId } = require("mongodb");
 
 /**
@@ -19,7 +20,8 @@ const createToken = ({ id, role }) =>
  */
 const getUserFromToken = async (token, db) => {
   try {
-    const jwtUserInfo = jwt.verify(token, secret);
+    // const jwtUserInfo = jwt.verify(token, secret);
+    const jwtUserInfo = jwt_decode(token);
     const user = await db.findById(jwtUserInfo.id);
     return user;
   } catch (e) {
