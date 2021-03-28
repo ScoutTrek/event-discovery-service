@@ -7,6 +7,8 @@ export const getTokens = async (Troop, User, user) => {
   const tokens = [];
 
   let troop;
+  
+
   if (user) {
     troop = await Troop.findById(user.troop);
   }

@@ -15,7 +15,7 @@
     ]
   },
   "engines": {
-    "node": "*"
+    "node": "^14"
   },
   "license": "MIT",
   "dependencies": {
@@ -37,13 +37,14 @@
     "express": "^4.17.1",
     "global": "^4.4.0",
     "graphql": "^15.0.0",
+    "graphql-type-json": "^0.3.2",
     "graphql-upload": "^11.0.0",
     "jest": "^25.3.0",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.0.0",
     "moment": "^2.27.0",
     "mongoose": "^5.9.9",
-    "node": "^13.13.0",
+    "node": "^14.0.0",
     "node-cron": "^2.0.3",
     "regenerator-runtime": "^0.13.5",
     "unfetch": "^4.1.0",

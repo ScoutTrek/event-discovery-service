@@ -1,3 +1,5 @@
+import { membership } from "../../models/TroopAndPatrol";
+
 const { gql } = require("apollo-server");
 const { authenticated, authorized } = require("../utils/Auth");
 
@@ -12,6 +14,19 @@ export const typeDefs = gql`
     ADULT_VOLUNTEER
   }
 
+  type Membership {
+    id: ID!
+    troop: Troop!
+    patrol: Patrol
+    role: ROLE!
+  }
+
+  input AddMembershipInput {
+    troop: ID!
+    patrol: ID
+    role: ROLE!
+  }
+
   type User {
     id: ID!
     expoNotificationToken: String!
@@ -22,9 +37,10 @@ export const typeDefs = gql`
     phone: String
     birthday: String
     age: Int
-    troop: Troop!
+    groups: [Membership]
+    troop: Troop
     patrol: Patrol
-    role: ROLE!
+    role: ROLE
     events: Event
     children: [String]
   }
@@ -36,9 +52,10 @@ export const typeDefs = gql`
     password: String!
     phone: String
     birthday: String
-    troop: ID!
+    troop: ID
     patrol: ID
-    role: ROLE!
+    role: ROLE
+    groups: [AddMembershipInput!]!
     children: [String]
   }
 
@@ -52,6 +69,7 @@ export const typeDefs = gql`
     troop: ID
     patrol: ID
     role: ROLE
+    groups: [AddMembershipInput]
     children: [String]
   }
 
@@ -74,10 +92,14 @@ export const resolvers = {
     id: (parent) => {
       return parent._id;
     },
-    troop: async (parent, __, { Troop }) => await Troop.findById(parent.troop),
-    patrol: async (parent, __, { Troop }) => {
-      const myTroop = await Troop.findById(parent.troop);
-      const myPatrol = await myTroop.patrols.id(parent.patrol);
+    troop: async (_, __, { Troop, Membership, currMembershipID }) => {
+      const curr_membership = await Membership.findById(currMembershipID);
+      return await Troop.findById(curr_membership.troopId);
+    },
+    patrol: async (_, __, { Troop, Membership, currMembershipID }) => {
+      const curr_membership = await Membership.findById(currMembershipID);
+      const myTroop = await Troop.findById(curr_membership.troopId);
+      const myPatrol = await myTroop.patrols.id(curr_membership.troopId);
       return myPatrol;
     },
   },
@@ -88,7 +110,6 @@ export const resolvers = {
     }),
     currUser: authenticated(async (_, __, { user }) => user),
   },
-
   Mutation: {
     updateUser: authenticated(
       authorized("SCOUTMASTER", async (_, { input, id }, { User }) => {

@@ -78,6 +78,7 @@ const troopSchema = new mongoose.Schema(
   }
 );
 
+export const Patrol = mongoose.model("Patrol", patrolSchema);
 const Troop = mongoose.model("Troop", troopSchema);
 
 export default Troop;

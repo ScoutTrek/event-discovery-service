@@ -1,0 +1,431 @@
+{
+  "hike": {
+    "metaData": {
+      "eventID": "HIKE",
+      "subtitle": "Plan a visit to the trail, let ScoutTrek take care of the rest.",
+      "image": {
+        "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_550/v1582556921/ScoutTrek/hiking_trip.png"
+      }
+    },
+    "options": [
+      {
+        "condition": "uniqueMeetLocation",
+        "hidden": "The trail.",
+        "shown": "A different meet point.",
+        "hiddenFields": [
+          "meetLocation",
+          "meetTime",
+          "leaveTime"
+        ]
+      }
+    ],
+    "form": [
+      {
+        "fieldType": "shortText",
+        "fieldID": "title",
+        "title": "Hike Title",
+        "questionText": "What do you want to call your hike?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "location",
+        "title": "Location",
+        "questionText": "Where do you want to hike?"
+      },
+      {
+        "fieldType": "setting",
+        "fieldID": "uniqueMeetLocation",
+        "questionText": "Where do you want everyone to meet?",
+        "payload": {
+          "options": [
+            "The trail.",
+            "A different meet point."
+          ]
+        }
+      },
+      {
+        "fieldType": "date",
+        "fieldID": "date",
+        "title": "Date",
+        "questionText": "When is your hike?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "startTime",
+        "title": "Time",
+        "questionText": "What time should everybody be at the trailhead?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "meetLocation",
+        "title": "Meet Location",
+        "questionText": "Where should everyone meet?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "meetTime",
+        "title": "Meet Time",
+        "questionText": "What time should everybody get to your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "leaveTime",
+        "title": "Leave Time",
+        "questionText": "What time do you plan to leave your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "endTime",
+        "title": "End Time",
+        "questionText": "Around what time will you return from the hike?"
+      },
+      {
+        "fieldType": "slider",
+        "fieldID": "distance",
+        "title": "Distance",
+        "payload": {
+          "units": "Miles",
+          "min": 1,
+          "max": 26
+        },
+        "questionText": "Hike Distance (in miles)?"
+      },
+      {
+        "fieldType": "description",
+        "fieldID": "description",
+        "title": "Description",
+        "questionText": "What additional information do you want everyone to know about this hike?"
+      }
+    ]
+  },
+  "campout": {
+    "metaData": {
+      "eventID": "CAMPOUT",
+      "subtitle": "Spend a few days in the wild outdoors.",
+      "image": {
+        "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,e_contrast:-25,w_600/v1595086345/ScoutTrek/campfire.png"
+      }
+    },
+    "options": [
+      {
+        "condition": "uniqueMeetLocation",
+        "hidden": "The campground.",
+        "shown": "A different meet point.",
+        "hiddenFields": [
+          "meetLocation",
+          "meetTime",
+          "leaveTime"
+        ]
+      }
+    ],
+    "form": [
+      {
+        "fieldType": "shortText",
+        "fieldID": "title",
+        "title": "Campout Title",
+        "questionText": "What do you want to call your campout?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "location",
+        "title": "Location",
+        "questionText": "Where are you camping?"
+      },
+      {
+        "fieldType": "setting",
+        "fieldID": "uniqueMeetLocation",
+        "questionText": "Where do you want everyone to meet?",
+        "payload": {
+          "options": [
+            "The campground.",
+            "A different meet point."
+          ]
+        }
+      },
+      {
+        "fieldType": "date",
+        "fieldID": "date",
+        "title": "Date",
+        "questionText": "What day does your campout begin?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "startTime",
+        "title": "Time",
+        "questionText": "What time do you want to be at the campground?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "meetLocation",
+        "title": "Meet Location",
+        "questionText": "Where should everyone meet?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "meetTime",
+        "title": "Meet Time",
+        "questionText": "What time should everybody get to your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "leaveTime",
+        "title": "Leave Time",
+        "questionText": "What time do you plan to leave your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "endTime",
+        "title": "End Time",
+        "questionText": "Around what time will you return from the campout?"
+      },
+      {
+        "fieldType": "description",
+        "fieldID": "description",
+        "title": "Description",
+        "questionText": "What additional information do you want everyone to know about this campout?"
+      }
+    ]
+  },
+  "summer_camp": {
+    "metaData": {
+      "eventID": "SUMMER_CAMP",
+      "subtitle": "A week of non-stop fun away from home.",
+      "image": {
+        "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_600/v1590852981/ScoutTrek/ben-white-pV5ckb2HEVk-unsplash.jpg"
+      }
+    },
+    "options": [
+      {
+        "condition": "uniqueMeetLocation",
+        "hidden": "At camp.",
+        "shown": "A different meet point.",
+        "hiddenFields": [
+          "meetLocation",
+          "meetTime",
+          "leaveTime"
+        ]
+      }
+    ],
+    "form": [
+      {
+        "fieldType": "shortText",
+        "fieldID": "title",
+        "title": "Summer Camp Name",
+        "questionText": "What is your summer camp called?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "location",
+        "title": "Location",
+        "questionText": "Where are you camping?"
+      },
+      {
+        "fieldType": "setting",
+        "fieldID": "uniqueMeetLocation",
+        "questionText": "Where should Scouts get dropped off?",
+        "payload": {
+          "options": [
+            "At camp.",
+            "A different meet point."
+          ]
+        }
+      },
+      {
+        "fieldType": "date",
+        "fieldID": "date",
+        "title": "Date",
+        "questionText": "What day does your summer camp start?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "startTime",
+        "title": "Starts on",
+        "questionText": "What time should Scouts be arriving at camp?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "meetLocation",
+        "title": "Meet Location",
+        "questionText": "Where should everyone meet?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "meetTime",
+        "title": "Meet Time",
+        "questionText": "What time should everybody get to your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "leaveTime",
+        "title": "Leave Time",
+        "questionText": "What time do you plan to leave your meet place?"
+      },
+      {
+        "fieldType": "date",
+        "fieldID": "endDate",
+        "title": "Ends on",
+        "questionText": "What day will Scouts check out of camp?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "endTime",
+        "title": "End Time",
+        "questionText": "Around what time will activities be finished?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "pickupTime",
+        "title": "Checkout Time",
+        "questionText": "Around what time should Scouts get picked up?"
+      },
+      {
+        "fieldType": "description",
+        "fieldID": "description",
+        "title": "Description",
+        "questionText": "What additional information do you want everyone to know about this campout?"
+      }
+    ]
+  },
+  "bike_ride": {
+    "metaData": {
+      "eventID": "BIKE_RIDE",
+      "subtitle": "Feel the wind in your face.",
+      "image": {
+        "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_600/v1599596052/ScoutTrek/bikeride.jpg"
+      }
+    },
+    "options": [],
+    "form": [
+      {
+        "fieldType": "shortText",
+        "fieldID": "title",
+        "title": "Bike Ride Title",
+        "questionText": "What do you want to call this bike ride?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "location",
+        "title": "Location",
+        "questionText": "Where will this event be?"
+      },
+      {
+        "fieldType": "date",
+        "fieldID": "date",
+        "title": "Date",
+        "questionText": "When is this bike ride?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "startTime",
+        "title": "Time",
+        "questionText": "What time should Scouts arrive at the start location?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "meetLocation",
+        "title": "Meet Location",
+        "questionText": "Where should everyone meet?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "endTime",
+        "title": "End Time",
+        "questionText": "Around when will the bike ride be finished?"
+      },
+      {
+        "fieldType": "description",
+        "fieldID": "description",
+        "title": "Description",
+        "questionText": "What additional information do you want everyone to know about this bike ride?"
+      }
+    ]
+  },
+  "special_event": {
+    "metaData": {
+      "eventID": "SPECIAL_EVENT",
+      "subtitle": "Plan an event that doesn't fit any of our templates above.",
+      "image": {
+        "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_600/v1599241295/ScoutTrek/luke-porter-mGFJIUD9yiM-unsplash.jpg"
+      }
+    },
+    "options": [
+      {
+        "condition": "uniqueMeetLocation",
+        "hidden": "The event location.",
+        "shown": "A different meet point.",
+        "hiddenFields": [
+          "meetLocation",
+          "meetTime",
+          "leaveTime"
+        ]
+      }
+    ],
+    "form": [
+      {
+        "fieldType": "shortText",
+        "fieldID": "title",
+        "title": "Special Event Title",
+        "questionText": "What do you want to call this special event?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "location",
+        "title": "Location",
+        "questionText": "Where will this event be?"
+      },
+      {
+        "fieldType": "setting",
+        "fieldID": "uniqueMeetLocation",
+        "questionText": "Where do you want everyone to meet?",
+        "payload": {
+          "options": [
+            "The event location.",
+            "A different meet point."
+          ]
+        }
+      },
+      {
+        "fieldType": "date",
+        "fieldID": "date",
+        "title": "Date",
+        "questionText": "When is this event?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "startTime",
+        "title": "Time",
+        "questionText": "What time should Scouts arrive at the event?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "meetLocation",
+        "title": "Meet Location",
+        "questionText": "Where should everyone meet?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "meetTime",
+        "title": "Meet Time",
+        "questionText": "What time should everybody get to your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "leaveTime",
+        "title": "Leave Time",
+        "questionText": "What time do you plan to leave your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "endTime",
+        "title": "End Time",
+        "questionText": "Around when will the event be finished?"
+      },
+      {
+        "fieldType": "description",
+        "fieldID": "description",
+        "title": "Description",
+        "questionText": "What additional information do you want everyone to know about this event?"
+      }
+    ]
+  }
+}

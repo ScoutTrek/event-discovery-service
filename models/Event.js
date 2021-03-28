@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { rosterSchema } from "./Roster";
 
 export const pointSchema = new mongoose.Schema({
   type: {
@@ -57,18 +58,20 @@ const eventSchema = new mongoose.Schema(
       required: [true, "An event cannot have a blank title."],
     },
     description: String,
-    datetime: Date,
+    date: Date,
+    endDate: Date,
+    startTime: Date,
+    uniqueMeetLocation: String,
     meetTime: Date,
     leaveTime: Date,
-    endTime: Date,
     pickupTime: Date,
+    endTime: Date,
+
     location: pointSchema,
     meetLocation: pointSchema,
     messages: [messageSchema],
-
-    startDatetime: Date,
-    endDatetime: Date,
-    recurring: Boolean,
+    invited: rosterSchema,
+    attending: rosterSchema,
     day: {
       type: String,
       enum: [
@@ -81,8 +84,6 @@ const eventSchema = new mongoose.Schema(
         "Sunday",
       ],
     },
-    checkoutTime: Date,
-    numDays: Number,
     distance: Number,
     shakedown: Boolean,
     published: Boolean,
@@ -103,31 +104,6 @@ eventSchema.virtual("time").get(function () {
   let date = new Date(this.datetime);
   const formattedDate =
     date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-  return formattedDate;
-});
-
-eventSchema.virtual("date").get(function () {
-  let date = new Date(this.datetime);
-  const monthNames = [
-    "Jan.",
-    "Feb.",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "Aug.",
-    "Sept.",
-    "Oct.",
-    "Nov.",
-    "Dec.",
-  ];
-  const formattedDate =
-    monthNames[date.getMonth()] +
-    " " +
-    date.getDay() +
-    ", " +
-    date.getFullYear();
   return formattedDate;
 });
 

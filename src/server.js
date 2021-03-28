@@ -73,6 +73,7 @@ const apolloServer = new ApolloServer({
       authFns.getTokenFromReq(req),
       User
     );
+    const currMembershipID = "5eed2def088dc50028cafe68";
     const tokens = await getTokens(Troop, User, user);
     return {
       User,
@@ -82,6 +83,7 @@ const apolloServer = new ApolloServer({
       req,
       authFns,
       user,
+      currMembershipID,
     };
   },
   introspection: true,
