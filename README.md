@@ -1,6 +1,6 @@
 # scouttrek-dynamic-api
 
-NodeJS and Express server that dynamically generates a GraphQL schema for a troop based on the scouting event types, and the custom event types. 
+Apollo GraphQL schema for Boy and Girls scout troops, patrols, users, and custom event types. 
 
 Tech stack:
 * Apollo Server
