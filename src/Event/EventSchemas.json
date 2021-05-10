@@ -233,13 +233,13 @@
       {
         "fieldType": "date",
         "fieldID": "date",
-        "title": "Date",
+        "title": "Start Date",
         "questionText": "What day does your summer camp start?"
       },
       {
         "fieldType": "time",
         "fieldID": "startTime",
-        "title": "Starts on",
+        "title": "Start Time",
         "questionText": "What time should Scouts be arriving at camp?"
       },
       {
@@ -263,7 +263,7 @@
       {
         "fieldType": "date",
         "fieldID": "endDate",
-        "title": "Ends on",
+        "title": "End Date",
         "questionText": "What day will Scouts check out of camp?"
       },
       {
@@ -294,7 +294,18 @@
         "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_600/v1599596052/ScoutTrek/bikeride.jpg"
       }
     },
-    "options": [],
+    "options": [
+      {
+        "condition": "uniqueMeetLocation",
+        "hidden": "At the bike trail.",
+        "shown": "A different meet point.",
+        "hiddenFields": [
+          "meetLocation",
+          "meetTime",
+          "leaveTime"
+        ]
+      }
+    ],
     "form": [
       {
         "fieldType": "shortText",
@@ -309,6 +320,17 @@
         "questionText": "Where will this event be?"
       },
       {
+        "fieldType": "setting",
+        "fieldID": "uniqueMeetLocation",
+        "questionText": "Where do you want everyone to meet?",
+        "payload": {
+          "options": [
+            "The event bike trail.",
+            "A different meet point."
+          ]
+        }
+      },
+      {
         "fieldType": "date",
         "fieldID": "date",
         "title": "Date",
@@ -318,13 +340,25 @@
         "fieldType": "time",
         "fieldID": "startTime",
         "title": "Time",
-        "questionText": "What time should Scouts arrive at the start location?"
+        "questionText": "What time does the event start?"
       },
       {
         "fieldType": "location",
         "fieldID": "meetLocation",
         "title": "Meet Location",
         "questionText": "Where should everyone meet?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "meetTime",
+        "title": "Meet Time",
+        "questionText": "What time should everybody get to your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "leaveTime",
+        "title": "Leave Time",
+        "questionText": "What time do you plan to leave your meet place?"
       },
       {
         "fieldType": "time",
@@ -337,6 +371,94 @@
         "fieldID": "description",
         "title": "Description",
         "questionText": "What additional information do you want everyone to know about this bike ride?"
+      }
+    ]
+  },
+  "canoe_trip": {
+    "metaData": {
+      "eventID": "CANOE_TRIP",
+      "subtitle": "On the water, in style.",
+      "image": {
+        "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_600/v1599596674/ScoutTrek/canoeing.jpg"
+      }
+    },
+    "options": [
+      {
+        "condition": "uniqueMeetLocation",
+        "hidden": "At the water.",
+        "shown": "A different meet point.",
+        "hiddenFields": [
+          "meetLocation",
+          "meetTime",
+          "leaveTime"
+        ]
+      }
+    ],
+    "form": [
+      {
+        "fieldType": "shortText",
+        "fieldID": "title",
+        "title": "Canoe Trip Title",
+        "questionText": "What do you want to call this canoe trip?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "location",
+        "title": "Location",
+        "questionText": "Where will this canoe trip be?"
+      },
+      {
+        "fieldType": "setting",
+        "fieldID": "uniqueMeetLocation",
+        "questionText": "Where do you want everyone to meet?",
+        "payload": {
+          "options": [
+            "At the water.",
+            "A different meet point."
+          ]
+        }
+      },
+      {
+        "fieldType": "date",
+        "fieldID": "date",
+        "title": "Date",
+        "questionText": "When is this canoe trip?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "startTime",
+        "title": "Time",
+        "questionText": "What time does the event start?"
+      },
+      {
+        "fieldType": "location",
+        "fieldID": "meetLocation",
+        "title": "Meet Location",
+        "questionText": "Where should everyone meet?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "meetTime",
+        "title": "Meet Time",
+        "questionText": "What time should everybody get to your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "leaveTime",
+        "title": "Leave Time",
+        "questionText": "What time do you plan to leave your meet place?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "endTime",
+        "title": "End Time",
+        "questionText": "Around when will the canoe trip be finished?"
+      },
+      {
+        "fieldType": "description",
+        "fieldID": "description",
+        "title": "Description",
+        "questionText": "What additional information do you want everyone to know about this canoe trip?"
       }
     ]
   },
@@ -394,7 +516,7 @@
         "fieldType": "time",
         "fieldID": "startTime",
         "title": "Time",
-        "questionText": "What time should Scouts arrive at the event?"
+        "questionText": "What time does the event start?"
       },
       {
         "fieldType": "location",

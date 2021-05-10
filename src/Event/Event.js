@@ -51,7 +51,7 @@ export const typeDefs = gql`
     BIKE_RIDE
     BOARD_OF_REVIEW
     CAMPOUT
-    CANEO_TRIP
+    CANOE_TRIP
     COMMITTEE_MEETING
     CUSTOM_EVENT
     EAGLE_PROJECT
@@ -65,6 +65,7 @@ export const typeDefs = gql`
     PARENT_MEETING
     SCOUTMASTER_CONFERENCE
     SERVICE_PROJECT
+    SPECIAL_EVENT
     SUMMER_CAMP
     SWIM_TEST
   }
@@ -152,24 +153,29 @@ export const typeDefs = gql`
   }
 
   input UpdateEventInput {
-    createdAt: String
-    updatedAt: String
-    title: String
+    type: EVENT_TYPES!
+    invited: [AddRosterInput]
+    creator: UpdateUserInput
+    published: Boolean
+
+    title: String!
     description: String
-    datetime: String
+    date: String!
+    endDate: String
+    startTime: String!
+    uniqueMeetLocation: String
     meetTime: String
     leaveTime: String
-    endDatetime: String
-    numDays: Int
+    endTime: String
+    pickupTime: String
+
     location: UpdateLocationInput
     meetLocation: UpdateLocationInput
-    pickupTime: String
-    checkoutTime: String
+
     recurring: Boolean
     day: WEEK_DAY
     distance: Int
-    published: Boolean
-    creator: UpdateUserInput
+
     shakedown: Boolean
   }
 
@@ -396,7 +402,7 @@ export const resolvers = {
           first,
           skip,
         }
-      ).sort({ datetime: 1 });
+      ).sort({ date: 1 });
       return events;
     },
     event: async (_, { id }, { Event }) => await Event.findById(id),
@@ -439,6 +445,12 @@ export const resolvers = {
     ),
     addEvent: authenticated(
       async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+        // combines the event date and time into one date object
+        // could be turned into a utility function in the future
+        let startDatetime = new Date(input?.meetTime || input?.startTime);
+        const eventDate = new Date(input?.date);
+        startDatetime.setMonth(eventDate.getMonth());
+        startDatetime.setDate(eventDate.getDate());
         const mutationObject = {
           ...input,
           troop: false
@@ -448,8 +460,7 @@ export const resolvers = {
             : user.troop,
           patrol: user?.patrol,
           creator: user.id,
-          notification:
-            new Date(input?.meetTime || input?.startTime) - 86400000,
+          notification: startDatetime - 86400000,
         };
 
         if (input.location) {

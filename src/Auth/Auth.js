@@ -40,11 +40,27 @@ export const resolvers = {
         throw new Error("Please enter a valid email.");
       }
 
-      const user = await User.create({ ...input });
+      const userInput = {
+        name: input.name,
+        email: input.email,
+        expoNotificationToken: input.expoNotificationToken,
+        password: input.password,
+        passwordConfirm: input.passwordConfirm,
+        memeberships: [
+          {
+            troop: input.troop,
+            patrol: input?.patrol,
+            role: input.role,
+          },
+        ],
+        children: input.children,
+      };
+
+      const user = await User.create({ ...userInput });
 
       const troop = await Troop.findById(input.troop);
       if (input.patrol) {
-        const patrol = await troop.patrols.id(user.patrol);
+        const patrol = await troop.patrols.id(input.patrol);
         patrol.members.push(user.id);
       }
 

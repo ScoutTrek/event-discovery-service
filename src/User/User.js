@@ -92,9 +92,11 @@ export const resolvers = {
     id: (parent) => {
       return parent._id;
     },
-    troop: async (_, __, { Troop, Membership, currMembershipID }) => {
-      const curr_membership = await Membership.findById(currMembershipID);
-      return await Troop.findById(curr_membership.troopId);
+    troop: async (parent, __, { Troop, Membership, currMembershipID }) => {
+      const curr_membership = parent?.troop
+        ? parent?.troop
+        : await Membership.findById(currMembershipID);
+      return await Troop.findById(curr_membership);
     },
     patrol: async (_, __, { Troop, Membership, currMembershipID }) => {
       const curr_membership = await Membership.findById(currMembershipID);
