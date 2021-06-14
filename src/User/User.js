@@ -1,5 +1,7 @@
 import { membership } from "../../models/TroopAndPatrol";
 
+import mongoose from "mongoose";
+import { group } from "console";
 const { gql } = require("apollo-server");
 const { authenticated, authorized } = require("../utils/Auth");
 
@@ -16,14 +18,16 @@ export const typeDefs = gql`
 
   type Membership {
     id: ID!
-    troop: Troop!
-    patrol: Patrol
+    troopID: ID!
+    troopNum: String!
+    patrolID: ID!
     role: ROLE!
   }
 
   input AddMembershipInput {
-    troop: ID!
-    patrol: ID
+    troopID: ID!
+    troopNum: String!
+    patrolID: ID!
     role: ROLE!
   }
 
@@ -40,6 +44,29 @@ export const typeDefs = gql`
     groups: [Membership]
     troop: Troop
     patrol: Patrol
+    role: ROLE
+    events: Event
+    children: [String]
+  }
+
+  type AddMembershipPayload {
+    groupID: ID!
+    groupNum: String!
+  }
+
+  type CurrUser {
+    id: ID!
+    expoNotificationToken: String!
+    createdAt: String
+    updatedAt: String
+    name: String!
+    email: String!
+    phone: String
+    birthday: String
+    age: Int
+    patrol: Patrol
+    troop: Troop
+    otherGroups: [Membership]
     role: ROLE
     events: Event
     children: [String]
@@ -76,10 +103,11 @@ export const typeDefs = gql`
   type Query {
     users(limit: Int, skip: Int): [User]
     user(id: ID!): User
-    currUser: User!
+    currUser: CurrUser!
   }
 
   type Mutation {
+    addGroup(input: AddMembershipInput): AddMembershipPayload
     updateUser(input: UpdateUserInput!, id: ID!): User
     deleteUser(id: ID!): User
     updateCurrUser(input: UpdateUserInput!): User
@@ -110,9 +138,71 @@ export const resolvers = {
     users: authenticated(async (_, { limit, skip }, { User }) => {
       return await User.find({}, null, { limit, skip });
     }),
-    currUser: authenticated(async (_, __, { user }) => user),
+    currUser: authenticated(
+      async (_, __, { Troop, currMembershipID, user }) => {
+        const userObj = JSON.parse(JSON.stringify(user));
+
+        if (!user.groups.length) {
+          // send admin a message that there is an invalid user
+          return { ...userObj, id: userObj?._id };
+        }
+
+        const myGroup = userObj?.groups?.find(
+          (group) => group?._id === currMembershipID
+        );
+
+        const currGroupIndex = userObj?.groups?.findIndex(
+          (group) => group?._id === currMembershipID
+        );
+        const troop = await Troop.findById(
+          user.groups?.[currGroupIndex >= 0 ? currGroupIndex : 0]["troopID"]
+        );
+
+        const myTroopObj = JSON.parse(JSON.stringify(troop));
+        const patrol = troop.patrols.id(
+          user.groups?.[currGroupIndex >= 0 ? currGroupIndex : 0]["patrolID"]
+        );
+        const myPatrolObj = JSON.parse(JSON.stringify(patrol));
+
+        let otherGroups = [];
+        if (userObj?.groups?.length > 1) {
+          otherGroups = userObj?.groups?.filter(
+            (group) => group?._id !== currMembershipID
+          );
+        }
+        return {
+          ...userObj,
+          id: userObj?._id,
+          patrol: {
+            ...myPatrolObj,
+            id: myPatrolObj._id,
+          },
+          troop: {
+            ...myTroopObj,
+            id: myTroopObj._id,
+          },
+          role: myGroup?.role,
+          otherGroups: otherGroups.map((group) => ({
+            ...group,
+            id: group?._id,
+          })),
+        };
+      }
+    ),
   },
   Mutation: {
+    addGroup: authenticated(async (_, { input }, { user, User }) => {
+      const newGroupID = mongoose.Types.ObjectId();
+      await User.findById(user.id, function (err, doc) {
+        if (err) return false;
+        const groups = doc.groups;
+        groups.push({ _id: newGroupID, ...input });
+        doc.save();
+      });
+      return {
+        groupID: newGroupID,
+      };
+    }),
     updateUser: authenticated(
       authorized("SCOUTMASTER", async (_, { input, id }, { User }) => {
         if (typeof input.password === "string") {

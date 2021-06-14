@@ -73,8 +73,9 @@ const apolloServer = new ApolloServer({
       authFns.getTokenFromReq(req),
       User
     );
+
     // Update this for membership paradigm
-    const currMembershipID = user?.troop;
+    const currMembershipID = req.headers.curr_membership;
     const tokens = await getTokens(Troop, User, user);
     return {
       User,

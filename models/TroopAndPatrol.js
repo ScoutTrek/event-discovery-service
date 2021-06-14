@@ -3,11 +3,14 @@ import mongoose from "mongoose";
 import { pointSchema } from "./Event";
 
 export const membership = new mongoose.Schema({
-  troop: {
+  troopID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Troop",
   },
-  patrol: {
+  troopNum: {
+    type: String,
+  },
+  patrolID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Patrol",
   },

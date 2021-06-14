@@ -372,10 +372,10 @@ export const resolvers = {
   },
   Query: {
     events: authenticated(
-      async (_, { curr_group, first, skip }, { Event, user }) => {
+      async (_, { first, skip }, { Event, user, currMembershipID }) => {
         const events = await Event.find(
           {
-            troop: curr_group || user.troop,
+            troop: currMembershipID || user.troop,
           },
           null,
           {
@@ -386,16 +386,21 @@ export const resolvers = {
         return events;
       }
     ),
-    upcomingEvents: async (_, { curr_group, first, skip }, { Event, user }) => {
+    upcomingEvents: async (
+      _,
+      { first, skip },
+      { Event, user, currMembershipID }
+    ) => {
+      const myMembership = user.groups.find(
+        (membership) => membership._id == currMembershipID
+      );
       const events = await Event.find(
         {
           date: {
             $gte: new Date(Date.now() - 86400000 * 1.5),
             $lte: new Date(Date.now() + 6.04e8 * 8),
           },
-          troop: curr_group
-            ? user.groups.find((membership) => membership.troop === curr_group)
-            : user.troop,
+          troop: myMembership?.troopID,
         },
         null,
         {
@@ -487,42 +492,44 @@ export const resolvers = {
         return event;
       }
     ),
-    addHike: authenticated(async (_, { input }, { Event, user, tokens }) => {
-      const hikeMutation = {
-        ...input,
-        type: "Hike",
-        troop: curr_group
-          ? user.groups.find((membership) => membership.troop === curr_group)
-          : user.troop,
-        patrol: user.patrol,
-        creator: user.id,
-        location: {
-          type: "Point",
-          coordinates: [input.location.lng, input.location.lat],
-          address: input.location.address,
-        },
-        meetLocation: {
-          type: "Point",
-          coordinates: [input.meetLocation.lng, input.meetLocation.lat],
-          address: input.meetLocation.address,
-        },
-        notification: new Date(input.meetTime) - 86400000,
-      };
-      const event = await Event.create(hikeMutation);
-      sendNotifications(
-        tokens,
-        `${input.title} event has been created. See details.`,
-        { type: "event", eventType: event.type, ID: event.id }
-      );
-    }),
+    addHike: authenticated(
+      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+        const hikeMutation = {
+          ...input,
+          type: "Hike",
+          troop: user.groups.find(
+            (membership) => membership.troop === currMembershipID
+          ),
+          patrol: user.patrol,
+          creator: user.id,
+          location: {
+            type: "Point",
+            coordinates: [input.location.lng, input.location.lat],
+            address: input.location.address,
+          },
+          meetLocation: {
+            type: "Point",
+            coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+            address: input.meetLocation.address,
+          },
+          notification: new Date(input.meetTime) - 86400000,
+        };
+        const event = await Event.create(hikeMutation);
+        sendNotifications(
+          tokens,
+          `${input.title} event has been created. See details.`,
+          { type: "event", eventType: event.type, ID: event.id }
+        );
+      }
+    ),
     addCampout: authenticated(
-      async (_, { curr_group, input }, { Event, user, tokens }) => {
+      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
         const campoutMutation = {
           ...input,
           type: "Campout",
-          troop: curr_group
-            ? user.groups.find((membership) => membership.troop === curr_group)
-            : user.troop,
+          troop: user.groups.find(
+            (membership) => membership.troop === currMembershipID
+          ),
           patrol: user.patrol,
           creator: user.id,
           location: {
@@ -547,13 +554,13 @@ export const resolvers = {
       }
     ),
     addBikeRide: authenticated(
-      async (_, { curr_group, input }, { Event, user, tokens }) => {
+      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
         const bikeRideMutation = {
           ...input,
           type: "BikeRide",
-          troop: curr_group
-            ? user.groups.find((membership) => membership.troop === curr_group)
-            : user.troop,
+          troop: user.groups.find(
+            (membership) => membership.troop === currMembershipID
+          ),
           patrol: user.patrol,
           creator: user.id,
           location: {
@@ -578,13 +585,13 @@ export const resolvers = {
       }
     ),
     addCanoeing: authenticated(
-      async (_, { curr_group, input }, { Event, user, tokens }) => {
+      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
         const canoeingMutation = {
           ...input,
           type: "Canoeing",
-          troop: curr_group
-            ? user.groups.find((membership) => membership.troop === curr_group)
-            : user.troop,
+          troop: user.groups.find(
+            (membership) => membership.troop === currMembershipID
+          ),
           patrol: user.patrol,
           creator: user.id,
           location: {
@@ -609,13 +616,13 @@ export const resolvers = {
       }
     ),
     addSummerCamp: authenticated(
-      async (_, { curr_group, input }, { Event, user, tokens }) => {
+      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
         const campoutMutation = {
           ...input,
           type: "SummerCamp",
-          troop: curr_group
-            ? user.groups.find((membership) => membership.troop === curr_group)
-            : user.troop,
+          troop: user.groups.find(
+            (membership) => membership.troop === currMembershipID
+          ),
           patrol: user.patrol,
           creator: user.id,
           location: {
@@ -640,48 +647,50 @@ export const resolvers = {
       }
     ),
 
-    addScoutMeeting: authenticated(async (_, { input }, { Event, user }) => {
-      for (let i = 0; i < +input.numWeeksRepeat; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() + 7 * i);
-        d.setDate(
-          d.getDate() + getInitialDate(weekDays[input.day], d.getDay())
-        );
-        const datetime = new Date(
-          `${moment(d).format("MMMM D, YYYY")} ${moment(input.datetime).format(
-            "hh:mm:ss a"
-          )}`
-        );
-        const troopMeetingMutation = {
-          ...input,
-          type: "TroopMeeting",
-          creator: user.id,
-          troop: curr_group
-            ? user.groups.find((membership) => membership.troop === curr_group)
-            : user.troop,
-          patrol: user.patrol,
-          title: `Troop Meeting`,
-          datetime,
-          location: {
-            type: "Point",
-            coordinates: [input.location.lng, input.location.lat],
-            address: input.location.address,
-          },
-          notification: new Date(datetime) - 86400000,
-        };
-        await Event.create(troopMeetingMutation);
+    addScoutMeeting: authenticated(
+      async (_, { input }, { Event, user, currMembershipID }) => {
+        for (let i = 0; i < +input.numWeeksRepeat; i++) {
+          const d = new Date();
+          d.setDate(d.getDate() + 7 * i);
+          d.setDate(
+            d.getDate() + getInitialDate(weekDays[input.day], d.getDay())
+          );
+          const datetime = new Date(
+            `${moment(d).format("MMMM D, YYYY")} ${moment(
+              input.datetime
+            ).format("hh:mm:ss a")}`
+          );
+          const troopMeetingMutation = {
+            ...input,
+            type: "TroopMeeting",
+            creator: user.id,
+            troop: user.groups.find(
+              (membership) => membership.troop === currMembershipID
+            ),
+            patrol: user.patrol,
+            title: `Troop Meeting`,
+            datetime,
+            location: {
+              type: "Point",
+              coordinates: [input.location.lng, input.location.lat],
+              address: input.location.address,
+            },
+            notification: new Date(datetime) - 86400000,
+          };
+          await Event.create(troopMeetingMutation);
+        }
+        return;
       }
-      return;
-    }),
+    ),
 
     addSpecialEvent: authenticated(
-      async (_, { input }, { Event, user, tokens }) => {
+      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
         const specialEventMutation = {
           ...input,
           type: "SpecialEvent",
-          troop: curr_group
-            ? user.groups.find((membership) => membership.troop === curr_group)
-            : user.troop,
+          troop: user.groups.find(
+            (membership) => membership.troop === currMembershipID
+          ),
           patrol: user.patrol,
           creator: user.id,
           location: {

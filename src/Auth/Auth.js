@@ -17,7 +17,8 @@ export const typeDefs = gql`
     phone: String
     birthday: String
     troop: ID!
-    patrol: ID
+    troopNum: String
+    patrol: ID!
     role: ROLE!
     children: [String]
   }
@@ -25,6 +26,7 @@ export const typeDefs = gql`
   type AuthPayload {
     token: String!
     user: User!
+    groupID: ID!
   }
 
   extend type Mutation {
@@ -40,15 +42,18 @@ export const resolvers = {
         throw new Error("Please enter a valid email.");
       }
 
+      const troop = await Troop.findById(input?.troop);
+
       const userInput = {
         name: input.name,
         email: input.email,
         expoNotificationToken: input.expoNotificationToken,
         password: input.password,
         passwordConfirm: input.passwordConfirm,
-        memeberships: [
+        groups: [
           {
             troop: input.troop,
+            troopNum: troop?.unitNumber,
             patrol: input?.patrol,
             role: input.role,
           },
@@ -58,7 +63,6 @@ export const resolvers = {
 
       const user = await User.create({ ...userInput });
 
-      const troop = await Troop.findById(input.troop);
       if (input.patrol) {
         const patrol = await troop.patrols.id(input.patrol);
         patrol.members.push(user.id);
@@ -68,7 +72,7 @@ export const resolvers = {
 
       if (input.role === "SCOUTMASTER" || input.role === "Scoutmaster") {
         await Troop.findByIdAndUpdate(input.troop, {
-          scoutMaster: user.id,
+          scoutMaster: user?.groups?._id,
         });
       }
 
@@ -77,6 +81,7 @@ export const resolvers = {
       return {
         user,
         token,
+        groupID: user?.groups[0]?._id,
       };
     },
     login: async (_, { input }, { authFns, User }) => {
@@ -101,7 +106,7 @@ export const resolvers = {
       }
 
       const token = authFns.createToken(user);
-      return { token, user };
+      return { token, user, groupID: user?.groups[0]?._id };
     },
   },
 };
