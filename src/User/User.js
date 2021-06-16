@@ -147,9 +147,13 @@ export const resolvers = {
           return { ...userObj, id: userObj?._id };
         }
 
-        const myGroup = userObj?.groups?.find(
-          (group) => group?._id === currMembershipID
-        );
+        const myGroup = userObj?.groups?.find((group) => {
+          console.log(group?._id);
+          console.log(typeof group?._id);
+          console.log(currMembershipID);
+          console.log(typeof currMembershipID);
+          return group?._id === currMembershipID;
+        });
 
         const currGroupIndex = userObj?.groups?.findIndex(
           (group) => group?._id === currMembershipID

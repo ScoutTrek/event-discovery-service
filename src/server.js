@@ -75,7 +75,9 @@ const apolloServer = new ApolloServer({
     );
 
     // Update this for membership paradigm
-    const currMembershipID = req.headers.curr_membership;
+    const currMembershipID = mongoose.Types.ObjectId(
+      req.headers.membership
+    ).toString();
     const tokens = await getTokens(Troop, User, user);
     return {
       User,

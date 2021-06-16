@@ -1,4 +1,4 @@
-import Troop from "../../models/TroopAndPatrol";
+import mongoose from "mongoose";
 
 import { sendNotifications } from "../Notifications/Expo";
 
@@ -392,7 +392,7 @@ export const resolvers = {
       { Event, user, currMembershipID }
     ) => {
       const myMembership = user.groups.find(
-        (membership) => membership._id == currMembershipID
+        (membership) => membership._id === currMembershipID
       );
       const events = await Event.find(
         {
