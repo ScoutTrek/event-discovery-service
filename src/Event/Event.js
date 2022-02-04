@@ -372,10 +372,10 @@ export const resolvers = {
   },
   Query: {
     events: authenticated(
-      async (_, { first, skip }, { Event, user, currMembershipID }) => {
+      async (_, { first, skip }, { Event, user, membershipIDString }) => {
         const events = await Event.find(
           {
-            troop: currMembershipID || user.troop,
+            troop: membershipIDString || user.troop,
           },
           null,
           {
@@ -389,10 +389,10 @@ export const resolvers = {
     upcomingEvents: async (
       _,
       { first, skip },
-      { Event, user, currMembershipID }
+      { Event, user, membershipIDString }
     ) => {
       const myMembership = user.groups.find(
-        (membership) => membership._id === currMembershipID
+        (membership) => membership._id === membershipIDString
       );
       const events = await Event.find(
         {
@@ -449,7 +449,7 @@ export const resolvers = {
       async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
     ),
     addEvent: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+      async (_, { input }, { Event, user, tokens, membershipIDString }) => {
         // combines the event date and time into one date object
         // could be turned into a utility function in the future
         let startDatetime = new Date(input?.meetTime || input?.startTime);
@@ -460,7 +460,7 @@ export const resolvers = {
           ...input,
           troop: false
             ? user.groups.find(
-                (membership) => membership.troop === currMembershipID
+                (membership) => membership.troop === membershipIDString
               )
             : user.troop,
           patrol: user?.patrol,
@@ -493,12 +493,12 @@ export const resolvers = {
       }
     ),
     addHike: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+      async (_, { input }, { Event, user, tokens, membershipIDString }) => {
         const hikeMutation = {
           ...input,
           type: "Hike",
           troop: user.groups.find(
-            (membership) => membership.troop === currMembershipID
+            (membership) => membership.troop === membershipIDString
           ),
           patrol: user.patrol,
           creator: user.id,
@@ -523,12 +523,12 @@ export const resolvers = {
       }
     ),
     addCampout: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+      async (_, { input }, { Event, user, tokens, membershipIDString }) => {
         const campoutMutation = {
           ...input,
           type: "Campout",
           troop: user.groups.find(
-            (membership) => membership.troop === currMembershipID
+            (membership) => membership.troop === membershipIDString
           ),
           patrol: user.patrol,
           creator: user.id,
@@ -554,12 +554,12 @@ export const resolvers = {
       }
     ),
     addBikeRide: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+      async (_, { input }, { Event, user, tokens, membershipIDString }) => {
         const bikeRideMutation = {
           ...input,
           type: "BikeRide",
           troop: user.groups.find(
-            (membership) => membership.troop === currMembershipID
+            (membership) => membership.troop === membershipIDString
           ),
           patrol: user.patrol,
           creator: user.id,
@@ -585,12 +585,12 @@ export const resolvers = {
       }
     ),
     addCanoeing: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+      async (_, { input }, { Event, user, tokens, membershipIDString }) => {
         const canoeingMutation = {
           ...input,
           type: "Canoeing",
           troop: user.groups.find(
-            (membership) => membership.troop === currMembershipID
+            (membership) => membership.troop === membershipIDString
           ),
           patrol: user.patrol,
           creator: user.id,
@@ -616,12 +616,12 @@ export const resolvers = {
       }
     ),
     addSummerCamp: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+      async (_, { input }, { Event, user, tokens, membershipIDString }) => {
         const campoutMutation = {
           ...input,
           type: "SummerCamp",
           troop: user.groups.find(
-            (membership) => membership.troop === currMembershipID
+            (membership) => membership.troop === membershipIDString
           ),
           patrol: user.patrol,
           creator: user.id,
@@ -648,7 +648,7 @@ export const resolvers = {
     ),
 
     addScoutMeeting: authenticated(
-      async (_, { input }, { Event, user, currMembershipID }) => {
+      async (_, { input }, { Event, user, membershipIDString }) => {
         for (let i = 0; i < +input.numWeeksRepeat; i++) {
           const d = new Date();
           d.setDate(d.getDate() + 7 * i);
@@ -665,7 +665,7 @@ export const resolvers = {
             type: "TroopMeeting",
             creator: user.id,
             troop: user.groups.find(
-              (membership) => membership.troop === currMembershipID
+              (membership) => membership.troop === membershipIDString
             ),
             patrol: user.patrol,
             title: `Troop Meeting`,
@@ -684,12 +684,12 @@ export const resolvers = {
     ),
 
     addSpecialEvent: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembershipID }) => {
+      async (_, { input }, { Event, user, tokens, membershipIDString }) => {
         const specialEventMutation = {
           ...input,
           type: "SpecialEvent",
           troop: user.groups.find(
-            (membership) => membership.troop === currMembershipID
+            (membership) => membership.troop === membershipIDString
           ),
           patrol: user.patrol,
           creator: user.id,

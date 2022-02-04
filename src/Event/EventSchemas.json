@@ -2,7 +2,7 @@
   "hike": {
     "metaData": {
       "eventID": "HIKE",
-      "subtitle": "Plan a visit to the trail, let ScoutTrek take care of the rest.",
+      "subtitle": "Plan a visit to the trails.",
       "image": {
         "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_550/v1582556921/ScoutTrek/hiking_trip.png"
       }
@@ -101,7 +101,7 @@
   "campout": {
     "metaData": {
       "eventID": "CAMPOUT",
-      "subtitle": "Spend a few days in the wild outdoors.",
+      "subtitle": "A few days in the wild outdoors.",
       "image": {
         "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,e_contrast:-25,w_600/v1595086345/ScoutTrek/campfire.png"
       }
@@ -189,7 +189,7 @@
   "summer_camp": {
     "metaData": {
       "eventID": "SUMMER_CAMP",
-      "subtitle": "A week of non-stop fun away from home.",
+      "subtitle": "A week of non-stop fun.",
       "image": {
         "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_600/v1590852981/ScoutTrek/ben-white-pV5ckb2HEVk-unsplash.jpg"
       }

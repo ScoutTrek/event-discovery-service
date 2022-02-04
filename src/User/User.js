@@ -1,7 +1,6 @@
 import { membership } from "../../models/TroopAndPatrol";
 
 import mongoose from "mongoose";
-import { group } from "console";
 const { gql } = require("apollo-server");
 const { authenticated, authorized } = require("../utils/Auth");
 
@@ -120,14 +119,14 @@ export const resolvers = {
     id: (parent) => {
       return parent._id;
     },
-    troop: async (parent, __, { Troop, Membership, currMembershipID }) => {
+    troop: async (parent, __, { Troop, Membership, membershipIDString }) => {
       const curr_membership = parent?.troop
         ? parent?.troop
-        : await Membership.findById(currMembershipID);
+        : await Membership.findById(membershipIDString);
       return await Troop.findById(curr_membership);
     },
-    patrol: async (_, __, { Troop, Membership, currMembershipID }) => {
-      const curr_membership = await Membership.findById(currMembershipID);
+    patrol: async (_, __, { Troop, Membership, membershipIDString }) => {
+      const curr_membership = await Membership.findById(membershipIDString);
       const myTroop = await Troop.findById(curr_membership.troopId);
       const myPatrol = await myTroop.patrols.id(curr_membership.troopId);
       return myPatrol;
@@ -139,7 +138,7 @@ export const resolvers = {
       return await User.find({}, null, { limit, skip });
     }),
     currUser: authenticated(
-      async (_, __, { Troop, currMembershipID, user }) => {
+      async (_, __, { Troop, membershipIDString, user }) => {
         const userObj = JSON.parse(JSON.stringify(user));
 
         if (!user.groups.length) {
@@ -148,15 +147,12 @@ export const resolvers = {
         }
 
         const myGroup = userObj?.groups?.find((group) => {
-          console.log(group?._id);
-          console.log(typeof group?._id);
-          console.log(currMembershipID);
-          console.log(typeof currMembershipID);
-          return group?._id === currMembershipID;
+          console.log("Group ID ", group?._id);
+          return group?._id === membershipIDString;
         });
 
         const currGroupIndex = userObj?.groups?.findIndex(
-          (group) => group?._id === currMembershipID
+          (group) => group?._id === membershipIDString
         );
         const troop = await Troop.findById(
           user.groups?.[currGroupIndex >= 0 ? currGroupIndex : 0]["troopID"]
@@ -171,9 +167,11 @@ export const resolvers = {
         let otherGroups = [];
         if (userObj?.groups?.length > 1) {
           otherGroups = userObj?.groups?.filter(
-            (group) => group?._id !== currMembershipID
+            (group) => group?._id !== membershipIDString
           );
         }
+        console.log("Curr membership id ", membershipIDString);
+        console.log("My group ", myGroup);
         return {
           ...userObj,
           id: userObj?._id,

@@ -97,7 +97,7 @@ export const resolvers = {
   Query: {
     troops: async (_, { limit, skip }, { Troop }) =>
       await Troop.find({}, null, { limit, skip }),
-    troop: async (_, { id }, { Troop }) =>
+    troop: async (_, { limit, skip, id }, { Troop }) =>
       await Troop.findById(id, null, { limit, skip }),
     currTroop: authenticated(
       async (_, __, { Troop, user }) =>
