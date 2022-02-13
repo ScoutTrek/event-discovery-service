@@ -372,10 +372,10 @@ export const resolvers = {
   },
   Query: {
     events: authenticated(
-      async (_, { first, skip }, { Event, user, membershipIDString }) => {
+      async (_, { first, skip }, { Event, currMembership }) => {
         const events = await Event.find(
           {
-            troop: membershipIDString || user.troop,
+            troop: currMembership?.troopID,
           },
           null,
           {
@@ -386,21 +386,14 @@ export const resolvers = {
         return events;
       }
     ),
-    upcomingEvents: async (
-      _,
-      { first, skip },
-      { Event, user, membershipIDString }
-    ) => {
-      const myMembership = user.groups.find(
-        (membership) => membership._id === membershipIDString
-      );
+    upcomingEvents: async (_, { first, skip }, { Event, currMembership }) => {
       const events = await Event.find(
         {
           date: {
             $gte: new Date(Date.now() - 86400000 * 1.5),
             $lte: new Date(Date.now() + 6.04e8 * 8),
           },
-          troop: myMembership?.troopID,
+          troop: currMembership?.troopID,
         },
         null,
         {
@@ -449,7 +442,7 @@ export const resolvers = {
       async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
     ),
     addEvent: authenticated(
-      async (_, { input }, { Event, user, tokens, membershipIDString }) => {
+      async (_, { input }, { Event, user, tokens, currMembership }) => {
         // combines the event date and time into one date object
         // could be turned into a utility function in the future
         let startDatetime = new Date(input?.meetTime || input?.startTime);
@@ -458,12 +451,8 @@ export const resolvers = {
         startDatetime.setDate(eventDate.getDate());
         const mutationObject = {
           ...input,
-          troop: false
-            ? user.groups.find(
-                (membership) => membership.troop === membershipIDString
-              )
-            : user.troop,
-          patrol: user?.patrol,
+          troop: currMembership ? currMembership?.troop : user.troop,
+          patrol: currMembership ? currMembership?.patrol : user.patrol,
           creator: user.id,
           notification: startDatetime - 86400000,
         };

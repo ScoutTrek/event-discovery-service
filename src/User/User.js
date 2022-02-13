@@ -18,16 +18,17 @@ export const typeDefs = gql`
   type Membership {
     id: ID!
     troopID: ID!
-    troopNum: String!
+    troopNumber: String!
     patrolID: ID!
     role: ROLE!
   }
 
   input AddMembershipInput {
     troopID: ID!
-    troopNum: String!
+    troopNumber: String!
     patrolID: ID!
     role: ROLE!
+    children: [String]
   }
 
   type User {
@@ -40,49 +41,29 @@ export const typeDefs = gql`
     phone: String
     birthday: String
     age: Int
+    currTroop: Troop
+    currPatrol: Patrol
+    currRole: ROLE
     groups: [Membership]
-    troop: Troop
-    patrol: Patrol
-    role: ROLE
+    otherGroups: [Membership]
     events: Event
     children: [String]
+    noGroups: Boolean
   }
 
-  type AddMembershipPayload {
+  type MembershipPayload {
     groupID: ID!
     groupNum: String!
-  }
-
-  type CurrUser {
-    id: ID!
-    expoNotificationToken: String!
-    createdAt: String
-    updatedAt: String
-    name: String!
-    email: String!
-    phone: String
-    birthday: String
-    age: Int
-    patrol: Patrol
-    troop: Troop
-    otherGroups: [Membership]
-    role: ROLE
-    events: Event
-    children: [String]
   }
 
   input AddUserInput {
     name: String!
     email: String!
-    expoNotificationToken: String
     password: String!
+    passwordConfirm: String!
+    expoNotificationToken: String
     phone: String
     birthday: String
-    troop: ID
-    patrol: ID
-    role: ROLE
-    groups: [AddMembershipInput!]!
-    children: [String]
   }
 
   input UpdateUserInput {
@@ -92,8 +73,6 @@ export const typeDefs = gql`
     password: String
     phone: String
     birthday: String
-    troop: ID
-    patrol: ID
     role: ROLE
     groups: [AddMembershipInput]
     children: [String]
@@ -102,11 +81,11 @@ export const typeDefs = gql`
   type Query {
     users(limit: Int, skip: Int): [User]
     user(id: ID!): User
-    currUser: CurrUser!
+    currUser: User!
   }
 
   type Mutation {
-    addGroup(input: AddMembershipInput): AddMembershipPayload
+    addGroup(input: AddMembershipInput): MembershipPayload
     updateUser(input: UpdateUserInput!, id: ID!): User
     deleteUser(id: ID!): User
     updateCurrUser(input: UpdateUserInput!): User
@@ -115,21 +94,39 @@ export const typeDefs = gql`
 `;
 
 export const resolvers = {
+  Membership: {
+    id: (parent) => {
+      return parent._id;
+    },
+  },
   User: {
     id: (parent) => {
       return parent._id;
     },
-    troop: async (parent, __, { Troop, Membership, membershipIDString }) => {
-      const curr_membership = parent?.troop
-        ? parent?.troop
-        : await Membership.findById(membershipIDString);
-      return await Troop.findById(curr_membership);
+    currRole: (parent, __, { currMembership }) => {
+      return currMembership ? currMembership.role : parent.role;
     },
-    patrol: async (_, __, { Troop, Membership, membershipIDString }) => {
-      const curr_membership = await Membership.findById(membershipIDString);
-      const myTroop = await Troop.findById(curr_membership.troopId);
-      const myPatrol = await myTroop.patrols.id(curr_membership.troopId);
+    currTroop: async (parent, __, { Troop, currMembership }) => {
+      return await Troop.findById(
+        currMembership ? currMembership.troopID : parent.troop
+      );
+    },
+    currPatrol: async (parent, __, { Troop, currMembership }) => {
+      const myTroop = await Troop.findById(
+        currMembership ? currMembership.troopID : parent.troop
+      );
+      const myPatrol = await myTroop.patrols.id(currMembership.patrolID);
       return myPatrol;
+    },
+    otherGroups: async (_, __, { user, membershipIDString }) => {
+      const userObj = JSON.parse(JSON.stringify(user));
+      let otherGroups = [];
+      if (userObj?.groups?.length > 1) {
+        otherGroups = userObj.groups.filter(
+          (group) => group?._id !== membershipIDString
+        );
+      }
+      return otherGroups;
     },
   },
   Query: {
@@ -137,68 +134,23 @@ export const resolvers = {
     users: authenticated(async (_, { limit, skip }, { User }) => {
       return await User.find({}, null, { limit, skip });
     }),
-    currUser: authenticated(
-      async (_, __, { Troop, membershipIDString, user }) => {
-        const userObj = JSON.parse(JSON.stringify(user));
-
-        if (!user.groups.length) {
-          // send admin a message that there is an invalid user
-          return { ...userObj, id: userObj?._id };
-        }
-
-        const myGroup = userObj?.groups?.find((group) => {
-          console.log("Group ID ", group?._id);
-          return group?._id === membershipIDString;
-        });
-
-        const currGroupIndex = userObj?.groups?.findIndex(
-          (group) => group?._id === membershipIDString
-        );
-        const troop = await Troop.findById(
-          user.groups?.[currGroupIndex >= 0 ? currGroupIndex : 0]["troopID"]
-        );
-
-        const myTroopObj = JSON.parse(JSON.stringify(troop));
-        const patrol = troop.patrols.id(
-          user.groups?.[currGroupIndex >= 0 ? currGroupIndex : 0]["patrolID"]
-        );
-        const myPatrolObj = JSON.parse(JSON.stringify(patrol));
-
-        let otherGroups = [];
-        if (userObj?.groups?.length > 1) {
-          otherGroups = userObj?.groups?.filter(
-            (group) => group?._id !== membershipIDString
-          );
-        }
-        console.log("Curr membership id ", membershipIDString);
-        console.log("My group ", myGroup);
-        return {
-          ...userObj,
-          id: userObj?._id,
-          patrol: {
-            ...myPatrolObj,
-            id: myPatrolObj._id,
-          },
-          troop: {
-            ...myTroopObj,
-            id: myTroopObj._id,
-          },
-          role: myGroup?.role,
-          otherGroups: otherGroups.map((group) => ({
-            ...group,
-            id: group?._id,
-          })),
-        };
-      }
-    ),
+    currUser: authenticated(async (_, __, { user }) => user),
   },
   Mutation: {
     addGroup: authenticated(async (_, { input }, { user, User }) => {
       const newGroupID = mongoose.Types.ObjectId();
+
+      if (input.role === "SCOUTMASTER" || input.role === "Scoutmaster") {
+        await Troop.findByIdAndUpdate(input.troop, {
+          scoutMaster: user.id,
+        });
+      }
+
       await User.findById(user.id, function (err, doc) {
         if (err) return false;
-        const groups = doc.groups;
-        groups.push({ _id: newGroupID, ...input });
+        const { children, ...membershipDetails } = input;
+        doc.children.push(children);
+        doc.groups.push({ _id: newGroupID, ...membershipDetails });
         doc.save();
       });
       return {

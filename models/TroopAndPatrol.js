@@ -7,7 +7,7 @@ export const membership = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Troop",
   },
-  troopNum: {
+  troopNumber: {
     type: String,
   },
   patrolID: {

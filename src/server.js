@@ -82,17 +82,26 @@ const apolloServer = new ApolloServer({
         ? undefined
         : mongoose.Types.ObjectId(membership).toString();
 
+    let currMembership;
+
+    if (membershipIDString && user) {
+      currMembership = user.groups.find((membership) => {
+        return membership._id.equals(membershipIDString);
+      });
+    }
+
     const tokens = await getTokens(Troop, User, user);
 
     return {
       User,
       Event,
       Troop,
+      membershipIDString,
+      currMembership,
       tokens,
       req,
       authFns,
       user,
-      membershipIDString,
     };
   },
   introspection: true,

@@ -105,7 +105,6 @@ export const resolvers = {
     ),
     patrols: async (_, __, { Troop, user }) => {
       const myTroop = await Troop.findById(user.troop);
-      // console.log(JSON.stringify(myTroop.patrols, null, 2));
       return myTroop.patrols;
     },
     patrolsOfTroop: async (_, { id }, { Troop }) => {

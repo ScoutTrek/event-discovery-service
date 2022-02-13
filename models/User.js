@@ -55,14 +55,6 @@ const userSchema = mongoose.Schema(
       type: Date,
     },
     groups: [membership],
-    troop: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Troop",
-    },
-    patrol: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patrol",
-    },
     children: [String],
     events: [
       {
@@ -70,6 +62,9 @@ const userSchema = mongoose.Schema(
         ref: "Event",
       },
     ],
+    noGroups: {
+      type: Boolean,
+    },
   },
   {
     timestamps: true,
