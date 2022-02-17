@@ -87,7 +87,7 @@ export const resolvers = {
       return {
         token,
         user,
-        noGroups: !!user.groups.length,
+        noGroups: !user.groups.length,
         groupID: user?.groups[0]?._id,
       };
     },

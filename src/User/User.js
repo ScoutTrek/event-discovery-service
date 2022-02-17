@@ -48,6 +48,7 @@ export const typeDefs = gql`
     otherGroups: [Membership]
     events: Event
     children: [String]
+    userPhoto: String!
     noGroups: Boolean
   }
 
@@ -81,7 +82,7 @@ export const typeDefs = gql`
   type Query {
     users(limit: Int, skip: Int): [User]
     user(id: ID!): User
-    currUser: User!
+    currUser: User
   }
 
   type Mutation {
@@ -128,16 +129,17 @@ export const resolvers = {
       }
       return otherGroups;
     },
+    noGroups: async (parent) => !parent.groups.length,
   },
   Query: {
     user: authenticated(async (_, { id }, { User }) => await User.findById(id)),
     users: authenticated(async (_, { limit, skip }, { User }) => {
       return await User.find({}, null, { limit, skip });
     }),
-    currUser: authenticated(async (_, __, { user }) => user),
+    currUser: async (_, __, { user }) => user,
   },
   Mutation: {
-    addGroup: authenticated(async (_, { input }, { user, User }) => {
+    addGroup: authenticated(async (_, { input }, { user, User, Troop }) => {
       const newGroupID = mongoose.Types.ObjectId();
 
       if (input.role === "SCOUTMASTER" || input.role === "Scoutmaster") {
@@ -149,7 +151,7 @@ export const resolvers = {
       await User.findById(user.id, function (err, doc) {
         if (err) return false;
         const { children, ...membershipDetails } = input;
-        doc.children.push(children);
+        doc.children.push(...children);
         doc.groups.push({ _id: newGroupID, ...membershipDetails });
         doc.save();
       });
