@@ -7,7 +7,6 @@ const EventSchemas = require("./EventSchemas.json");
 const { gql } = require("apollo-server");
 const { authenticated, authorized } = require("../utils/Auth");
 const GraphQLJSON = require("graphql-type-json");
-import moment from "moment";
 
 export const weekDays = {
   Sunday: 0,
@@ -78,105 +77,107 @@ export const typeDefs = gql`
     user: User!
   }
 
+  # not currently in use
   type Roster {
     id: ID!
     groups: [Troop]!
     patrols: [Patrol]
     individuals: [User]
   }
-
-  type Event {
-    id: ID!
-    type: EVENT_TYPES!
-    createdAt: String!
-    updatedAt: String!
-    invited: [Roster]
-    attending: [Roster]
-    patrol: Patrol
-    troop: Troop
-    title: String!
-    description: String
-    date: String!
-    endDate: String
-    startTime: String!
-    uniqueMeetLocation: String
-    meetTime: String
-    leaveTime: String
-    pickupTime: String
-    endTime: String
-
-    messages: [Message]
-
-    location: Location
-    meetLocation: Location
-
-    checkoutTime: String
-    recurring: Boolean
-    day: WEEK_DAY
-    distance: Int
-    published: Boolean!
-    creator: User
-    shakedown: Boolean
-  }
-
   input AddRosterInput {
     groups: [ID]!
     patrols: [ID]
     individuals: [ID]
   }
 
+  type Event {
+    id: ID!
+
+    createdAt: String!
+    updatedAt: String!
+
+    patrol: Patrol
+    troop: Troop
+
+    type: EVENT_TYPES!
+    invited: [Roster]
+    attending: [Roster]
+
+    title: String!
+    description: String
+
+    date: String!
+    startTime: String!
+    meetTime: String
+    leaveTime: String
+    endTime: String
+    endDate: String
+    pickupTime: String
+
+    uniqueMeetLocation: String
+    location: Location
+    meetLocation: Location
+
+    checkoutTime: String
+    day: WEEK_DAY
+    distance: Int
+
+    published: Boolean!
+    creator: User
+  }
+
   input AddEventInput {
     type: EVENT_TYPES!
     invited: [AddRosterInput]
-    creator: UpdateUserInput
-    published: Boolean
+    attending: [AddRosterInput]
 
     title: String!
     description: String
+
     date: String!
-    endDate: String
     startTime: String!
-    uniqueMeetLocation: String
     meetTime: String
     leaveTime: String
     endTime: String
+    endDate: String
     pickupTime: String
 
+    uniqueMeetLocation: String
     location: UpdateLocationInput
     meetLocation: UpdateLocationInput
 
-    recurring: Boolean
+    checkoutTime: String
     day: WEEK_DAY
     distance: Int
 
-    shakedown: Boolean
+    published: Boolean!
   }
 
   input UpdateEventInput {
-    type: EVENT_TYPES!
+    type: EVENT_TYPES
     invited: [AddRosterInput]
-    creator: UpdateUserInput
-    published: Boolean
+    attending: [AddRosterInput]
 
     title: String!
     description: String
+
     date: String!
-    endDate: String
     startTime: String!
     uniqueMeetLocation: String
     meetTime: String
     leaveTime: String
     endTime: String
+    endDate: String
     pickupTime: String
 
     location: UpdateLocationInput
     meetLocation: UpdateLocationInput
 
-    recurring: Boolean
+    checkoutTime: String
     day: WEEK_DAY
     distance: Int
 
-    shakedown: Boolean
+    published: Boolean
   }
 
   input AddHikeInput {
@@ -251,7 +252,6 @@ export const typeDefs = gql`
     pickupTime: String
     startDate: String
     endDate: String
-    shakedown: Boolean
     day: WEEK_DAY
     numWeeksRepeat: Int
     troop: ID
@@ -370,15 +370,22 @@ export const resolvers = {
         };
       }
 
-      const newEvent = await Event.findOneAndUpdate({ _id: id }, newVals, {
+      await Event.updateOne({ _id: id }, newVals, {
         new: true,
       });
-      sendNotifications(tokens, `${newEvent.title} event has been updated!`, {
-        type: "event",
-        eventType: newEvent.type,
-        ID: newEvent.id,
-      });
-      return newEvent;
+
+      const updatedEvent = await Event.findById(id);
+
+      sendNotifications(
+        tokens,
+        `${updatedEvent.title} event has been updated!`,
+        {
+          type: "event",
+          eventType: updatedEvent.type,
+          ID: updatedEvent.id,
+        }
+      );
+      return updatedEvent;
     }),
     deleteEvent: authenticated(
       async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
