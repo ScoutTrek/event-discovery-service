@@ -4,7 +4,7 @@ import { sendNotifications } from "../Notifications/Expo";
 
 const EventSchemas = require("./EventSchemas.json");
 
-const { gql } = require("apollo-server");
+const { gql } = require("apollo-server-express");
 const { authenticated } = require("../utils/Auth");
 const GraphQLJSON = require("graphql-type-json");
 

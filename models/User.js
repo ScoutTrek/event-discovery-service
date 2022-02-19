@@ -23,7 +23,8 @@ const userSchema = mongoose.Schema(
     },
     userPhoto: {
       type: String,
-      default: "https://picsum.photos/200/200",
+      default:
+        "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_250/v1645286759/ScoutTrek/DefaultProfile.png",
     },
     password: {
       type: String,

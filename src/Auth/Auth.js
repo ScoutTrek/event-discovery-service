@@ -1,4 +1,4 @@
-const { gql } = require("apollo-server");
+const { gql } = require("apollo-server-express");
 const validator = require("email-validator");
 
 export const typeDefs = gql`

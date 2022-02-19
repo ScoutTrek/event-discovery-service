@@ -1,4 +1,4 @@
-const { ApolloServer } = require("apollo-server");
+const { ApolloServer } = require("apollo-server-express");
 import cron from "node-cron";
 
 import {
@@ -109,8 +109,6 @@ const apolloServer = new ApolloServer({
       user,
     };
   },
-  introspection: true,
-  playground: true,
 });
 
 export default apolloServer;

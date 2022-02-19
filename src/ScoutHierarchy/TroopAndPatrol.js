@@ -1,4 +1,4 @@
-const { gql } = require("apollo-server");
+const { gql } = require("apollo-server-express");
 const { authenticated, authorized } = require("../utils/Auth");
 
 export const typeDefs = gql`
