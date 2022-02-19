@@ -1,5 +1,3 @@
-import { membership } from "../../models/TroopAndPatrol";
-
 import mongoose from "mongoose";
 const { gql } = require("apollo-server");
 const { authenticated, authorized } = require("../utils/Auth");
@@ -13,6 +11,15 @@ export const typeDefs = gql`
     SCOUT
     PARENT
     ADULT_VOLUNTEER
+  }
+
+  type Notification {
+    id: ID!
+    title: String!
+    type: String!
+    eventType: String!
+    eventID: ID!
+    createdAt: String!
   }
 
   type Membership {
@@ -49,6 +56,7 @@ export const typeDefs = gql`
     events: Event
     children: [String]
     userPhoto: String!
+    unreadNotifications: [Notification]
     noGroups: Boolean
   }
 
@@ -91,11 +99,17 @@ export const typeDefs = gql`
     deleteUser(id: ID!): User
     updateCurrUser(input: UpdateUserInput!): User
     deleteCurrUser: User
+    dismissNotification(id: ID!): Boolean!
   }
 `;
 
 export const resolvers = {
   Membership: {
+    id: (parent) => {
+      return parent._id;
+    },
+  },
+  Notification: {
     id: (parent) => {
       return parent._id;
     },
@@ -130,6 +144,13 @@ export const resolvers = {
       return otherGroups;
     },
     noGroups: async (parent) => !parent.groups.length,
+    unreadNotifications: async (parent) => {
+      if (parent?.unreadNotifications) {
+        return parent?.unreadNotifications;
+      } else {
+        return null;
+      }
+    },
   },
   Query: {
     user: authenticated(async (_, { id }, { User }) => await User.findById(id)),
@@ -142,7 +163,7 @@ export const resolvers = {
     addGroup: authenticated(async (_, { input }, { user, User, Troop }) => {
       const newGroupID = mongoose.Types.ObjectId();
 
-      if (input.role === "SCOUTMASTER" || input.role === "Scoutmaster") {
+      if (input.role === "SCOUTMASTER") {
         await Troop.findByIdAndUpdate(input.troop, {
           scoutMaster: user.id,
         });
@@ -184,5 +205,19 @@ export const resolvers = {
     deleteCurrUser: authenticated(
       async (_, { id }, { User }) => await User.findByIdAndDelete(id)
     ),
+    dismissNotification: authenticated(async (_, { id }, { user, User }) => {
+      await User.findById(user.id, function (err, doc) {
+        if (err) return false;
+
+        if (doc?.unreadNotifications) {
+          doc.unreadNotifications = doc.unreadNotifications.filter(
+            (notification) => notification.id !== id
+          );
+        }
+
+        doc.save();
+      });
+      return true;
+    }),
   },
 };

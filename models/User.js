@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
-import { membership } from "./TroopAndPatrol";
+import { membershipSchema } from "./TroopAndPatrol";
+import { notificationSchema } from "./Notification";
 
 const userSchema = mongoose.Schema(
   {
@@ -54,8 +55,9 @@ const userSchema = mongoose.Schema(
     birthday: {
       type: Date,
     },
-    groups: [membership],
+    groups: [membershipSchema],
     children: [String],
+    unreadNotifications: [notificationSchema],
     events: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 import { pointSchema } from "./Event";
 
-export const membership = new mongoose.Schema({
+export const membershipSchema = new mongoose.Schema({
   troopID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Troop",

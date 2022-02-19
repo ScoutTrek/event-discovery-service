@@ -286,6 +286,47 @@
       }
     ]
   },
+  "troop_meeting": {
+    "metaData": {
+      "eventID": "TROOP_MEETING",
+      "subtitle": "Plan out your activities for the week.",
+      "image": {
+        "uri": "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_600/v1582557266/ScoutTrek/ScoutBadgesImage.jpg"
+      }
+    },
+    "form": [
+      {
+        "fieldType": "location",
+        "fieldID": "location",
+        "title": "Location",
+        "questionText": "Where will your Troop meeting take place?"
+      },
+      {
+        "fieldType": "date",
+        "fieldID": "date",
+        "title": "Date",
+        "questionText": "When is the meeting?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "startTime",
+        "title": "Time",
+        "questionText": "What time does the meeting start?"
+      },
+      {
+        "fieldType": "time",
+        "fieldID": "endTime",
+        "title": "End Time",
+        "questionText": "Around when will the event be finished?"
+      },
+      {
+        "fieldType": "description",
+        "fieldID": "description",
+        "title": "Description",
+        "questionText": "What additional information do you want everyone to know about this event?"
+      }
+    ]
+  },
   "bike_ride": {
     "metaData": {
       "eventID": "BIKE_RIDE",

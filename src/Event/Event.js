@@ -5,7 +5,7 @@ import { sendNotifications } from "../Notifications/Expo";
 const EventSchemas = require("./EventSchemas.json");
 
 const { gql } = require("apollo-server");
-const { authenticated, authorized } = require("../utils/Auth");
+const { authenticated } = require("../utils/Auth");
 const GraphQLJSON = require("graphql-type-json");
 
 export const weekDays = {
@@ -34,16 +34,6 @@ export const getInitialDate = (target, current) => {
 export const typeDefs = gql`
   scalar JSON
 
-  enum WEEK_DAY {
-    Sunday
-    Monday
-    Tuesday
-    Wednesday
-    Thursday
-    Friday
-    Saturday
-  }
-
   enum EVENT_TYPES {
     AQUATIC_EVENT
     BACKPACK_TRIP
@@ -57,7 +47,7 @@ export const typeDefs = gql`
     FISHING_TRIP
     FLAG_RETIREMENT
     FUNDRAISER
-    GROUP_MEETING
+    TROOP_MEETING
     HIKE
     KAYAK_TRIP
     MERIT_BADGE_CLASS
@@ -67,14 +57,6 @@ export const typeDefs = gql`
     SPECIAL_EVENT
     SUMMER_CAMP
     SWIM_TEST
-  }
-
-  type Message {
-    _id: ID!
-    text: String
-    image: String
-    createdAt: String!
-    user: User!
   }
 
   # not currently in use
@@ -119,10 +101,9 @@ export const typeDefs = gql`
     meetLocation: Location
 
     checkoutTime: String
-    day: WEEK_DAY
     distance: Int
 
-    published: Boolean!
+    published: Boolean
     creator: User
   }
 
@@ -131,7 +112,7 @@ export const typeDefs = gql`
     invited: [AddRosterInput]
     attending: [AddRosterInput]
 
-    title: String!
+    title: String
     description: String
 
     date: String!
@@ -147,10 +128,9 @@ export const typeDefs = gql`
     meetLocation: UpdateLocationInput
 
     checkoutTime: String
-    day: WEEK_DAY
     distance: Int
 
-    published: Boolean!
+    published: Boolean
   }
 
   input UpdateEventInput {
@@ -174,88 +154,9 @@ export const typeDefs = gql`
     meetLocation: UpdateLocationInput
 
     checkoutTime: String
-    day: WEEK_DAY
     distance: Int
 
     published: Boolean
-  }
-
-  input AddHikeInput {
-    title: String!
-    description: String!
-    datetime: String!
-    meetTime: String
-    leaveTime: String
-    endDatetime: String
-    pickupTime: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    distance: Int
-    troop: ID
-    patrol: ID
-  }
-
-  input AddBikeRideInput {
-    title: String!
-    description: String!
-    datetime: String!
-    meetTime: String
-    leaveTime: String
-    endDatetime: String
-    pickupTime: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    distance: Int
-    troop: ID
-    patrol: ID
-  }
-
-  input AddCanoeingInput {
-    title: String!
-    description: String!
-    datetime: String!
-    meetTime: String
-    leaveTime: String
-    endDatetime: String
-    pickupTime: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    troop: ID
-    patrol: ID
-  }
-
-  input AddCampoutInput {
-    title: String!
-    description: String!
-    datetime: String
-    meetTime: String
-    leaveTime: String
-    endDatetime: String!
-    pickupTime: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    numDays: Int
-    # Add a packing list
-    troop: ID
-    patrol: ID
-  }
-
-  input AddScoutMeetingInput {
-    title: String
-    description: String
-    location: AddLocationInput
-    meetLocation: AddLocationInput
-    datetime: String!
-    meetTime: String
-    leaveTime: String
-    endTime: String
-    pickupTime: String
-    startDate: String
-    endDate: String
-    day: WEEK_DAY
-    numWeeksRepeat: Int
-    troop: ID
-    patrol: ID
   }
 
   type Location {
@@ -279,13 +180,11 @@ export const typeDefs = gql`
   extend type Query {
     events(first: Int, skip: Int): [Event]
     event(id: ID!): Event
-    messages(id: ID!): [Message]
     eventSchemas: JSON
   }
 
   extend type Mutation {
     addEvent(input: AddEventInput!): Event
-
     updateEvent(input: UpdateEventInput, id: ID!): Event
     deleteEvent(id: ID!): Event
   }
@@ -346,13 +245,57 @@ export const resolvers = {
       }
     ),
     event: async (_, { id }, { Event }) => await Event.findById(id),
-    messages: async (_, { id }, { Event }) => {
-      const event = await Event.findById(id);
-      return event.messages;
-    },
     eventSchemas: () => EventSchemas,
   },
   Mutation: {
+    deleteEvent: authenticated(
+      async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
+    ),
+    addEvent: authenticated(
+      async (_, { input }, { Event, user, tokens, currMembership }) => {
+        if (input.type === "TROOP_MEETING") {
+          input.title = "Troop Meeting";
+        }
+
+        // combines the event date and time into one date object
+        // could be turned into a utility function in the future
+        let startDatetime = new Date(input?.meetTime || input?.startTime);
+        const eventDate = new Date(input?.date);
+        startDatetime.setMonth(eventDate.getMonth());
+        startDatetime.setDate(eventDate.getDate());
+        const mutationObject = {
+          ...input,
+          troop: currMembership?.troopID,
+          patrol: currMembership?.patrolID,
+          creator: user.id,
+          notification: startDatetime - 86400000,
+        };
+
+        if (input.location) {
+          mutationObject.location = {
+            type: "Point",
+            coordinates: [input.location.lng, input.location.lat],
+            address: input.location.address,
+          };
+        }
+        if (input.meetLocation) {
+          mutationObject.meetLocation = {
+            type: "Point",
+            coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+            address: input.meetLocation.address,
+          };
+        }
+
+        const event = await Event.create(mutationObject);
+
+        sendNotifications(
+          tokens,
+          `${input.title} event has been created. See details.`,
+          { type: "event", eventType: event.type, ID: event.id }
+        );
+        return event;
+      }
+    ),
     updateEvent: authenticated(async (_, { input, id }, { Event, tokens }) => {
       const newVals = { ...input };
       if (input.location) {
@@ -387,84 +330,5 @@ export const resolvers = {
       );
       return updatedEvent;
     }),
-    deleteEvent: authenticated(
-      async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
-    ),
-    addEvent: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembership }) => {
-        // combines the event date and time into one date object
-        // could be turned into a utility function in the future
-        let startDatetime = new Date(input?.meetTime || input?.startTime);
-        const eventDate = new Date(input?.date);
-        startDatetime.setMonth(eventDate.getMonth());
-        startDatetime.setDate(eventDate.getDate());
-        const mutationObject = {
-          ...input,
-          troop: currMembership?.troopID,
-          patrol: currMembership?.patrolID,
-          creator: user.id,
-          notification: startDatetime - 86400000,
-        };
-
-        if (input.location) {
-          mutationObject.location = {
-            type: "Point",
-            coordinates: [input.location.lng, input.location.lat],
-            address: input.location.address,
-          };
-        }
-        if (input.meetLocation) {
-          mutationObject.meetLocation = {
-            type: "Point",
-            coordinates: [input.meetLocation.lng, input.meetLocation.lat],
-            address: input.meetLocation.address,
-          };
-        }
-
-        const event = await Event.create(mutationObject);
-        sendNotifications(
-          tokens,
-          `${input.title} event has been created. See details.`,
-          { type: "event", eventType: event.type, ID: event.id }
-        );
-        return event;
-      }
-    ),
-
-    // addScoutMeeting: authenticated(
-    //   async (_, { input }, { Event, user, membershipIDString }) => {
-    //     for (let i = 0; i < +input.numWeeksRepeat; i++) {
-    //       const d = new Date();
-    //       d.setDate(d.getDate() + 7 * i);
-    //       d.setDate(
-    //         d.getDate() + getInitialDate(weekDays[input.day], d.getDay())
-    //       );
-    //       const datetime = new Date(
-    //         `${moment(d).format("MMMM D, YYYY")} ${moment(
-    //           input.datetime
-    //         ).format("hh:mm:ss a")}`
-    //       );
-    //       const troopMeetingMutation = {
-    //         ...input,
-    //         type: "TroopMeeting",
-    //         creator: user.id,
-    //         troop: user.groups.find(
-    //           (membership) => membership.troop === membershipIDString
-    //         ),
-    //         patrol: user.patrol,
-    //         title: `Troop Meeting`,
-    //         datetime,
-    //         location: {
-    //           type: "Point",
-    //           coordinates: [input.location.lng, input.location.lat],
-    //           address: input.location.address,
-    //         },
-    //         notification: new Date(datetime) - 86400000,
-    //       };
-    //       await Event.create(troopMeetingMutation);
-    //     }
-    //     return;
-    //   }
-    // ),
   },
 };

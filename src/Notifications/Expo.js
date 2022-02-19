@@ -1,16 +1,15 @@
 import { Expo } from "expo-server-sdk";
+import User from "../../models/User";
 let expo = new Expo();
 
 // fill messages
-
-export const getTokens = async (Troop, User, user) => {
-  const tokens = [];
+export const getUserNotificationData = async (Troop, User, troopID) => {
+  const userData = [];
 
   let troop;
-  
 
-  if (user) {
-    troop = await Troop.findById(user.troop);
+  if (troopID) {
+    troop = await Troop.findById(troopID);
   }
 
   if (troop) {
@@ -18,16 +17,16 @@ export const getTokens = async (Troop, User, user) => {
       (patrol) => patrol.members.length
     );
 
-    const functionWithPromise = (user) => {
+    const addToUserData = (user) => {
       if (user && user.expoNotificationToken) {
-        tokens.push(user.expoNotificationToken);
+        userData.push({ token: user.expoNotificationToken, userID: user.id });
       }
       return Promise.resolve("ok");
     };
 
     const getUser = async (member) => {
       const user = await User.findById(member);
-      return functionWithPromise(user);
+      return addToUserData(user);
     };
 
     await Promise.all(
@@ -37,19 +36,45 @@ export const getTokens = async (Troop, User, user) => {
     );
   }
 
-  return tokens;
+  return userData;
 };
 
-export const sendNotifications = (somePushTokens, body, data) => {
+export const sendNotifications = async (userData, body, data) => {
   let messages = [];
-  for (let pushToken of somePushTokens) {
-    if (!Expo.isExpoPushToken(pushToken)) {
-      console.error(`Push token ${pushToken} is not a valid Expo push token`);
+  for (let user of userData) {
+    const { userID, token } = user;
+
+    let notificationData;
+
+    await User.findById(userID, function (err, doc) {
+      if (err) return false;
+      const notification = {
+        title: body,
+        type: data.type,
+        eventType: data.eventType,
+        eventID: data.ID,
+      };
+
+      let index;
+      if (doc?.unreadNotifications) {
+        index = doc.unreadNotifications.push(notification);
+      } else {
+        doc.unreadNotifications = [notification];
+      }
+
+      doc.save();
+      notificationData = doc.unreadNotifications[index - 1];
+    });
+
+    data = { ...data, notificationID: notificationData._id };
+
+    if (!Expo.isExpoPushToken(token)) {
+      console.error(`Push token ${token} is not a valid Expo push token`);
       continue;
     }
 
     messages.push({
-      to: pushToken,
+      to: token,
       sound: "default",
       vibrate: true,
       body,
@@ -63,7 +88,6 @@ export const sendNotifications = (somePushTokens, body, data) => {
     for (let chunk of chunks) {
       try {
         let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-        // console.log(ticketChunk);
         tickets.push(...ticketChunk);
       } catch (error) {
         console.error(error);

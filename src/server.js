@@ -26,7 +26,10 @@ import Troop from "../models/TroopAndPatrol";
 
 import * as authFns from "./utils/Auth";
 import mongoose from "mongoose";
-import { getTokens, sendNotifications } from "./Notifications/Expo.js";
+import {
+  getUserNotificationData,
+  sendNotifications,
+} from "./Notifications/Expo.js";
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
   useCreateIndex: true,
@@ -47,7 +50,7 @@ cron.schedule("* * * * *", async () => {
   });
   if (oneDayReminderEvents !== []) {
     oneDayReminderEvents.map(async (event) => {
-      const tokens = await getTokens(Troop, User, { troop: event.troop });
+      const tokens = await getUserNotificationData(Troop, User, event.troop);
       sendNotifications(
         tokens,
         `Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`,
@@ -90,7 +93,9 @@ const apolloServer = new ApolloServer({
       });
     }
 
-    const tokens = await getTokens(Troop, User, user);
+    const tokens = currMembership
+      ? await getUserNotificationData(Troop, User, currMembership.troopID)
+      : null;
 
     return {
       User,
