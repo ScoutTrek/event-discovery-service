@@ -83,7 +83,8 @@ export const typeDefs = gql`
 export const resolvers = {
   Troop: {},
   Patrol: {
-    troop: async (_, __, { Troop, user }) => await Troop.findById(user.troop),
+    troop: async (_, __, { Troop, currMembership }) =>
+      await Troop.findById(currMembership.troopID),
     members: async (parent, __, { User }) => {
       const members = await User.find().where("_id").in(parent.members);
       return members;
@@ -100,24 +101,24 @@ export const resolvers = {
     troop: async (_, { limit, skip, id }, { Troop }) =>
       await Troop.findById(id, null, { limit, skip }),
     currTroop: authenticated(
-      async (_, __, { Troop, user }) =>
-        await Troop.findById(user.troop, null, { limit, skip })
+      async (_, __, { Troop, currMembership }) =>
+        await Troop.findById(currMembership.troopID, null, { limit, skip })
     ),
-    patrols: async (_, __, { Troop, user }) => {
-      const myTroop = await Troop.findById(user.troop);
+    patrols: async (_, __, { Troop, currMembership }) => {
+      const myTroop = await Troop.findById(currMembership.troopID);
       return myTroop.patrols;
     },
     patrolsOfTroop: async (_, { id }, { Troop }) => {
       const myTroop = await Troop.findById(id);
       return myTroop.patrols;
     },
-    patrol: async (_, { id }, { Troop, user }) => {
-      const myTroop = await Troop.findById(user.troop);
+    patrol: async (_, { id }, { Troop, currMembership }) => {
+      const myTroop = await Troop.findById(currMembership.troopID);
       return myTroop.patrols.id(id);
     },
-    currPatrol: authenticated(async (_, __, { Troop, user }) => {
-      const myTroop = await Troop.findById(user.troop);
-      return myTroop.patrols.id(user.patrol);
+    currPatrol: authenticated(async (_, __, { Troop, currMembership }) => {
+      const myTroop = await Troop.findById(currMembership.troopID);
+      return myTroop.patrols.id(currMembership.patrolID);
     }),
   },
 
@@ -135,34 +136,44 @@ export const resolvers = {
       return troop.patrols[troop.patrols.length - 1];
     },
     updatePatrol: authenticated(
-      authorized("PATROL_LEADER", async (_, { id, input }, { Troop, user }) => {
-        const troop = await Troop.findById(user.troop);
-        const patrol = troop.patrols.id(id);
+      authorized(
+        "PATROL_LEADER",
+        async (_, { id, input }, { Troop, currMembership }) => {
+          const troop = await Troop.findById(currMembership.troopID);
+          const patrol = troop.patrols.id(id);
+          const index = troop.patrols.indexOf(patrol);
+          const updatedPatrol = { ...patrol, ...input };
+          troop.patrols[index] = updatedPatrol;
+          return await troop.save();
+        }
+      )
+    ),
+    deletePatrol: authenticated(
+      authorized(
+        "PATROL_LEADER",
+        async (_, { id }, { Troop, currMembership }) => {
+          // Not tested because I don't have very much data in the DB yet.
+          const troop = await Troop.findById(currMembership.troopID);
+          return troop.patrols.id(id).remove();
+        }
+      )
+    ),
+    updateCurrPatrol: authenticated(
+      async (_, { input }, { Troop, currMembership }) => {
+        const troop = await Troop.findById(currMembership.troopID);
+        const patrol = troop.patrols.id(currMembership.patrolID);
         const index = troop.patrols.indexOf(patrol);
         const updatedPatrol = { ...patrol, ...input };
         troop.patrols[index] = updatedPatrol;
         return await troop.save();
-      })
+      }
     ),
-    deletePatrol: authenticated(
-      authorized("PATROL_LEADER", async (_, { id }, { Troop }) => {
+    deleteCurrPatrol: authenticated(
+      async (_, __, { Troop, currMembership }) => {
         // Not tested because I don't have very much data in the DB yet.
-        const troop = await Troop.findById(user.troop);
-        return troop.patrols.id(id).remove();
-      })
+        const troop = await Troop.findById(currMembership.troopID);
+        return troop.patrols.id(user.patrol).remove();
+      }
     ),
-    updateCurrPatrol: authenticated(async (_, { input }, { Troop, user }) => {
-      const troop = await Troop.findById(user.troop);
-      const patrol = troop.patrols.id(user.patrol);
-      const index = troop.patrols.indexOf(patrol);
-      const updatedPatrol = { ...patrol, ...input };
-      troop.patrols[index] = updatedPatrol;
-      return await troop.save();
-    }),
-    deleteCurrPatrol: authenticated(async (_, __, { Troop, user }) => {
-      // Not tested because I don't have very much data in the DB yet.
-      const troop = await Troop.findById(user.troop);
-      return troop.patrols.id(user.patrol).remove();
-    }),
   },
 };

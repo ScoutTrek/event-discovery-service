@@ -6,7 +6,7 @@ const { Storage } = require("@google-cloud/storage");
 
 const gcs = new Storage();
 
-const bucketName = "profile_pictures";
+const bucketName = process.env.GCLOUD_STORAGE_BUCKET;
 const bucket = gcs.bucket(bucketName);
 
 function getPublicUrl(filename) {
@@ -38,7 +38,7 @@ export const typeDefs = gql`
 export const resolvers = {
   Upload: GraphQLUpload,
   Mutation: {
-    uploadImage: authenticated(async (_, { file }, __) => {
+    uploadImage: authenticated(async (_, { file }, { user, User }) => {
       const { createReadStream, filename, mimetype } = await file;
 
       const newFile = bucket.file(filename);
@@ -57,7 +57,14 @@ export const resolvers = {
           .on("error", (err) => rejects(err)) // reject on error
           .on("finish", resolves)
       );
-      return getPublicUrl(filename);
+
+      const newPhoto = getPublicUrl(filename);
+
+      await User.findByIdAndUpdate(user.id, {
+        userPhoto: newPhoto,
+      });
+
+      return newPhoto;
     }),
   },
 };

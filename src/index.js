@@ -1,7 +1,5 @@
 const express = require("express");
-const {
-  graphqlUploadExpress, // A Koa implementation is also exported.
-} = require("graphql-upload");
+const { graphqlUploadExpress } = require("graphql-upload");
 import server from "./server";
 
 async function startServer() {
@@ -14,8 +12,9 @@ async function startServer() {
 
   server.applyMiddleware({ app });
 
-  await new Promise((r) => app.listen({ port: 4000 }, r));
+  const port = process.env.PORT || 4000;
 
+  await new Promise((resolve) => app.listen({ port }, resolve));
   console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
 }
 

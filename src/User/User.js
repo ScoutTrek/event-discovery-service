@@ -163,11 +163,18 @@ export const resolvers = {
     addGroup: authenticated(async (_, { input }, { user, User, Troop }) => {
       const newGroupID = mongoose.Types.ObjectId();
 
-      if (input.role === "SCOUTMASTER") {
-        await Troop.findByIdAndUpdate(input.troop, {
-          scoutMaster: user.id,
-        });
-      }
+      await Troop.findById(input.troopID, function (err, doc) {
+        if (input.role === "SCOUTMASTER") {
+          doc.scoutMaster = user.id;
+        }
+        if (input.patrolID) {
+          const currPatrol = doc.patrols.find(
+            (patrol) => patrol.id === input.patrolID
+          );
+          currPatrol.members.push(user.id);
+        }
+        doc.save();
+      });
 
       await User.findById(user.id, function (err, doc) {
         if (err) return false;
@@ -176,6 +183,7 @@ export const resolvers = {
         doc.groups.push({ _id: newGroupID, ...membershipDetails });
         doc.save();
       });
+
       return {
         groupID: newGroupID,
       };

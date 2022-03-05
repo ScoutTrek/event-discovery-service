@@ -58,7 +58,10 @@ const userSchema = mongoose.Schema(
     },
     groups: [membershipSchema],
     children: [String],
-    unreadNotifications: [notificationSchema],
+    unreadNotifications: {
+      type: [notificationSchema],
+      default: [],
+    },
     events: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -55,13 +55,7 @@ export const sendNotifications = async (userData, body, data) => {
         eventID: data.ID,
       };
 
-      let index;
-      if (doc?.unreadNotifications) {
-        index = doc.unreadNotifications.push(notification);
-      } else {
-        doc.unreadNotifications = [notification];
-      }
-
+      let index = doc.unreadNotifications.push(notification);
       doc.save();
       notificationData = doc.unreadNotifications[index - 1];
     });
