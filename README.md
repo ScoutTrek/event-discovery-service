@@ -1,10 +1,14 @@
-# scouttrek-dynamic-api
+# ScoutTrek API
 
-Apollo GraphQL schema for Boy and Girls scout troops, patrols, users, and custom event types. 
+Apollo GraphQL schema for Boy and Girls Scout Troops to create custom events. 
 
-Tech stack:
+* Create common events such as camping, hiking, and backpacking based on ScoutTrek templates
+* Create custom event templates for your Troop and allow authorized users like Patrol Leaders to create those event types
+* Store, update, and send notifcations based on the latest changes to events, ensuring all users are up to date
+
+
+## Tech
+
 * Apollo Server
 * Mongoose + Atlas MongoDB Database
 * Google Cloud App Engine
-
-(Custom event types not yet active, therefore the GraphQL schema is complete but temporarily static. When the web console for ScoutTrek is active I will update the dynamic GraphQL schema.)
