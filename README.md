@@ -1,6 +1,6 @@
 # ScoutTrek API
 
-Apollo GraphQL schema for Boy and Girls Scout Troops to create custom events. 
+## Apollo GraphQL schema for Boy and Girls Scout Troops to create custom events
 
 * Create common events such as camping, hiking, and backpacking based on ScoutTrek templates
 * Create custom event templates for your Troop and allow authorized users like Patrol Leaders to create those event types
