@@ -39,7 +39,7 @@
     "jest": "^25.3.0",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.0.0",
-    "moment": "^2.27.0",
+    "moment": "^2.29.4",
     "mongoose": "^5.12.10",
     "node": "^14.0.0",
     "node-cron": "^2.0.3",
