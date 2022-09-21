@@ -1,14 +1,10 @@
 const express = require("express");
-const { graphqlUploadExpress } = require("graphql-upload");
 import server from "./server";
 
 async function startServer() {
   await server.start();
 
   const app = express();
-
-  // This middleware should be added before calling `applyMiddleware`.
-  app.use(graphqlUploadExpress());
 
   server.applyMiddleware({ app });
 

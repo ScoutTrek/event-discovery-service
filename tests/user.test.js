@@ -1,5 +1,4 @@
 require("@babel/register");
-require("@babel/polyfill/noConflict");
 
 // Models
 import User from "../models/User";

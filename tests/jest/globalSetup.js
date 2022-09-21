@@ -1,5 +1,4 @@
 require("@babel/register");
-require("@babel/polyfill/noConflict");
 require("dotenv").config();
 
 const server = require("../../src/server").default;

@@ -30,13 +30,7 @@ import {
   getUserNotificationData,
   sendNotifications,
 } from "./Notifications/Expo.js";
-mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
-  useFindAndModify: true,
-});
-mongoose.set("useFindAndModify", true);
+mongoose.connect(process.env.MONGO_URL);
 
 const mongo = mongoose.connection;
 mongo.on("error", console.error.bind(console, "connection error:"));
