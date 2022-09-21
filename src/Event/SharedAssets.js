@@ -1,5 +1,4 @@
 const { gql } = require("apollo-server-express");
-const { GraphQLUpload } = require("graphql-upload");
 const { authenticated, authorized } = require("../utils/Auth");
 
 const { Storage } = require("@google-cloud/storage");
@@ -36,7 +35,6 @@ export const typeDefs = gql`
 `;
 
 export const resolvers = {
-  Upload: GraphQLUpload,
   Mutation: {
     uploadImage: authenticated(async (_, { file }, { user, User }) => {
       const { createReadStream, filename, mimetype } = await file;
