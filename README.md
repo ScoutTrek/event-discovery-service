@@ -20,4 +20,4 @@
 3. Reach out to a ScoutTrek developer for MongoDB and Google Cloud invite 
 4. In the terminal, run `yarn install`
 5. Run `yarn start` to start the server
-6. Make sure you have `ScoutTrek-Frontend` set up as well
+6. Make sure you have `ScoutTrek-Frontend` set up as well -- see the [readme](https://github.com/sandboxnu/ScoutTrek-Frontend#readme) to begin developing
