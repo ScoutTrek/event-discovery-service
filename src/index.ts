@@ -1,4 +1,4 @@
-const express = require("express");
+import express from "express";
 import server from "./server";
 
 async function startServer() {
@@ -10,7 +10,11 @@ async function startServer() {
 
   const port = process.env.PORT || 4000;
 
-  await new Promise((resolve) => app.listen({ port }, resolve));
+  // await new Promise((resolve) => app.listen({ port }, resolve(port)));
+  await new Promise((resolve) => {
+    const serverResponse = app.listen(port);
+    resolve(serverResponse);
+  });
   console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
 }
 
