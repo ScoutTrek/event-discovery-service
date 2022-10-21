@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"target": "ES6",
-		"module": "CommonJS",
+		// "target": "ES6",
+		// "module": "CommonJS",
 		"esModuleInterop": true,
 		"allowJs": true,
 		"allowSyntheticDefaultImports": true,
@@ -13,7 +13,14 @@
 		"noUncheckedIndexedAccess": true,
 		"baseUrl": "./",
 		"typeRoots": ["node_modules/@types"],
-		"outDir": "dist"
+		"outDir": "dist",
+
+		// Ensure that .d.ts files are created by tsc, but not .js files
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		// Ensure that Babel can safely transpile files in the TypeScript project
+		"isolatedModules": true
+
 		// "strictPropertyInitialization": true,
 		// "noImplicitThis": true
 	},
