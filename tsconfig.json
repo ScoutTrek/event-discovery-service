@@ -2,17 +2,22 @@
 	"compilerOptions": {
 		"target": "ES6",
 		"module": "CommonJS",
-		"esModuleInterop": true
-		// "baseUrl": "./",
+		"esModuleInterop": true,
+		"allowJs": true,
+		"allowSyntheticDefaultImports": true,
+		"moduleResolution": "node",
+		"strict": false,
+		"strictNullChecks": true,
+		"noImplicitAny": true,
+		"skipLibCheck": true,
+		"noUncheckedIndexedAccess": true,
+		"baseUrl": "./",
+		"typeRoots": ["node_modules/@types"]
+
 		// "outDir": "dist",
-		// "moduleResolution": "node"
-		// "strict": true,
-		// "strictNullChecks": true,
-		// "noImplicitAny": true,
 		// "strictPropertyInitialization": true,
 		// "noImplicitThis": true
 	},
-	"include": ["src/**/*"]
 	// "exclude": ["node_modules"]
-	// "include": ["src/**/*", "models/**/*", "test/**/*", "node_modules/@types"]
+	"include": ["src/**/*", "models/**/*", "test/**/*"]
 }

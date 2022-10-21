@@ -10,7 +10,7 @@ async function startServer() {
 
   const port = process.env.PORT || 4000;
 
-  // await new Promise((resolve) => app.listen({ port }, resolve(port)));
+  // await new Promise((resolve) => app.listen({ port }, resolve));
   await new Promise((resolve) => {
     const serverResponse = app.listen(port);
     resolve(serverResponse);
@@ -19,3 +19,5 @@ async function startServer() {
 }
 
 startServer();
+
+console.log("index");
