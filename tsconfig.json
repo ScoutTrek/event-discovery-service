@@ -12,9 +12,8 @@
 		"skipLibCheck": true,
 		"noUncheckedIndexedAccess": true,
 		"baseUrl": "./",
-		"typeRoots": ["node_modules/@types"]
-
-		// "outDir": "dist",
+		"typeRoots": ["node_modules/@types"],
+		"outDir": "dist"
 		// "strictPropertyInitialization": true,
 		// "noImplicitThis": true
 	},
