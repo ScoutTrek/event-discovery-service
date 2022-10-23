@@ -44,8 +44,6 @@ export const sendNotifications = (userData, body, data) => {
   for (let user of userData) {
     const { userID, token } = user;
 
-    let notificationData;
-
     User.findById(userID, function (err, doc) {
       if (err) return false;
       const notification = {
@@ -57,22 +55,21 @@ export const sendNotifications = (userData, body, data) => {
 
       let index = doc.unreadNotifications.push(notification);
       doc.save();
-      notificationData = doc.unreadNotifications[index - 1];
-    });
+      let notificationData = doc.unreadNotifications[index - 1];
 
-    data = { ...data, notificationID: notificationData._id };
+      data = { ...data, notificationID: notificationData._id };
 
-    if (!Expo.isExpoPushToken(token)) {
-      console.error(`Push token ${token} is not a valid Expo push token`);
-      continue;
-    }
-
-    messages.push({
-      to: token,
-      sound: "default",
-      vibrate: true,
-      body,
-      data,
+      if (!Expo.isExpoPushToken(token)) {
+        console.error(`Push token ${token} is not a valid Expo push token`);
+      } else {
+        messages.push({
+          to: token,
+          sound: "default",
+          vibrate: true,
+          body,
+          data,
+        });
+      }
     });
   }
 
