@@ -1,36 +1,26 @@
 import { Schema, Types, model } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
-import { membershipSchema } from "./TroopAndPatrol";
-import { notificationSchema } from "./Notification";
-import { type } from "os";
+import { membershipSchema, IMembership } from "./TroopAndPatrol";
+import { notificationSchema, INotification } from "./Notification";
 
 export interface IUser {
-  name: {
-    type: string,
-    required: Array<boolean|string>,
-    trim: boolean,
-  },
-  email: {
-    type: string,
-    required: Array<boolean | string>,
-    unique: boolean,
-    lowercase: boolean, 
-    validate: Array<boolean | string>,
-  }, 
-  userPhoto: {
-    type: string,
-    default: string,
-  },
-  password: {
-    type: string,
-    required: boolean,
-    minLength: number,
-    select: boolean,
-  }
+  name: string,
+  email: string, 
+  userPhoto: string,
+  password: string,
+  passwordConfirm?: string,
+  expoNotificationToken: string,
+  phone: string,
+  birthday: Date,
+  groups: Array<IMembership>,
+  unreadNotifications: Array<INotification>,
+  children: Array<StringConstructor>,
+  events: Array<any>,
+  noGroups: boolean,
 }
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -76,8 +66,8 @@ const userSchema = new mongoose.Schema(
         validator.isMobilePhone,
         "Please provide a valid phone number",
       ],
-      minlength: 10,
-      maxlength: 11,
+      minLength: 10,
+      maxLength: 11,
     },
     birthday: {
       type: Date,
@@ -90,7 +80,7 @@ const userSchema = new mongoose.Schema(
     },
     events: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: "Event",
       },
     ],
@@ -106,7 +96,7 @@ const userSchema = new mongoose.Schema(
 userSchema.virtual("age").get(function () {
   let n = Date.now();
   let d: Date = new Date(this.birthday ?? Date.now());
-  return Math.floor((n - d) / 1000 / 60 / 60 / 24 / 365);
+  return Math.floor((n - d.getTime()) / 1000 / 60 / 60 / 24 / 365);
 });
 
 userSchema.pre("save", async function (next) {
@@ -121,6 +111,6 @@ userSchema.methods.isValidPassword = async function (submittedPass: string, real
   return await bcrypt.compare(submittedPass, realPass);
 };
 
-const User = mongoose.model("User", userSchema);
+const User = model("User", userSchema);
 
 export default User;
