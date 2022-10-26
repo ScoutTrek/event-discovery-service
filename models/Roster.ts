@@ -1,25 +1,15 @@
 import { Schema, Types } from "mongoose";
 
 export interface IRoster {
-  groups: {
-    type: Types.ObjectId;
-    ref: string;
-    required: [boolean, string];
-  }[];
-  patrols: {
-    type: Types.ObjectId;
-    ref: string;
-  }[];
-  individuals: {
-    type: Types.ObjectId;
-    ref: string;
-  }[];
+  groups: Types.ObjectId[],
+  patrols?: Types.ObjectId[],
+  individuals?: Types.ObjectId[],
 }
 
 export const rosterSchema = new Schema<IRoster>({
   groups: [
     {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Troop",
       required: [
         true,
@@ -29,13 +19,13 @@ export const rosterSchema = new Schema<IRoster>({
   ],
   patrols: [
     {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Patrol",
     },
   ],
   individuals: [
     {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
     },
   ],

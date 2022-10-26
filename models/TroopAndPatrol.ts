@@ -1,35 +1,36 @@
 import { Schema, Types, model } from "mongoose";
-
 import { IPoint, pointSchema } from "./Event";
 
+export type Role = "SCOUTMASTER" | "ASST_SCOUTMASTER" | "SENIOR_PATROL_LEADER" | 
+"ASST_PATROL_LEADER" | "PATROL_LEADER" | "SCOUT" | "PARENT" | "ADULT_VOLUNTEER";
+
 export interface IMembership {
-  troopID: {
-    type: Types.ObjectId;
-    ref: string;
-  };
-  troopNumber: {
-    type: string;
-  };
-  patrolID: {
-    type: Types.ObjectId;
-    ref: string;
-  };
-  role: {
-    type: string;
-    enum: "SCOUTMASTER"
-    | "ASST_SCOUTMASTER"
-    | "SENIOR_PATROL_LEADER"
-    | "ASST_PATROL_LEADER"
-    | "PATROL_LEADER"
-    | "SCOUT"
-    | "PARENT"
-    | "ADULT_VOLUNTEER";
-  }
+  troopID?: Types.ObjectId,
+  troopNumber?: string,
+  patrolID?: Types.ObjectId,
+  role?: Role,
+}
+
+export interface IPatrol {
+  name: string,
+  members?: Types.ObjectId[],
+  events?: Types.ObjectId[],
+}
+
+export interface ITroop {
+  council: string,
+  state: string,
+  unitNumber: number,
+  city?: string,
+  scoutMaster?: string,
+  meetLocation?: IPoint,
+  patrols?: IPatrol[],
+  events?: Types.ObjectId
 }
 
 export const membershipSchema = new Schema<IMembership>({
   troopID: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Troop",
   },
   troopNumber: {
@@ -54,21 +55,6 @@ export const membershipSchema = new Schema<IMembership>({
   },
 });
 
-export interface IPatrol {
-  name: {
-    type: string;
-    required: boolean;
-  };
-  members: {
-    type: Types.ObjectId[];
-    ref: string;
-  };
-  events: {
-    type: Types.ObjectId[];
-    ref: string;
-  };
-}
-
 const patrolSchema = new Schema<IPatrol>({
   name: {
     type: String,
@@ -89,29 +75,6 @@ const patrolSchema = new Schema<IPatrol>({
     timestamps: true,
   }
 );
-
-export interface ITroop {
-  council: {
-    type: string;
-    required: boolean;
-  };
-  state: {
-    type: string;
-    required: boolean;
-  };
-  unitNumber: {
-    type: number;
-    required: boolean;
-  };
-  city: string;
-  scoutMaster: string;
-  meetLocation: IPoint;
-  patrols: IPatrol[];
-  events: {
-    type: Types.ObjectId;
-    ref: string;
-  };
-}
 
 const troopSchema = new Schema<ITroop>({
   council: {

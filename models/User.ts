@@ -10,14 +10,14 @@ export interface IUser {
   userPhoto: string,
   password: string,
   passwordConfirm?: string,
-  expoNotificationToken: string,
+  expoNotificationToken?: string,
   phone: string,
-  birthday: Date,
-  groups: Array<IMembership>,
-  unreadNotifications: Array<INotification>,
-  children: Array<StringConstructor>,
-  events: Array<any>,
-  noGroups: boolean,
+  birthday?: Date,
+  groups?: IMembership[],
+  unreadNotifications?: INotification[],
+  children?: StringConstructor[],
+  events?: Types.ObjectId[],
+  noGroups?: boolean,
 }
 
 const userSchema = new Schema<IUser>(
@@ -80,7 +80,7 @@ const userSchema = new Schema<IUser>(
     },
     events: [
       {
-        type: Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "Event",
       },
     ],

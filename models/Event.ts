@@ -1,19 +1,50 @@
-import { Schema, Types, model, StringExpression } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 import { IRoster, rosterSchema } from "./Roster";
 
+export type Day = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+
 export interface IPoint {
-  type: {
-    type: string;
-    enum: string[];
-    required: boolean;
-  },
-  coordinates: {
-    type: number[];
-    required: boolean;
-  },
-  address: {
-    type: string;
-  }
+  type: string,
+  coordinates: Array<number>,
+  address?: string,
+}
+
+export interface IMessageUser {
+  name: string,
+}
+
+export interface IMessage {
+  text?: string,
+  image?: string,
+  createdAt?: Date,
+  user?: IMessageUser,
+}
+
+interface IEvent {
+  type: string,
+  troop: Types.ObjectId, 
+  patrol: Types.ObjectId, 
+  title: string,
+  description?: string,
+  date: Date,
+  endDate?: Date,
+  startTime?: Date,
+  uniqueMeetLocation?: string,
+  meetTime?: Date,
+  leaveTime?: Date,
+  pickupTime?: Date,
+  endTime?: Date,
+  location?: IPoint,
+  meetLocation?: IPoint,
+  messages?: IMessage[],
+  invited?: IRoster,
+  attending?: IRoster,
+  day?: Day;
+  distance?: number,
+  shakedown?: boolean,
+  published?: boolean,
+  creator?: Types.ObjectId, 
+  notification?: Date,
 }
 
 export const pointSchema = new Schema<IPoint>({
@@ -31,33 +62,12 @@ export const pointSchema = new Schema<IPoint>({
   },
 });
 
-export interface IMessageUser {
-  name: {
-    type: string;
-    required: boolean
-  }
-}
-
 export const messageUserSchema = new Schema<IMessageUser>({
   name: {
     type: String,
     required: true,
   },
 });
-
-export interface IMessage {
-  text: {
-    type: string;
-  },
-  image: {
-    type: string;
-  },
-  createdAt: {
-    type: Date;
-    default: number;
-  },
-  user: IMessageUser;
-}
 
 export const messageSchema = new Schema<IMessage>({
   text: {
@@ -73,71 +83,18 @@ export const messageSchema = new Schema<IMessage>({
   user: messageUserSchema,
 });
 
-interface IEvent {
-  type: {
-    type: string;
-    required: boolean;
-  };
-  troop: {
-    type: Types.ObjectId;
-    ref: string;
-    required: boolean;
-  };
-  patrol: {
-    type: Types.ObjectId;
-    ref: string;
-    required: boolean;
-  };
-  title: {
-    type: string;
-    required: [boolean, string];
-  };
-  description: string;
-  date: Date;
-  endDate: Date;
-  startTime: Date;
-  uniqueMeetLocation: string;
-  meetTime: Date;
-  leaveTime: Date;
-  pickupTime: Date;
-  endTime: Date;
-  location: IPoint;
-  meetLocation: IPoint;
-  messages: IMessage[];
-  invited: IRoster;
-  attending: IRoster;
-  day: {
-    type: string;
-    enum: "Monday"
-    | "Tuesday"
-    | "Wednesday"
-    | "Thursday"
-    | "Friday"
-    | "Saturday"
-    | "Sunday";
-  };
-  distance: number;
-  shakedown: boolean;
-  published: boolean;
-  creator: {
-    type: Types.ObjectId;
-    ref: string;
-  };
-  notification: Date;
-}
-
 const eventSchema = new Schema<IEvent>({
   type: {
     type: String,
     required: true,
   },
   troop: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Troop",
     required: true,
   },
   patrol: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Patrol",
     required: true,
   },
@@ -176,7 +133,7 @@ const eventSchema = new Schema<IEvent>({
   shakedown: Boolean,
   published: Boolean,
   creator: {
-    type: Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "User",
   },
   notification: Date,

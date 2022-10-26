@@ -1,10 +1,10 @@
 import { Schema } from "mongoose";
 
 export interface INotification {
-  title: string;
-  type: string;
-  eventType: string;
-  eventID: string;
+  title?: string;
+  type?: string;
+  eventType?: string;
+  eventID?: string;
 }
 
 export const notificationSchema = new Schema<INotification>(
