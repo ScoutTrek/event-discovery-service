@@ -8,8 +8,8 @@
 		"test": "jest --watchAll"
 	},
 	"jest": {
-		"globalSetup": "./tests/jest/globalSetup.js",
-		"globalTeardown": "./tests/jest/globalTeardown.js",
+		"globalSetup": "./tests/jest/globalSetup.ts",
+		"globalTeardown": "./tests/jest/globalTeardown.ts",
 		"setupFiles": [
 			"dotenv/config"
 		]

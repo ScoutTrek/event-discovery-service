@@ -1,5 +1,8 @@
+// import '@babel/register';
+// import "dotenv"
 require("@babel/register");
 require("dotenv").config();
+
 
 const server = require("../../src/server").default;
 
@@ -10,3 +13,4 @@ export default () => {
     })
     .then(({ url }) => console.log(`Test server up and running at ${url}`));
 };
+
