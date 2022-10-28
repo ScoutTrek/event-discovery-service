@@ -1,4 +1,4 @@
-const hikeSchema = {
+export const hikeSchema = {
   metaData: {
     eventID: "hike",
     subtitle: "Plan a visit to the trail, let ScoutTrek take care of the rest.",
@@ -88,6 +88,3 @@ const hikeSchema = {
   ],
 };
 
-const parseJSONPayload = (eventDetailsString) => {
-  const eventDetails = JSON.stringify(eventDetailsString);
-};
