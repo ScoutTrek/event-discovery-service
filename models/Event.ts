@@ -152,6 +152,6 @@ eventSchema.virtual("time").get(function (this: IEvent) {
   return formattedDate;
 });
 
-const Event = model("Event", eventSchema);
+const Event = model<IEvent>("Event", eventSchema);
 
 export default Event;

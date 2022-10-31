@@ -105,7 +105,7 @@ const troopSchema = new Schema<ITroop>({
   }
 );
 
-export const Patrol = model("Patrol", patrolSchema);
-const Troop = model("Troop", troopSchema);
+export const Patrol = model<IPatrol>("Patrol", patrolSchema);
+const Troop = model<ITroop>("Troop", troopSchema);
 
 export default Troop;
