@@ -5,7 +5,7 @@ export type Day = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "
 
 export interface IPoint {
   type: string,
-  coordinates: Array<number>,
+  coordinates: Types.Array<number>,
   address?: string,
 }
 
@@ -36,7 +36,7 @@ interface IEvent {
   endTime?: Date,
   location?: IPoint,
   meetLocation?: IPoint,
-  messages?: IMessage[],
+  messages?: Types.DocumentArray<IMessage>,
   invited?: IRoster,
   attending?: IRoster,
   day?: Day;
@@ -111,7 +111,6 @@ const eventSchema = new Schema<IEvent>({
   leaveTime: Date,
   pickupTime: Date,
   endTime: Date,
-
   location: pointSchema,
   meetLocation: pointSchema,
   messages: [messageSchema],

@@ -24,8 +24,8 @@ export interface ITroop {
   city?: string,
   scoutMaster?: string,
   meetLocation?: IPoint,
-  patrols?: IPatrol[],
-  events?: Types.ObjectId
+  patrols?: Types.DocumentArray<IPatrol>,
+  events: Types.ObjectId[]
 }
 
 export const membershipSchema = new Schema<IMembership>({

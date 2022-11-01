@@ -13,9 +13,9 @@ export interface IUser {
   expoNotificationToken?: string,
   phone: string,
   birthday?: Date,
-  groups?: IMembership[],
-  unreadNotifications?: INotification[],
-  children?: StringConstructor[],
+  groups?: Types.DocumentArray<IMembership>,
+  unreadNotifications?: Types.DocumentArray<INotification>,
+  children?: string[],
   events?: Types.ObjectId[],
   noGroups?: boolean,
 }
