@@ -1,4 +1,5 @@
 import { Schema, Types } from "mongoose";
+import { createSchema } from "ts-mongoose";
 
 export interface IRoster {
   groups: Types.ObjectId[],
@@ -6,7 +7,7 @@ export interface IRoster {
   individuals?: Types.ObjectId[],
 }
 
-export const rosterSchema = new Schema<IRoster>({
+export const rosterSchema = createSchema({
   groups: [
     {
       type: Schema.Types.ObjectId,

@@ -1,123 +1,94 @@
 import { Schema, Types, model } from "mongoose";
+import { createSchema, Type, typedModel } from "ts-mongoose";
+import { Type } from "typescript";
 import { IRoster, rosterSchema } from "./Roster";
+import { patrolSchema, troopSchema } from "./TroopAndPatrol";
+import { userSchema } from "./User";
 
 export type Day = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
 
-export interface IPoint {
-  type: string,
-  coordinates: Types.Array<number>,
-  address?: string,
-}
+// export interface IPoint {
+//   type: string,
+//   coordinates: Types.Array<number>,
+//   address?: string,
+// }
 
-export interface IMessageUser {
-  name: string,
-}
+// export interface IMessageUser {
+//   name: string,
+// }
 
-export interface IMessage {
-  text?: string,
-  image?: string,
-  createdAt?: Date,
-  user?: IMessageUser,
-}
+// export interface IMessage {
+//   text?: string,
+//   image?: string,
+//   createdAt?: Date,
+//   user?: IMessageUser,
+// }
 
-interface IEvent {
-  type: string,
-  troop: Types.ObjectId, 
-  patrol: Types.ObjectId, 
-  title: string,
-  description?: string,
-  date: Date,
-  endDate?: Date,
-  startTime?: Date,
-  uniqueMeetLocation?: string,
-  meetTime?: Date,
-  leaveTime?: Date,
-  pickupTime?: Date,
-  endTime?: Date,
-  location?: IPoint,
-  meetLocation?: IPoint,
-  messages?: Types.DocumentArray<IMessage>,
-  invited?: IRoster,
-  attending?: IRoster,
-  day?: Day;
-  distance?: number,
-  shakedown?: boolean,
-  published?: boolean,
-  creator?: Types.ObjectId, 
-  notification?: Date,
-}
+// interface IEvent {
+//   type: string,
+//   troop: Types.ObjectId,
+//   patrol: Types.ObjectId,
+//   title: string,
+//   description?: string,
+//   date: Date,
+//   endDate?: Date,
+//   startTime?: Date,
+//   uniqueMeetLocation?: string,
+//   meetTime?: Date,
+//   leaveTime?: Date,
+//   pickupTime?: Date,
+//   endTime?: Date,
+//   location?: IPoint,
+//   meetLocation?: IPoint,
+//   messages?: Types.DocumentArray<IMessage>,
+//   invited?: IRoster,
+//   attending?: IRoster,
+//   day?: Day;
+//   distance?: number,
+//   shakedown?: boolean,
+//   published?: boolean,
+//   creator?: Types.ObjectId,
+//   notification?: Date,
+// }
 
-export const pointSchema = new Schema<IPoint>({
-  type: {
-    type: String,
-    enum: ["Point"],
-    required: true,
-  },
-  coordinates: {
-    type: [Number],
-    required: true,
-  },
-  address: {
-    type: String,
-  },
+export const pointSchema = createSchema({
+  type: Type.string({ required: true, enum: ["Point"] as const }),
+  coordinates: Type.array({ required: true }).of(Type.number()),
+  address: Type.string()
 });
 
-export const messageUserSchema = new Schema<IMessageUser>({
-  name: {
-    type: String,
-    required: true,
-  },
+export const messageUserSchema = createSchema({
+  name: Type.string({ required: true })
 });
 
-export const messageSchema = new Schema<IMessage>({
-  text: {
-    type: String,
-  },
-  image: {
-    type: String,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  user: messageUserSchema,
+export const messageSchema = createSchema({
+  text: Type.string(),
+  image: Type.string(),
+  // TODO: Date.now or Date.now()?
+  createdAt: Type.date({ default: Date.now }),
+  user: Type.schema().of(messageUserSchema)
 });
 
-const eventSchema = new Schema<IEvent>({
-  type: {
-    type: String,
-    required: true,
-  },
-  troop: {
-    type: Schema.Types.ObjectId,
-    ref: "Troop",
-    required: true,
-  },
-  patrol: {
-    type: Schema.Types.ObjectId,
-    ref: "Patrol",
-    required: true,
-  },
-  title: {
-    type: String,
-    required: [true, "An event cannot have a blank title."],
-  },
-  description: String,
-  date: Date,
-  endDate: Date,
-  startTime: Date,
-  uniqueMeetLocation: String,
-  meetTime: Date,
-  leaveTime: Date,
-  pickupTime: Date,
-  endTime: Date,
-  location: pointSchema,
-  meetLocation: pointSchema,
-  messages: [messageSchema],
-  invited: rosterSchema,
-  attending: rosterSchema,
-  day: {
-    type: String,
+export const eventSchema = createSchema({
+  type: Type.string({ required: true }),
+  troop: Type.ref(Type.objectId({ required: true })).to("Troop", troopSchema),
+  patrol: Type.ref(Type.objectId({ required: true })).to("Patrol", patrolSchema),
+  title: Type.string({ required: true, message: "An event cannot have a blank title." }),
+  description: Type.string(),
+  date: Type.date(),
+  endDate: Type.date(),
+  startTime: Type.date(),
+  uniqueMeetLocation: Type.string(),
+  meetTime: Type.date(),
+  leaveTime: Type.date(),
+  pickupTime: Type.date(),
+  endTime: Type.date(),
+  location: Type.schema().of(pointSchema),
+  meetLocation: Type.schema().of(pointSchema),
+  messages: Type.array().of(messageSchema),
+  invited: Type.schema().of(rosterSchema),
+  attending: Type.schema().of(rosterSchema),
+  day: Type.string({
     enum: [
       "Monday",
       "Tuesday",
@@ -126,16 +97,13 @@ const eventSchema = new Schema<IEvent>({
       "Friday",
       "Saturday",
       "Sunday",
-    ],
-  },
-  distance: Number,
-  shakedown: Boolean,
-  published: Boolean,
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-  notification: Date,
+    ] as const
+  }),
+  distance: Type.number(),
+  shakedown: Type.boolean(),
+  published: Type.boolean(),
+  creator: Type.ref(Type.objectId()).to("User", userSchema),
+  notification: Type.date(),
 },
   {
     toJSON: { virtuals: true },
@@ -144,13 +112,13 @@ const eventSchema = new Schema<IEvent>({
   }
 );
 
-eventSchema.virtual("time").get(function (this: IEvent) {
+eventSchema.virtual("time").get(function () {
   let date = new Date(this.date);
   const formattedDate =
     date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
   return formattedDate;
 });
 
-const Event = model<IEvent>("Event", eventSchema);
+const Event = typedModel("Event", eventSchema);
 
 export default Event;

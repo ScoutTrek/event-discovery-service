@@ -1,109 +1,81 @@
 import { Schema, Types, model } from "mongoose";
-import { IPoint, pointSchema } from "./Event";
+import { createSchema, Type } from "ts-mongoose";
+import { eventSchema, IPoint, pointSchema } from "./Event";
+import { userSchema } from "./User";
 
-export type Role = "SCOUTMASTER" | "ASST_SCOUTMASTER" | "SENIOR_PATROL_LEADER" | 
-"ASST_PATROL_LEADER" | "PATROL_LEADER" | "SCOUT" | "PARENT" | "ADULT_VOLUNTEER";
+export type Role = "SCOUTMASTER" | "ASST_SCOUTMASTER" | "SENIOR_PATROL_LEADER" |
+  "ASST_PATROL_LEADER" | "PATROL_LEADER" | "SCOUT" | "PARENT" | "ADULT_VOLUNTEER";
 
-export interface IMembership {
-  troopID?: Types.ObjectId,
-  troopNumber?: string,
-  patrolID?: Types.ObjectId,
-  role?: Role,
-}
+// export interface IMembership {
+//   troopID?: Types.ObjectId,
+//   troopNumber?: string,
+//   patrolID?: Types.ObjectId,
+//   role?: Role,
+// }
 
-export interface IPatrol {
-  name: string,
-  members?: Types.ObjectId[],
-  events?: Types.ObjectId[],
-}
+// export interface IPatrol {
+//   name: string,
+//   members?: Types.ObjectId[],
+//   events?: Types.ObjectId[],
+// }
 
-export interface ITroop {
-  council: string,
-  state: string,
-  unitNumber: number,
-  city?: string,
-  scoutMaster?: string,
-  meetLocation?: IPoint,
-  patrols?: Types.DocumentArray<IPatrol>,
-  events: Types.ObjectId[]
-}
+// export interface ITroop {
+//   council: string,
+//   state: string,
+//   unitNumber: number,
+//   city?: string,
+//   scoutMaster?: string,
+//   meetLocation?: IPoint,
+//   patrols?: Types.DocumentArray<IPatrol>,
+//   events: Types.ObjectId[]
+// }
 
-export const membershipSchema = new Schema<IMembership>({
-  troopID: {
-    type: Schema.Types.ObjectId,
-    ref: "Troop",
-  },
-  troopNumber: {
-    type: String,
-  },
-  patrolID: {
-    type: Schema.Types.ObjectId,
-    ref: "Patrol",
-  },
-  role: {
-    type: String,
-    enum: [
-      "SCOUTMASTER",
-      "ASST_SCOUTMASTER",
-      "SENIOR_PATROL_LEADER",
-      "ASST_PATROL_LEADER",
-      "PATROL_LEADER",
-      "SCOUT",
-      "PARENT",
-      "ADULT_VOLUNTEER",
-    ],
-  },
+export const patrolSchema = createSchema({
+  name: Type.string({ required: true }),
+  members: Type.ref(Type.objectId()).to("User", userSchema),
+  events: Type.ref(Type.objectId()).to("Event", eventSchema)
+},
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    timestamps: true,
+  }
+);
+
+export const troopSchema = createSchema({
+  council: Type.string({ required: true }),
+  state: Type.string({ required: true }),
+  unitNumber: Type.number({ required: true }),
+  city: Type.string(),
+  scoutMaster: Type.string(),
+  meetLocation: Type.schema().of(pointSchema),
+  patrols: Type.array().of(patrolSchema),
+  events: Type.ref(Type.objectId()).to("Event", eventSchema)
+},
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    timestamps: true,
+  }
+);
+
+const memberRoles = [
+  "SCOUTMASTER",
+  "ASST_SCOUTMASTER",
+  "SENIOR_PATROL_LEADER",
+  "ASST_PATROL_LEADER",
+  "PATROL_LEADER",
+  "SCOUT",
+  "PARENT",
+  "ADULT_VOLUNTEER",
+] as const;
+
+export const membershipSchema = createSchema({
+  troopID: Type.ref(Type.objectId()).to("Troop", troopSchema),
+  troopNumber: Type.string(),
+  patrolID: Type.ref(Type.objectId()).to("Patrol", patrolSchema),
+  role: Type.string({ enum: memberRoles })
 });
-
-const patrolSchema = new Schema<IPatrol>({
-  name: {
-    type: String,
-    required: true,
-  },
-  members: {
-    type: [Schema.Types.ObjectId],
-    ref: "User",
-  },
-  events: {
-    type: [Schema.Types.ObjectId],
-    ref: "Event",
-  },
-},
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-    timestamps: true,
-  }
-);
-
-const troopSchema = new Schema<ITroop>({
-  council: {
-    type: String,
-    required: true,
-  },
-  state: {
-    type: String,
-    required: true,
-  },
-  unitNumber: {
-    type: Number,
-    required: true,
-  },
-  city: String,
-  scoutMaster: String,
-  meetLocation: pointSchema,
-  patrols: [patrolSchema],
-  events: {
-    type: [Schema.Types.ObjectId],
-    ref: "Event",
-  },
-},
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-    timestamps: true,
-  }
-);
 
 export const Patrol = model<IPatrol>("Patrol", patrolSchema);
 const Troop = model<ITroop>("Troop", troopSchema);
