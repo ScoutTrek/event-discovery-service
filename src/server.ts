@@ -1,7 +1,7 @@
-const { ApolloServer } = require("apollo-server-express");
-const cron = require("node-cron");
-// import { ApolloServer } from "apollo-server-express";
-// import cron from "node-cron";
+// const { ApolloServer } = require("apollo-server-express");
+// const cron = require("node-cron");
+import { ApolloServer } from "apollo-server-express";
+import cron from "node-cron";
 
 import { typeDefs as userTypes, resolvers as userResolvers } from "./User/User.js";
 import { typeDefs as eventTypes, resolvers as eventResolvers } from "./Event/Event";
@@ -20,7 +20,7 @@ import Troop from "../models/TroopAndPatrol";
 import * as authFns from "./utils/Auth";
 import mongoose from "mongoose";
 import { getUserNotificationData, sendNotifications } from "./Notifications/Expo.js";
-mongoose.connect(process.env.MONGO_URL);
+mongoose.connect(process.env.MONGO_URL!);
 
 const mongo = mongoose.connection;
 mongo.on("error", console.error.bind(console, "connection error:"));
@@ -32,7 +32,7 @@ cron.schedule("* * * * *", async () => {
 	const oneDayReminderEvents = await Event.find({
 		notification: { $lte: new Date() }
 	});
-	if (oneDayReminderEvents !== []) {
+	if (oneDayReminderEvents.length > 0) {
 		oneDayReminderEvents.map(async (event) => {
 			const tokens = await getUserNotificationData(Troop, User, event.troop);
 			sendNotifications(
@@ -52,17 +52,19 @@ const apolloServer = new ApolloServer({
 	context: async ({ req }) => {
 		const user = await authFns.getUserFromToken(authFns.getTokenFromReq(req), User);
 
-		// Update this for membership paradigm
-		const membership = req.headers?.membership;
+		// Update this for membership paradigm --(connie: not sure what this means but will leave the comment here )
+		const membership = Array.isArray(req.headers?.membership) ? req.headers?.membership[0] : req.headers?.membership; // this is really bad... 
 
 		const membershipIDString =
-			membership === "undefined" ? undefined : mongoose.Types.ObjectId(membership).toString();
+			membership === "undefined" ? undefined : new mongoose.Types.ObjectId(membership).toString();
 
 		let currMembership;
 
-		if (membershipIDString && user) {
+		if (membershipIDString && user && user.groups) {
 			currMembership = user.groups.find((membership) => {
-				return membership._id.equals(membershipIDString);
+				if (membership._id) {
+					return membership._id.equals(membershipIDString);
+				}
 			});
 		}
 

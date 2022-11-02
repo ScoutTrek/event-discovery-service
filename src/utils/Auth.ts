@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import jwt_decode, { JwtPayload } from "jwt-decode";
+import { IUser } from 'models/User';
 import type { Role } from '../../models/TroopAndPatrol'
 
 const secret: string = "themfingsuperobvioussting"; // ??????
@@ -25,7 +26,7 @@ export const getUserFromToken = async (token: string, db: any) => { // get rid o
     
     // based on the createToken method, a jwt is created with id in its payload. However, 
     // typescript is not able to tell what the jwt will have, hence this any cast (will look into changing it):(
-    const user = await db.findById((jwtUserInfo as any).id);
+    const user: IUser = await db.findById((jwtUserInfo as any).id); // ok I also have no idea if this is actually an IUser but... ?????
     return user;
   } catch (e) {
     return null; 
