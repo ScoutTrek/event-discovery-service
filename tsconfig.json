@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"experimentalDecorators": true,
+		// "target": "ES6",
+		// "module": "CommonJS",
+		"esModuleInterop": true,
+		"allowJs": true,
+		"allowSyntheticDefaultImports": true,
+		"moduleResolution": "node",
+		"strict": false,
+		"strictNullChecks": true,
+		"noImplicitAny": true,
+		"skipLibCheck": true,
+		"noUncheckedIndexedAccess": true,
+		"baseUrl": "./",
+		"typeRoots": ["node_modules/@types"],
+		"outDir": "dist",
+
+		// Ensure that .d.ts files are created by tsc, but not .js files
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		// Ensure that Babel can safely transpile files in the TypeScript project
+		"isolatedModules": true
+
+		// "strictPropertyInitialization": true,
+		// "noImplicitThis": true
+	},
+	// "exclude": ["node_modules"]
+	"include": ["src/**/*", "models/**/*", "test/**/*"]
+}

@@ -1,5 +1,85 @@
+import { getModelForClass, prop, Ref } from "@typegoose/typegoose";
 import mongoose from "mongoose";
 import { rosterSchema } from "./Roster";
+
+export const DAYS_OF_WEEK = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+
+class EventClass {
+  @prop({ required: true })
+  public type!: string;
+
+  // @prop({ required: true, ref: () => Troop })
+  // public troop!: Ref<Troop>;
+
+  // @prop({ required: true, ref: () => Patrol })
+  // public patrol!: Ref<Patrol>;
+
+  @prop({ required: [true, "An event cannot have a blank title."] })
+  public title!: string;
+
+  @prop()
+  public description?: string;
+
+  @prop()
+  public date?: Date;
+
+  @prop()
+  startTime?: Date;
+
+  @prop()
+  uniqueMeetLocation?: string;
+
+  @prop()
+  meetTime?: Date;
+
+  @prop()
+  leaveTime?: Date;
+
+  @prop()
+  pickupTime?: Date;
+
+  @prop()
+  endTime?: Date;
+
+  // @prop()
+  // location?: pointSchema;
+
+  // @prop()
+  // meetLocation?: pointSchema;
+
+  // @prop()
+  // messages?: messageSchema[];
+
+  // @prop()
+  // invited?: rosterSchema;
+
+  // @prop()
+  // attending?: rosterSchema;
+
+  @prop({ enum: DAYS_OF_WEEK })
+  public day?: string;
+
+  @prop()
+  distance?: number;
+
+  @prop()
+  shakedown: boolean;
+
+  published: Boolean,
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  notification: Date,
+}
 
 export const pointSchema = new mongoose.Schema({
   type: {
