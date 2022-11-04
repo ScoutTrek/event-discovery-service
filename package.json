@@ -45,6 +45,8 @@
     "@babel/cli": "^7.18.10",
     "@babel/core": "^7.19.1",
     "@babel/node": "^7.19.1",
+    "@types/bcrypt": "^5.0.0",
+    "@types/validator": "^13.7.10",
     "babel-plugin-graphql-tag": "^3.3.0"
   }
 }

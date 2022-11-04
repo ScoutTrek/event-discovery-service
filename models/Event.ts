@@ -1,5 +1,7 @@
 import { getModelForClass, prop, Ref } from "@typegoose/typegoose";
-import { Types } from "mongoose";
+import { Roster } from "./Roster";
+import { Troop, Patrol } from "./TroopAndPatrol";
+import { User } from "./User";
 
 export const DAYS_OF_WEEK = [
   "Monday",
@@ -75,7 +77,7 @@ export class Event {
   @prop()
   public published?: boolean;
 
-  @prop({ type: Types.ObjectId, ref: () => User })
+  @prop({ ref: () => User })
   public creator?: Ref<User>;
 
   @prop()
