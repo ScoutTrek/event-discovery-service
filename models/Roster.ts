@@ -1,5 +1,4 @@
 import { modelOptions, prop, Ref } from "@typegoose/typegoose";
-import { Types } from "mongoose";
 import { Troop } from "./TroopAndPatrol";
 import { User } from "./User";
 

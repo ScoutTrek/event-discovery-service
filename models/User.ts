@@ -1,7 +1,8 @@
 import { getModelForClass, modelOptions, prop, Ref, pre } from "@typegoose/typegoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
-import { Membership } from "./TroopAndPatrol";
+import { Membership, ROLES } from "./TroopAndPatrol";
+import { Types } from "mongoose";
 
 const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_250/v1645286759/ScoutTrek/DefaultProfile.png";
 
@@ -18,6 +19,9 @@ const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image
   next();
 })
 export class User {
+  @prop({ required: true })
+  _id!: Types.ObjectId;
+
   @prop({
     required: [true, "You must insert your name to create a valid user."],
     trim: true
@@ -88,6 +92,9 @@ export class User {
 
   @prop()
   public noGroups?: boolean;
+
+  @prop({ required: true, enum: ROLES })
+  public role!: string;
 
   /**
    * TODO: check functionality of function
