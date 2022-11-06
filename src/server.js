@@ -67,7 +67,7 @@ const apolloServer = new ApolloServer({
   ],
   context: async ({ req }) => {
     const user = await authFns.getUserFromToken(
-      authFns.getTokenFromReq(req),
+      authFns.getTokenFromReq(req.),
       User
     );
 

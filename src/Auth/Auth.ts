@@ -83,10 +83,10 @@ export class AuthResolver {
     };
 
     // TODO: double check this return type
-    const user: User | null = await UserModel.create({ ...userInput });
+    const user = await UserModel.create({ ...userInput });
 
     const token = authFns.createToken({
-      id: user._id.toString(),
+      id: user._id,
       role: user.role
     });
 
@@ -108,7 +108,7 @@ export class AuthResolver {
     // }
 
     // TODO: double check this return type
-    const user: User | null = await UserModel.findOne({ email }).select("+password");
+    const user = await UserModel.findOne({ email }).select("+password");
 
     if (!user || !(await user.isValidPassword(password, user.password))) {
       throw new Error("Invalid login");
@@ -116,18 +116,20 @@ export class AuthResolver {
 
     if (input.expoNotificationToken) {
       if (input.expoNotificationToken !== user.expoNotificationToken) {
-        await User.findByIdAndUpdate(user.id, {
+        await UserModel.findByIdAndUpdate(user._id, {
           expoNotificationToken: input.expoNotificationToken,
         });
       }
     }
 
-    const token = authFns.createToken(user);
+    const token = authFns.createToken({ id: user._id.toString(), role: user.role });
     return {
       token,
       user,
-      noGroups: !user.groups.length,
-      groupID: user?.groups[0]?._id,
+      // noGroups: !user.groups.length,
+      // noGroups: user?.noGroups ?? false,
+      // groupID: user?.groups[0]?._id,
+      groupID: 
     };
   },
 }

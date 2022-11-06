@@ -19,8 +19,6 @@ const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image
   next();
 })
 export class User {
-  @prop({ required: true })
-  _id!: Types.ObjectId;
 
   @prop({
     required: [true, "You must insert your name to create a valid user."],
@@ -69,7 +67,6 @@ export class User {
   })
   public phone?: string;
 
-
   /**
    * NOTE:
    * `birthday` was previously optional
@@ -84,17 +81,17 @@ export class User {
   @prop({ type: () => [String] })
   public children?: string[];
 
-  @prop({ default: [], type: () => [Notification] })
-  public unreadNotifications?: Notification[];
+  @prop({ required: true, type: () => [Notification], default: [] })
+  public unreadNotifications!: Notification[];
 
-  @prop({ ref: () => Event })
-  public events?: Ref<Event>[];
+  // @prop({ ref: () => Event })
+  // public events?: Ref<Event>[];
 
   @prop()
   public noGroups?: boolean;
 
-  @prop({ required: true, enum: ROLES })
-  public role!: string;
+  // @prop({ required: true, enum: ROLES })
+  // public role!: string;
 
   /**
    * TODO: check functionality of function

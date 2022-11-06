@@ -1,5 +1,5 @@
 import { modelOptions, prop, Ref } from "@typegoose/typegoose";
-import { Troop } from "./TroopAndPatrol";
+import { Patrol, Troop } from "./TroopAndPatrol";
 import { User } from "./User";
 
 @modelOptions({
@@ -12,11 +12,17 @@ export class Roster {
     required: [true, "You must associate your event with at least one group."],
     ref: () => Troop
   })
-  public groups!: Ref<Troop>;
+  public groups!: Ref<Troop>[];
 
-  @prop({ ref: () => Troop })
-  public patrols?: Ref<Troop>;
+  @prop({
+    required: true,
+    ref: () => Patrol
+  })
+  public patrols!: Ref<Patrol>[];
 
-  @prop({ ref: () => User })
-  public individuals?: Ref<User>;
+  @prop({
+    required: true,
+    ref: () => User
+  })
+  public individuals!: Ref<User>[];
 }

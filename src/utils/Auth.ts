@@ -1,22 +1,24 @@
-import jwt from "jsonwebtoken";
+import { verify, sign } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import jwtDecode from "jwt-decode";
 import { ObjectId } from "mongodb/mongodb";
 import { User, UserModel } from "models/User";
+import { ExpressContext } from "apollo-server-express";
 
 const SECRET = "themfingsuperobvioussting";
 const DEFAULT_EXPIRES_IN = "55d";
 
+interface UserToken {
+  id: string;
+}
 
 /**
- * takes a user object and creates  jwt out of it
+ * takes a user token object and creates jwt out of it
  * using user.id and user.role
  * @param {Object} user the user to create a jwt for
  */
-export function createToken(
-  { id, role }: { id: string; role: string; }
-): string {
-  return jwt.sign({ id, role }, SECRET, { expiresIn: DEFAULT_EXPIRES_IN });
+export function createToken(unsignedToken: UserToken): string {
+  return sign(unsignedToken, SECRET, { expiresIn: DEFAULT_EXPIRES_IN });
 }
 
 /**
@@ -24,23 +26,24 @@ export function createToken(
  * db associated with it. Catches any error and returns
  * a null user
  * @param {String} token jwt from client
+ * @throws {Error} if user cannot be found from specified token
  */
-export async function getUserFromToken(token: string): Promise<User | null> {
-  try {
-    // const jwtUserInfo = jwt.verify(token, secret);
-    const jwtUserInfo = jwtDecode(token) as unknown & { id: string };
-    const user = await UserModel.findById(jwtUserInfo.id);
-    return user;
-  } catch (e) {
-    return null;
+export async function getUserFromToken(encodedToken: string): Promise<User> {
+  const jwtUserInfo = verify(encodedToken, SECRET) as UserToken;
+  const user = await UserModel.findById(jwtUserInfo.id);
+
+  if (user == null) {
+    throw new Error("User could not be found.");
   }
+
+  return user;
 };
 
 /**
  * TODO
  * @param req
  */
-export function getTokenFromReq(req: any): string | null {
+export function getTokenFromReq(req: ): string | null {
   const authReq = req.headers.authorization;
 
   if (!authReq) {

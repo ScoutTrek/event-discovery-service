@@ -21,7 +21,7 @@ export class Membership {
   public troopNumber?: string;
 
   @prop({ ref: () => Patrol })
-  patrolID?: Ref<Patrol>;
+  public patrolID?: Ref<Patrol>;
 
   @prop({ enum: ROLES })
   public role?: string;
@@ -38,11 +38,11 @@ export class Patrol {
   @prop({ required: true })
   public name!: string;
 
-  @prop({ ref: () => User })
-  public members?: Ref<User>[];
+  @prop({ required: true, ref: () => User, default: [] })
+  public members!: Ref<User>[];
 
-  @prop({ ref: () => Event })
-  public events?: Ref<Event>[];
+  // @prop({ required: true, ref: () => Event, default: [] })
+  // public events!: Ref<Event>[];
 }
 
 @modelOptions({
@@ -74,8 +74,8 @@ export class Troop {
   @prop({ type: () => [Patrol] })
   public patrols?: Patrol[];
 
-  @prop({ ref: () => Event })
-  public events?: Ref<Event>[];
+  // @prop({ ref: () => Event })
+  // public events?: Ref<Event>[];
 }
 
 export const PatrolModel = getModelForClass(Patrol);
