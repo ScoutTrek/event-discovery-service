@@ -39,7 +39,7 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Mutation: {
-    signup: async (_, { input }, { User, authFns }) => {
+    signup: async (_, { input }, { UserModel, authFns }) => {
       if (!validator.validate(input.email)) {
         throw new Error("Please enter a valid email.");
       }
@@ -52,7 +52,7 @@ export const resolvers = {
         passwordConfirm: input.passwordConfirm,
       };
 
-      const user = await User.create({ ...userInput });
+      const user = await UserModel.create({ ...userInput });
 
       const token = authFns.createToken({ id: user._id, role: user.role });
 
@@ -62,14 +62,14 @@ export const resolvers = {
         noGroups: true,
       };
     },
-    login: async (_, { input }, { authFns, User }) => {
+    login: async (_, { input }, { authFns, UserModel }) => {
       const { email, password } = input;
 
       if (!email || !password) {
         throw new Error("Please provide an email and password.");
       }
 
-      const user = await User.findOne({ email }).select("+password");
+      const user = await UserModel.findOne({ email }).select("+password");
 
       if (!user || !(await user.isValidPassword(password, user.password))) {
         throw new Error("Invalid login");
@@ -77,7 +77,7 @@ export const resolvers = {
 
       if (input.expoNotificationToken) {
         if (input.expoNotificationToken !== user.expoNotificationToken) {
-          await User.findByIdAndUpdate(user.id, {
+          await UserModel.findByIdAndUpdate(user.id, {
             expoNotificationToken: input.expoNotificationToken,
           });
         }

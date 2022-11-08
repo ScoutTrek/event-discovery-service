@@ -1,37 +1,28 @@
-import { Schema, Types } from "mongoose";
-import { createSchema } from "ts-mongoose";
+import { modelOptions, prop, Ref } from "@typegoose/typegoose";
+import { Patrol, Troop } from "./TroopAndPatrol";
+import { User } from "./User";
 
-export interface IRoster {
-  groups: Types.ObjectId[],
-  patrols?: Types.ObjectId[],
-  individuals?: Types.ObjectId[],
-}
-
-export const rosterSchema = createSchema({
-  groups: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Troop",
-      required: [
-        true,
-        "You must associate your event with at least one group.",
-      ],
-    },
-  ],
-  patrols: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Patrol",
-    },
-  ],
-  individuals: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
-},
-  {
-    timestamps: true,
+@modelOptions({
+  schemaOptions: {
+    timestamps: true
   }
-);
+})
+export class Roster {
+  @prop({
+    required: [true, "You must associate your event with at least one group."],
+    ref: () => Troop
+  })
+  public groups!: Ref<Troop>[];
+
+  @prop({
+    required: true,
+    ref: () => Patrol
+  })
+  public patrols!: Ref<Patrol>[];
+
+  @prop({
+    required: true,
+    ref: () => User
+  })
+  public individuals!: Ref<User>[];
+}

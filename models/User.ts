@@ -1,97 +1,114 @@
-import { createSchema, Type, typedModel, ExtractDoc, ExtractProps } from "ts-mongoose";
+import { modelOptions, prop, pre } from "@typegoose/typegoose";
 import validator from "validator";
-import bcrypt from "bcryptjs";
-import { membershipSchema } from "./TroopAndPatrol";
-import { notificationSchema } from "./Notification";
-import { eventSchema } from "./Event";
+import bcrypt from "bcrypt";
+import { Membership, ROLES } from "./TroopAndPatrol";
+import { Notification } from "./Notification";
 
-// export interface IUser {
-//   name: string;
-//   email: string;
-//   userPhoto: string;
-//   password: string;
-//   passwordConfirm?: string;
-//   expoNotificationToken?: string;
-//   phone: string;
-//   birthday?: Date;
-//   groups?: Types.DocumentArray<IMembership>;
-//   unreadNotifications?: Types.DocumentArray<INotification>;
-//   children?: string[];
-//   events?: Types.ObjectId[];
-//   noGroups?: boolean;
-// }
+const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_250/v1645286759/ScoutTrek/DefaultProfile.png";
 
-const defaultUserPhotoURL = "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_250/v1645286759/ScoutTrek/DefaultProfile.png";
+@modelOptions({
+  schemaOptions: {
+    timestamps: true,
+  }
+})
+@pre<User>("save", async function (next) {
+  if (!this.isModified("password")) return next();
 
-export const userSchema = createSchema({
-  name: Type.string({
-    required: true,
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+  next();
+})
+export class User {
+
+  @prop({
+    required: [true, "You must insert your name to create a valid user."],
     trim: true
-  }),
-  email: Type.string({
-    required: true,
+  })
+  public name!: string;
+
+  @prop({
+    required: [true, "To create a valid user you must enter an email address."],
     unique: false,
     lowercase: true,
     validate: {
       validator: validator.isEmail,
       message: "Please provide a valid email."
     }
-  }),
-  userPhoto: Type.string({
-    default: defaultUserPhotoURL
-  }),
-  password: Type.string({
+  })
+  public email!: string;
+
+  @prop({ default: DEFAULT_USER_PHOTO_URL })
+  public userPhoto?: string;
+
+  @prop({
     required: true,
-    minLength: 8,
+    minlength: 8,
     select: false
-  }),
-  passwordConfirm: Type.string({
+  })
+  public password!: string;
+
+  @prop({
     validate: {
-      validator: function (el: String) {
+      validator: function (el: string) {
         return el === this.password;
       },
-      message: "Passwords are not equal :(",
+      message: "Passwords are not equal :("
     }
-  }),
-  expoNotificationToken: Type.string(),
-  phone: Type.string({
+  })
+  public passwordConfirm?: string;
+
+  @prop()
+  public expoNotificationToken?: string;
+
+  @prop({
     validate: {
       validator: validator.isMobilePhone,
-      message: "Please provide a valid phone number"
+      message: "Please provide a valid phone number",
     },
-    minLength: 10,
-    maxLength: 11
-  }),
-  birthday: Type.date(),
-  groups: Type.array().of(membershipSchema),
-  children: Type.array().of(Type.string()),
-  unreadNotifications: Type.array({ default: [] }).of(notificationSchema),
-  events: Type.array().of(
-    Type.ref(Type.objectId()).to("Event", eventSchema)
-  ),
-  noGroups: Type.boolean(),
-}, { timestamps: true });
+    minlength: 10,
+    maxlength: 11
+  })
+  public phone?: string;
 
-userSchema.virtual("age").get(function () {
-  let n = Date.now();
-  let d: Date = new Date(this.birthday ?? Date.now());
-  return Math.floor((n - d.getTime()) / 1000 / 60 / 60 / 24 / 365);
-});
+  /**
+   * NOTE:
+   * `birthday` was previously optional
+   * but should be absolute for age() getter to work
+   */
+  @prop({ required: true })
+  public birthday!: Date;
 
-userSchema.pre("save", async function (next: Function) {
-  if (!this.isModified("password")) return next();
+  @prop({ required: true, type: () => [Membership], default: [] })
+  public groups!: Membership[];
 
-  this.password = await bcrypt.hash(this.password, 12);
-  this.passwordConfirm = undefined;
-  next();
-});
+  @prop({ required: true, type: () => [String], default: [] })
+  public children!: string[];
 
-userSchema.methods.isValidPassword = async function (submittedPass: string, realPass: string) {
-  return await bcrypt.compare(submittedPass, realPass);
-};
+  @prop({ required: true, type: () => [Notification], default: [] })
+  public unreadNotifications!: Notification[];
 
-const User = typedModel("User", userSchema);
-export type UserDoc = ExtractDoc<typeof userSchema>;
-export type UserProps = ExtractProps<typeof userSchema>;
+  // @prop({ ref: () => Event })
+  // public events?: Ref<Event>[];
 
-export default User;
+  // @prop({ required: true, enum: ROLES })
+  // public role!: string;
+
+  /**
+   * TODO: check functionality of function
+   */
+  public get age(): number {
+    const todayAsMillis = new Date(Date.now()).getUTCMilliseconds();
+    const bdayAsMillis = new Date(this.birthday).getUTCMilliseconds();
+    return Math.floor((todayAsMillis - bdayAsMillis) / 1000 / 60 / 60 / 24 / 365);
+  }
+
+  /**
+   * TODO
+   */
+  public async isValidPassword(
+    submittedPass: string,
+    realPass: string
+  ): Promise<boolean> {
+    return await bcrypt.compare(submittedPass, realPass);
+  }
+}

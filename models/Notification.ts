@@ -1,22 +1,22 @@
-import { Schema } from "mongoose";
+import { modelOptions, prop } from "@typegoose/typegoose";
 
-export interface INotification {
-  title?: string;
-  type?: string;
-  eventType?: string;
-  eventID?: string;
+@modelOptions({
+	schemaOptions: {
+		toJSON: { virtuals: true },
+		toObject: { virtuals: true },
+		timestamps: true
+	}
+})
+export class Notification {
+	@prop()
+	public title?: string;
+
+	@prop()
+	public type?: string;
+
+	@prop()
+	public eventType?: string;
+
+	@prop()
+	public eventID?: string;
 }
-
-export const notificationSchema = new Schema<INotification>(
-  {
-    title: String,
-    type: String,
-    eventType: String,
-    eventID: String,
-  },
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-    timestamps: true,
-  }
-);

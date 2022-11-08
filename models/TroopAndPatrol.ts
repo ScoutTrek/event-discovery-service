@@ -1,65 +1,9 @@
-import { Schema, Types, model } from "mongoose";
-import { createSchema, Type } from "ts-mongoose";
-import { eventSchema, IPoint, pointSchema } from "./Event";
-import { userSchema } from "./User";
+import { modelOptions, prop } from "@typegoose/typegoose";
+import type { Ref } from "@typegoose/typegoose";
+import { Point } from "./Event";
+import { User } from "./User";
 
-export type Role = "SCOUTMASTER" | "ASST_SCOUTMASTER" | "SENIOR_PATROL_LEADER" |
-  "ASST_PATROL_LEADER" | "PATROL_LEADER" | "SCOUT" | "PARENT" | "ADULT_VOLUNTEER";
-
-// export interface IMembership {
-//   troopID?: Types.ObjectId,
-//   troopNumber?: string,
-//   patrolID?: Types.ObjectId,
-//   role?: Role,
-// }
-
-// export interface IPatrol {
-//   name: string,
-//   members?: Types.ObjectId[],
-//   events?: Types.ObjectId[],
-// }
-
-// export interface ITroop {
-//   council: string,
-//   state: string,
-//   unitNumber: number,
-//   city?: string,
-//   scoutMaster?: string,
-//   meetLocation?: IPoint,
-//   patrols?: Types.DocumentArray<IPatrol>,
-//   events: Types.ObjectId[]
-// }
-
-export const patrolSchema = createSchema({
-  name: Type.string({ required: true }),
-  members: Type.ref(Type.objectId()).to("User", userSchema),
-  events: Type.ref(Type.objectId()).to("Event", eventSchema)
-},
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-    timestamps: true,
-  }
-);
-
-export const troopSchema = createSchema({
-  council: Type.string({ required: true }),
-  state: Type.string({ required: true }),
-  unitNumber: Type.number({ required: true }),
-  city: Type.string(),
-  scoutMaster: Type.string(),
-  meetLocation: Type.schema().of(pointSchema),
-  patrols: Type.array().of(patrolSchema),
-  events: Type.ref(Type.objectId()).to("Event", eventSchema)
-},
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-    timestamps: true,
-  }
-);
-
-const memberRoles = [
+export const ROLES = [
   "SCOUTMASTER",
   "ASST_SCOUTMASTER",
   "SENIOR_PATROL_LEADER",
@@ -70,14 +14,67 @@ const memberRoles = [
   "ADULT_VOLUNTEER",
 ] as const;
 
-export const membershipSchema = createSchema({
-  troopID: Type.ref(Type.objectId()).to("Troop", troopSchema),
-  troopNumber: Type.string(),
-  patrolID: Type.ref(Type.objectId()).to("Patrol", patrolSchema),
-  role: Type.string({ enum: memberRoles })
-});
+export class Membership {
+  @prop({ ref: () => Troop })
+  public troopID?: Ref<Troop>;
 
-export const Patrol = model<IPatrol>("Patrol", patrolSchema);
-const Troop = model<ITroop>("Troop", troopSchema);
+  @prop()
+  public troopNumber?: string;
 
-export default Troop;
+  @prop({ ref: () => Patrol })
+  public patrolID?: Ref<Patrol>;
+
+  @prop({ enum: ROLES })
+  public role?: string;
+}
+
+@modelOptions({
+  schemaOptions: {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    timestamps: true
+  }
+})
+export class Patrol {
+  @prop({ required: true })
+  public name!: string;
+
+  @prop({ required: true, ref: () => User, default: [] })
+  public members!: Ref<User>[];
+
+  // @prop({ required: true, ref: () => Event, default: [] })
+  // public events!: Ref<Event>[];
+}
+
+@modelOptions({
+  schemaOptions: {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    timestamps: true
+  }
+})
+export class Troop {
+  @prop({ required: true })
+  public council!: string;
+
+  @prop({ required: true })
+  public state!: string;
+
+  @prop({ required: true })
+  public unitNumber!: number;
+
+  @prop()
+  public city?: string;
+
+  @prop()
+  public scoutMaster?: string;
+
+  @prop()
+  public meetLocation?: Point;
+
+  @prop({ type: () => [Patrol] })
+  public patrols?: Patrol[];
+
+  // @prop({ ref: () => Event })
+  // public events?: Ref<Event>[];
+}

@@ -1,39 +1,50 @@
-import jwt from 'jsonwebtoken';
-import jwt_decode, { JwtPayload } from "jwt-decode";
-import { IUser } from 'models/User';
-import type { Role } from '../../models/TroopAndPatrol'
+import { verify, sign } from "jsonwebtoken";
+import { User } from "../../models/User";
+import { Request } from "express";
+import { UserModel } from "../../models/models";
 
-const secret: string = "themfingsuperobvioussting"; // ??????
+const SECRET = "themfingsuperobvioussting";
+const DEFAULT_EXPIRES_IN = "55d";
+
+interface UserToken {
+  id: string;
+}
 
 /**
- * takes a user object and creates  jwt out of it
+ * takes a user token object and creates jwt out of it
  * using user.id and user.role
  * @param {Object} user the user to create a jwt for
  */
-export const createToken = (id: number, role: Role) => { 
-  return jwt.sign({ id, role }, secret, { expiresIn: "55d" }) 
-};
+export function createToken(unsignedToken: UserToken): string {
+  return sign(unsignedToken, SECRET, { expiresIn: DEFAULT_EXPIRES_IN });
+}
 
 /**
  * will attemp to verify a jwt and find a user in the
  * db associated with it. Catches any error and returns
  * a null user
  * @param {String} token jwt from client
+ * @throws {Error} if user cannot be found from specified token
  */
-export const getUserFromToken = async (token: string, db: any) => { // get rid of any type here
-  try {
-    const jwtUserInfo = jwt.verify(token, secret)
-    
-    // based on the createToken method, a jwt is created with id in its payload. However, 
-    // typescript is not able to tell what the jwt will have, hence this any cast (will look into changing it):(
-    const user: IUser = await db.findById((jwtUserInfo as any).id); // ok I also have no idea if this is actually an IUser but... ?????
-    return user;
-  } catch (e) {
-    return null; 
+export async function getUserFromToken(encodedToken: string): Promise<User> {
+  if (!encodedToken) {
+    return Promise.reject();
   }
+  const jwtUserInfo = verify(encodedToken, SECRET) as UserToken;
+  const user = await UserModel.findById(jwtUserInfo.id);
+
+  if (user == null) {
+    throw new Error("User could not be found.");
+  }
+
+  return user;
 };
 
-export const getTokenFromReq = (req: any) => {
+/**
+ * TODO
+ * @param req
+ */
+export function getTokenFromReq(req: Request): string | null {
   const authReq = req.headers.authorization;
 
   if (!authReq) {
@@ -71,5 +82,3 @@ export const authorized = (role: string, next: Function) => (root: any, args: an
   }
   return next(root, args, context, info);
 };
-
-
