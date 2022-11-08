@@ -193,16 +193,16 @@ export const typeDefs = gql`
 export const resolvers = {
   JSON: GraphQLJSON,
   Event: {
-    troop: async (parent, __, { Troop }) => {
-      await Troop.findById(parent.troop);
+    troop: async (parent, __, { TroopModel }) => {
+      await TroopModel.findById(parent.troop);
     },
-    patrol: async (parent, __, { Troop }) => {
-      const myTroop = await Troop.findById(parent.troop);
+    patrol: async (parent, __, { TroopModel }) => {
+      const myTroop = await TroopModel.findById(parent.troop);
       const myPatrol = await myTroop.patrols.id(parent.patrol);
       return myPatrol;
     },
-    creator: async (parent, __, { User }) =>
-      await User.findById(parent.creator),
+    creator: async (parent, __, { UserModel }) =>
+      await UserModel.findById(parent.creator),
     location: (parent) => {
       if (parent.location) {
         return {
@@ -226,8 +226,8 @@ export const resolvers = {
   },
   Query: {
     events: authenticated(
-      async (_, { first, skip }, { Event, currMembership }) => {
-        const events = await Event.find(
+      async (_, { first, skip }, { EventModel, currMembership }) => {
+        const events = await EventModel.find(
           {
             date: {
               $gte: new Date(Date.now() - 86400000 * 1.5),
@@ -244,15 +244,15 @@ export const resolvers = {
         return events;
       }
     ),
-    event: async (_, { id }, { Event }) => await Event.findById(id),
+    event: async (_, { id }, { EventModel }) => await EventModel.findById(id),
     eventSchemas: () => EventSchemas,
   },
   Mutation: {
     deleteEvent: authenticated(
-      async (_, { id }, { Event }) => await Event.findByIdAndDelete(id)
+      async (_, { id }, { EventModel }) => await EventModel.findByIdAndDelete(id)
     ),
     addEvent: authenticated(
-      async (_, { input }, { Event, user, tokens, currMembership }) => {
+      async (_, { input }, { EventModel, user, tokens, currMembership }) => {
         if (input.type === "TROOP_MEETING") {
           input.title = "Troop Meeting";
         }
@@ -286,7 +286,7 @@ export const resolvers = {
           };
         }
 
-        const event = await Event.create(mutationObject);
+        const event = await EventModel.create(mutationObject);
 
         sendNotifications(
           tokens,
@@ -296,7 +296,7 @@ export const resolvers = {
         return event;
       }
     ),
-    updateEvent: authenticated(async (_, { input, id }, { Event, tokens }) => {
+    updateEvent: authenticated(async (_, { input, id }, { EventModel, tokens }) => {
       const newVals = { ...input };
       if (input.location) {
         newVals.location = {
@@ -313,11 +313,11 @@ export const resolvers = {
         };
       }
 
-      await Event.updateOne({ _id: id }, newVals, {
+      await EventModel.updateOne({ _id: id }, newVals, {
         new: true,
       });
 
-      const updatedEvent = await Event.findById(id);
+      const updatedEvent = await EventModel.findById(id);
 
       sendNotifications(
         tokens,

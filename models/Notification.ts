@@ -1,5 +1,4 @@
-import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
-import { Types } from "mongoose";
+import { modelOptions, prop } from "@typegoose/typegoose";
 
 @modelOptions({
 	schemaOptions: {

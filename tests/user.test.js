@@ -1,9 +1,7 @@
 require("@babel/register");
 
 // Models
-import User from "../models/User";
-import Event from "../models/Event";
-import Troop from "../models/TroopAndPatrol";
+import { UserModel } from "../models/models";
 
 import ApolloBoost, { gql } from "apollo-boost";
 
@@ -47,7 +45,7 @@ test("Creates a new user", async () => {
     mutation: createUser,
   });
 
-  const exists = User.count(
+  const exists = UserModel.count(
     { _id: response.data.createUser.user.id },
     function (err, count) {
       if (count > 0) {

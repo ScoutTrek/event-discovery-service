@@ -1,4 +1,5 @@
-import { getModelForClass, modelOptions, prop, Ref } from "@typegoose/typegoose";
+import { modelOptions, prop } from "@typegoose/typegoose";
+import type { Ref } from "@typegoose/typegoose";
 import { Point } from "./Event";
 import { User } from "./User";
 
@@ -77,6 +78,3 @@ export class Troop {
   // @prop({ ref: () => Event })
   // public events?: Ref<Event>[];
 }
-
-export const PatrolModel = getModelForClass(Patrol);
-export const TroopModel = getModelForClass(Troop);

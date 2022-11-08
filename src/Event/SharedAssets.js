@@ -36,7 +36,7 @@ export const typeDefs = gql`
 
 export const resolvers = {
   Mutation: {
-    uploadImage: authenticated(async (_, { file }, { user, User }) => {
+    uploadImage: authenticated(async (_, { file }, { user, UserModel }) => {
       const { createReadStream, filename, mimetype } = await file;
 
       const newFile = bucket.file(filename);
@@ -58,7 +58,7 @@ export const resolvers = {
 
       const newPhoto = getPublicUrl(filename);
 
-      await User.findByIdAndUpdate(user.id, {
+      await UserModel.findByIdAndUpdate(user.id, {
         userPhoto: newPhoto,
       });
 

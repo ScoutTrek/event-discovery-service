@@ -3,13 +3,13 @@ import User from "../../models/User";
 let expo = new Expo();
 
 // fill messages
-export const getUserNotificationData = async (Troop, User, troopID) => {
+export const getUserNotificationData = async (TroopModel, UserModel, troopID) => {
   const userData = [];
 
   let troop;
 
   if (troopID) {
-    troop = await Troop.findById(troopID);
+    troop = await TroopModel.findById(troopID);
   }
 
   if (troop) {
@@ -25,7 +25,7 @@ export const getUserNotificationData = async (Troop, User, troopID) => {
     };
 
     const getUser = async (member) => {
-      const user = await User.findById(member);
+      const user = await UserModel.findById(member);
       return addToUserData(user);
     };
 
@@ -46,7 +46,7 @@ export const sendNotifications = async (userData, body, data) => {
 
     let notificationData;
 
-    await User.findById(userID, function (err, doc) {
+    await UserModel.findById(userID, function (err, doc) {
       if (err) return false;
       const notification = {
         title: body,

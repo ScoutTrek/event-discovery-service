@@ -1,8 +1,8 @@
-import { getModelForClass, modelOptions, prop, Ref, pre } from "@typegoose/typegoose";
+import { modelOptions, prop, pre } from "@typegoose/typegoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { Membership, ROLES } from "./TroopAndPatrol";
-import { Types } from "mongoose";
+import { Notification } from "./Notification";
 
 const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_250/v1645286759/ScoutTrek/DefaultProfile.png";
 
@@ -30,7 +30,10 @@ export class User {
     required: [true, "To create a valid user you must enter an email address."],
     unique: false,
     lowercase: true,
-    validate: [validator.isEmail, "Please provide a valid email."]
+    validate: {
+      validator: validator.isEmail,
+      message: "Please provide a valid email."
+    }
   })
   public email!: string;
 
@@ -58,10 +61,10 @@ export class User {
   public expoNotificationToken?: string;
 
   @prop({
-    validate: [
-      validator.isMobilePhone,
-      "Please provide a valid phone number",
-    ],
+    validate: {
+      validator: validator.isMobilePhone,
+      message: "Please provide a valid phone number",
+    },
     minlength: 10,
     maxlength: 11
   })
@@ -75,20 +78,17 @@ export class User {
   @prop({ required: true })
   public birthday!: Date;
 
-  @prop({ type: () => [Membership] })
-  public groups?: Membership[];
+  @prop({ required: true, type: () => [Membership], default: [] })
+  public groups!: Membership[];
 
-  @prop({ type: () => [String] })
-  public children?: string[];
+  @prop({ required: true, type: () => [String], default: [] })
+  public children!: string[];
 
   @prop({ required: true, type: () => [Notification], default: [] })
   public unreadNotifications!: Notification[];
 
   // @prop({ ref: () => Event })
   // public events?: Ref<Event>[];
-
-  @prop()
-  public noGroups?: boolean;
 
   // @prop({ required: true, enum: ROLES })
   // public role!: string;
@@ -112,5 +112,3 @@ export class User {
     return await bcrypt.compare(submittedPass, realPass);
   }
 }
-
-export const UserModel = getModelForClass(User);

@@ -23,6 +23,7 @@ import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 import User from "../models/User";
 import Event from "../models/Event";
 import Troop from "../models/TroopAndPatrol";
+import { UserModel, EventModel, TroopModel } from "../models/models";
 
 import * as authFns from "./utils/Auth";
 import mongoose from "mongoose";
@@ -39,7 +40,7 @@ mongo.once("open", function () {
 });
 
 cron.schedule("* * * * *", async () => {
-  const oneDayReminderEvents = await Event.find({
+  const oneDayReminderEvents = await EventModel.find({
     notification: { $lte: new Date() },
   });
   if (oneDayReminderEvents !== []) {
@@ -66,10 +67,17 @@ const apolloServer = new ApolloServer({
     authResolvers,
   ],
   context: async ({ req }) => {
+    const token = authFns.getTokenFromReq(req);
+    if (!token) {
+      return {
+        UserModel, EventModel, TroopModel,
+      }
+    }
     const user = await authFns.getUserFromToken(
-      authFns.getTokenFromReq(req.),
-      User
+      authFns.getTokenFromReq(req),
     );
+
+    console.log(user);
 
     // Update this for membership paradigm
     const membership = req.headers?.membership;
@@ -92,9 +100,9 @@ const apolloServer = new ApolloServer({
       : null;
 
     return {
-      User,
-      Event,
-      Troop,
+      UserModel,
+      EventModel,
+      TroopModel,
       membershipIDString,
       currMembership,
       tokens,

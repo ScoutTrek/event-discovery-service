@@ -1,9 +1,7 @@
 import { verify, sign } from "jsonwebtoken";
-import bcrypt from "bcrypt";
-import jwtDecode from "jwt-decode";
-import { ObjectId } from "mongodb/mongodb";
-import { User, UserModel } from "models/User";
-import { ExpressContext } from "apollo-server-express";
+import { User } from "../../models/User";
+import { Request } from "express";
+import { UserModel } from "../../models/models";
 
 const SECRET = "themfingsuperobvioussting";
 const DEFAULT_EXPIRES_IN = "55d";
@@ -29,6 +27,9 @@ export function createToken(unsignedToken: UserToken): string {
  * @throws {Error} if user cannot be found from specified token
  */
 export async function getUserFromToken(encodedToken: string): Promise<User> {
+  if (!encodedToken) {
+    return Promise.reject();
+  }
   const jwtUserInfo = verify(encodedToken, SECRET) as UserToken;
   const user = await UserModel.findById(jwtUserInfo.id);
 
@@ -43,7 +44,7 @@ export async function getUserFromToken(encodedToken: string): Promise<User> {
  * TODO
  * @param req
  */
-export function getTokenFromReq(req: ): string | null {
+export function getTokenFromReq(req: Request): string | null {
   const authReq = req.headers.authorization;
 
   if (!authReq) {
@@ -52,6 +53,7 @@ export function getTokenFromReq(req: ): string | null {
 
   return authReq.replace("Bearer ", "");
 };
+
 /**
  * checks if the user is on the context object
  * continues to the next resolver if true

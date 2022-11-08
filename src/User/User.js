@@ -121,13 +121,13 @@ export const resolvers = {
     currRole: (parent, __, { currMembership }) => {
       return currMembership ? currMembership.role : parent.role;
     },
-    currTroop: async (parent, __, { Troop, currMembership }) => {
-      return await Troop.findById(
+    currTroop: async (parent, __, { TroopModel, currMembership }) => {
+      return await TroopModel.findById(
         currMembership ? currMembership.troopID : parent.troop
       );
     },
-    currPatrol: async (parent, __, { Troop, currMembership }) => {
-      const myTroop = await Troop.findById(
+    currPatrol: async (parent, __, { TroopModel, currMembership }) => {
+      const myTroop = await TroopModel.findById(
         currMembership ? currMembership.troopID : parent.troop
       );
       const myPatrol = await myTroop.patrols.id(currMembership.patrolID);
@@ -153,17 +153,17 @@ export const resolvers = {
     },
   },
   Query: {
-    user: authenticated(async (_, { id }, { User }) => await User.findById(id)),
-    users: authenticated(async (_, { limit, skip }, { User }) => {
-      return await User.find({}, null, { limit, skip });
+    user: authenticated(async (_, { id }, { UserModel }) => await UserModel.findById(id)),
+    users: authenticated(async (_, { limit, skip }, { UserModel }) => {
+      return await UserModel.find({}, null, { limit, skip });
     }),
     currUser: async (_, __, { user }) => user,
   },
   Mutation: {
-    addGroup: authenticated(async (_, { input }, { user, User, Troop }) => {
+    addGroup: authenticated(async (_, { input }, { user, UserModel, TroopModel }) => {
       const newGroupID = mongoose.Types.ObjectId();
 
-      await Troop.findById(input.troopID, function (err, doc) {
+      await TroopModel.findById(input.troopID, function (err, doc) {
         if (input.role === "SCOUTMASTER") {
           doc.scoutMaster = user.id;
         }
@@ -176,7 +176,7 @@ export const resolvers = {
         doc.save();
       });
 
-      await User.findById(user.id, function (err, doc) {
+      await UserModel.findById(user.id, function (err, doc) {
         if (err) return false;
         const { children, ...membershipDetails } = input;
         doc.children.push(...children);
@@ -189,32 +189,32 @@ export const resolvers = {
       };
     }),
     updateUser: authenticated(
-      authorized("SCOUTMASTER", async (_, { input, id }, { User }) => {
+      authorized("SCOUTMASTER", async (_, { input, id }, { UserModel }) => {
         if (typeof input.password === "string") {
-          input.password = await User.findById(id, function (err, doc) {
+          input.password = await UserModel.findById(id, function (err, doc) {
             if (err) return false;
             doc.password = input.password;
             doc.save();
           });
         }
-        return await User.findByIdAndUpdate(id, { ...input }, { new: true });
+        return await UserModel.findByIdAndUpdate(id, { ...input }, { new: true });
       })
     ),
     deleteUser: authenticated(
       authorized(
         "SCOUTMASTER",
-        async (_, { id }, { User }) => await User.findByIdAndDelete(id)
+        async (_, { id }, { UserModel }) => await UserModel.findByIdAndDelete(id)
       )
     ),
     updateCurrUser: authenticated(
-      async (_, { input }, { User, user }) =>
-        await User.findByIdAndUpdate(user.id, { ...input }, { new: true })
+      async (_, { input }, { UserModel, user }) =>
+        await UserModel.findByIdAndUpdate(user.id, { ...input }, { new: true })
     ),
     deleteCurrUser: authenticated(
-      async (_, { id }, { User }) => await User.findByIdAndDelete(id)
+      async (_, { id }, { UserModel }) => await UserModel.findByIdAndDelete(id)
     ),
-    dismissNotification: authenticated(async (_, { id }, { user, User }) => {
-      await User.findById(user.id, function (err, doc) {
+    dismissNotification: authenticated(async (_, { id }, { user, UserModel }) => {
+      await UserModel.findById(user.id, function (err, doc) {
         if (err) return false;
 
         if (doc?.unreadNotifications) {

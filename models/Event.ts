@@ -1,4 +1,5 @@
-import { getModelForClass, prop, Ref } from "@typegoose/typegoose";
+import { prop } from "@typegoose/typegoose";
+import type { Ref } from "@typegoose/typegoose";
 import { Roster } from "./Roster";
 import { Troop, Patrol } from "./TroopAndPatrol";
 import { User } from "./User";
@@ -12,6 +13,36 @@ export const DAYS_OF_WEEK = [
   "Saturday",
   "Sunday",
 ] as const;
+
+export class Point {
+  @prop({ required: true, enum: ["Point"] as const })
+  public type!: string;
+
+  @prop({ required: true, type: () => [Number] })
+  public coordinates!: number[];
+
+  @prop()
+  public address?: string;
+}
+
+export class MessageUser {
+  @prop({ required: true })
+  public name!: string;
+}
+
+export class Message {
+  @prop()
+  public text?: string;
+
+  @prop()
+  public image?: string;
+
+  @prop({ default: Date.now })
+  public createdAt?: Date;
+
+  @prop()
+  public user?: MessageUser;
+}
 
 export class Event {
   @prop({ required: true })
@@ -56,8 +87,8 @@ export class Event {
   @prop()
   public meetLocation?: Point;
 
-  @prop({ type: () => [Message] })
-  public messages?: Message[];
+  @prop({ required: true, type: () => [Message], default: [] })
+  public messages!: Message[];
 
   @prop()
   public invited?: Roster;
@@ -92,35 +123,3 @@ export class Event {
     return formattedDate;
   }
 }
-
-export class Point {
-  @prop({ required: true, enum: ["Point"] as const })
-  public type!: string;
-
-  @prop({ required: true, type: () => [Number] })
-  public coordinates!: number[];
-
-  @prop()
-  public address?: string;
-}
-
-export class MessageUser {
-  @prop({ required: true })
-  public name!: string;
-}
-
-export class Message {
-  @prop()
-  public text?: string;
-
-  @prop()
-  public image?: string;
-
-  @prop({ default: Date.now })
-  public createdAt?: Date;
-
-  @prop()
-  public user?: MessageUser;
-}
-
-export const EventModel = getModelForClass(Event);
