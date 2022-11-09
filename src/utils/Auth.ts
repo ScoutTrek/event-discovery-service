@@ -2,6 +2,7 @@ import { verify, sign } from "jsonwebtoken";
 import { User } from "../../models/User";
 import { Request } from "express";
 import { UserModel } from "../../models/models";
+import { Document } from "mongoose";
 
 const SECRET = "themfingsuperobvioussting";
 const DEFAULT_EXPIRES_IN = "55d";
@@ -16,7 +17,7 @@ interface UserToken {
  * @param {Object} user the user to create a jwt for
  */
 export function createToken(unsignedToken: UserToken): string {
-  return sign(unsignedToken, SECRET, { expiresIn: DEFAULT_EXPIRES_IN });
+  return sign({id: unsignedToken.id}, SECRET, { expiresIn: DEFAULT_EXPIRES_IN });
 }
 
 /**
@@ -26,7 +27,8 @@ export function createToken(unsignedToken: UserToken): string {
  * @param {String} token jwt from client
  * @throws {Error} if user cannot be found from specified token
  */
-export async function getUserFromToken(encodedToken: string): Promise<User> {
+export async function getUserFromToken(encodedToken: string): Promise<User & Document> {
+  console.log(encodedToken);
   if (!encodedToken) {
     return Promise.reject();
   }

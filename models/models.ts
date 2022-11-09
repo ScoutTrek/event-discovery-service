@@ -2,6 +2,7 @@ import { getModelForClass } from "@typegoose/typegoose";
 import { User } from "./User";
 import { Patrol, Troop } from "./TroopAndPatrol";
 import { Event } from "./Event";
+import { Model } from "mongoose";
 
 export const UserModel = getModelForClass(User);
 export const PatrolModel = getModelForClass(Patrol);

@@ -13,13 +13,13 @@ import { typeDefs as fileTypes, resolvers as fileResolvers } from "./Event/Share
 import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 
 // Models
-import User from "../models/User";
-import Event from "../models/Event";
-import Troop from "../models/TroopAndPatrol";
+import { UserModel, EventModel, TroopModel } from "../models/models";
 
 import * as authFns from "./utils/Auth";
-import mongoose from "mongoose";
-import { getUserNotificationData, sendNotifications } from "./Notifications/Expo.js";
+import mongoose, { Types } from "mongoose";
+import { getUserNotificationData, sendNotifications } from "./Notifications/Expo";
+import { isDocumentArray, isRefType } from "@typegoose/typegoose";
+import { getIdFromRef } from "./utils/db";
 mongoose.connect(process.env.MONGO_URL!);
 
 const mongo = mongoose.connection;
@@ -29,12 +29,15 @@ mongo.once("open", function () {
 });
 
 cron.schedule("* * * * *", async () => {
-	const oneDayReminderEvents = await Event.find({
+	const oneDayReminderEvents = await EventModel.find({
 		notification: { $lte: new Date() }
 	});
 	if (oneDayReminderEvents.length > 0) {
 		oneDayReminderEvents.map(async (event) => {
-			const tokens = await getUserNotificationData(Troop, User, event.troop);
+			if (!isRefType(event.troop, Types.ObjectId)) {
+				throw new Error("Impossible");
+			}
+			const tokens = await getUserNotificationData(event.troop.toString());
 			sendNotifications(
 				tokens,
 				`Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`,
@@ -50,7 +53,19 @@ const apolloServer = new ApolloServer({
 	typeDefs: [userTypes, fileTypes, eventTypes, troopTypes, authTypes],
 	resolvers: [userResolvers, fileResolvers, eventResolvers, troopResolvers, authResolvers],
 	context: async ({ req }) => {
-		const user = await authFns.getUserFromToken(authFns.getTokenFromReq(req), User);
+		let ret: object = {
+			UserModel,
+			EventModel,
+			TroopModel,
+			req,
+			authFns
+		};
+
+		const token = authFns.getTokenFromReq(req);
+		if (!token) {
+			return ret;
+		}
+		const user = await authFns.getUserFromToken(token);
 
 		// Update this for membership paradigm --(connie: not sure what this means but will leave the comment here )
 		const membership = Array.isArray(req.headers?.membership) ? req.headers?.membership[0] : req.headers?.membership; // this is really bad... 
@@ -61,26 +76,23 @@ const apolloServer = new ApolloServer({
 		let currMembership;
 
 		if (membershipIDString && user && user.groups) {
+			user.populate("groups");
+			if (!isDocumentArray(user.groups)) {
+				throw new Error("Population failed");
+			}
 			currMembership = user.groups.find((membership) => {
-				if (membership._id) {
-					return membership._id.equals(membershipIDString);
-				}
+				return membership._id.equals(membershipIDString);
 			});
+			ret = {
+				...ret,
+				tokens: currMembership ? await getUserNotificationData(getIdFromRef(currMembership.troopID).toString()): null
+			}
 		}
 
-		const tokens = currMembership
-			? await getUserNotificationData(Troop, User, currMembership.troopID)
-			: null;
-
 		return {
-			User,
-			Event,
-			Troop,
+			...ret,
 			membershipIDString,
 			currMembership,
-			tokens,
-			req,
-			authFns,
 			user
 		};
 	}

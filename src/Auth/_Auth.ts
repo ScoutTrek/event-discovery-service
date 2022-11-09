@@ -87,8 +87,7 @@
 //     const user = await UserModel.create({ ...userInput });
 
 //     const token = authFns.createToken({
-//       id: user._id,
-//       role: user.role
+//       id: user._id
 //     });
 
 //     return {
@@ -123,7 +122,7 @@
 //       }
 //     }
 
-//     const token = authFns.createToken({ id: user._id.toString(), role: user.role });
+//     const token = authFns.createToken({ id: user._id.toString() });
 //     return {
 //       token,
 //       user,
@@ -134,60 +133,3 @@
 //     };
 //   },
 // }
-
-// export const resolvers = {
-//   Mutation: {
-//     signup: async (_, { input }, { User, authFns }) => {
-//       if (!validator.validate(input.email)) {
-//         throw new Error("Please enter a valid email.");
-//       }
-
-//       const userInput = {
-//         name: input.name,
-//         email: input.email,
-//         expoNotificationToken: input.expoNotificationToken,
-//         password: input.password,
-//         passwordConfirm: input.passwordConfirm,
-//       };
-
-//       const user = await User.create({ ...userInput });
-
-//       const token = authFns.createToken({ id: user._id, role: user.role });
-
-//       return {
-//         user,
-//         token,
-//         noGroups: true,
-//       };
-//     },
-//     login: async (_, { input }, { authFns, User }) => {
-//       const { email, password } = input;
-
-//       if (!email || !password) {
-//         throw new Error("Please provide an email and password.");
-//       }
-
-//       const user = await User.findOne({ email }).select("+password");
-
-//       if (!user || !(await user.isValidPassword(password, user.password))) {
-//         throw new Error("Invalid login");
-//       }
-
-//       if (input.expoNotificationToken) {
-//         if (input.expoNotificationToken !== user.expoNotificationToken) {
-//           await User.findByIdAndUpdate(user.id, {
-//             expoNotificationToken: input.expoNotificationToken,
-//           });
-//         }
-//       }
-
-//       const token = authFns.createToken(user);
-//       return {
-//         token,
-//         user,
-//         noGroups: !user.groups.length,
-//         groupID: user?.groups[0]?._id,
-//       };
-//     },
-//   },
-// };

@@ -1,7 +1,8 @@
-import { Expo } from "expo-server-sdk";
-import { ITroop } from "models/TroopAndPatrol";
-import { Model } from "mongoose";
-import User, { UserDoc } from "../../models/User";
+import { Expo, ExpoPushMessage } from "expo-server-sdk";
+import { TroopModel, UserModel } from "../../models/models";
+import { Document, Error, Types } from "mongoose";
+import { User } from "../../models/User";
+import { isDocument } from "@typegoose/typegoose";
 
 let expo = new Expo();
 
@@ -12,26 +13,23 @@ export type UserData = {
 
 // fill messages
 // TODO: is `troopID` a string that gets converted into a ObjectID automatically?
-export const getUserNotificationData = async (
-  Troop: Model<ITroop>,
-  troopID: string
-): Promise<Array<UserData>> => {
-  const userData: Array<unknown> = [];
+export const getUserNotificationData = async (troopID: string): Promise<Array<UserData>> => {
+  const userData: Array<UserData> = [];
 
-  const troop: ITroop | null = await Troop.findById(troopID);
+  const troop = await TroopModel.findById(troopID);
 
   if (!troop || !troop.patrols) {
     return [];
   }
 
   // patrols with not undefined members
-  const validPatrols = troop.patrols.filter((patrol) => patrol.members?.length);
+  const validPatrols = troop.patrols.filter((patrol) => patrol.members.length);
 
   /**
    * TODO
    * @param user 
    */
-  const addToUserData = (user: UserDoc): Promise<string> => {
+  const addToUserData = (user: User & Document): Promise<string> => {
     if (user.expoNotificationToken) {
       userData.push({ token: user.expoNotificationToken, userID: user.id });
     }
@@ -42,85 +40,60 @@ export const getUserNotificationData = async (
    * TODO
    * @param memberId
    */
-  const getUser = async (memberId: string): Array<UserData> => {
-    const user: IUser | null = await User.findById(memberId);
+  const getUser = async (memberId: string): Promise<Array<UserData>> => {
+    const user = await UserModel.findById(memberId);
+    if (!user) return [];
     await addToUserData(user);
     return userData;
   };
 
   await Promise.all(
     validPatrols.map((patrol) =>
-      Promise.all(patrol.members.map((member) => getUser(member)))
+      Promise.all(patrol.members.map((member) => {
+        let memberId = member as Types.ObjectId;
+        return getUser(memberId.toString());
+      }))
     )
   );
 
   return userData;
-
-  // let troop;
-
-  // if (troopID) {
-  // troop = await Troop.findById(troopID);
-  // }
-
-  // if (troop) {
-  //   const validPatrols = troop.patrols?.filter(
-  //     (patrol) => patrol.members?.length
-  //   );
-
-  //   const addToUserData = (user) => {
-  //     if (user && user.expoNotificationToken) {
-  //       userData.push({ token: user.expoNotificationToken, userID: user.id });
-  //     }
-  //     return Promise.resolve("ok");
-  //   };
-
-  //   const getUser = async (member) => {
-  //     const user = await User.findById(member);
-  //     return addToUserData(user);
-  //   };
-
-  //   await Promise.all(
-  //     validPatrols.map((patrol) =>
-  //       Promise.all(patrol.members.map((member) => getUser(member)))
-  //     )
-  //   );
-  // }
-
-  // return userData;
 };
 
-export const sendNotifications = (userData, body, data) => {
-  let messages = [];
+export const sendNotifications = async (userData: UserData[], body: string, data: {type: string, eventType: string, ID: string, notificationID?: Types.ObjectId}) => {
+  let messages: ExpoPushMessage[] = [];
   for (let user of userData) {
     const { userID, token } = user;
 
-    let notificationData;
+    let doc = await UserModel.findById(userID);
+    if (!doc) {
+      continue;
+    }
 
-    User.findById(userID, function (err, doc) {
-      if (err) return false;
-      const notification = {
-        title: body,
-        type: data.type,
-        eventType: data.eventType,
-        eventID: data.ID,
-      };
+    const notification = {
+      title: body,
+      type: data.type,
+      eventType: data.eventType,
+      eventID: data.ID,
+    };
 
-      let index = doc.unreadNotifications.push(notification);
-      doc.save();
-      notificationData = doc.unreadNotifications[index - 1];
-    });
+    let index = doc.unreadNotifications.push(notification);
+    doc.save();
+    const notificationData = doc.unreadNotifications[index - 1];
+
+    if (!isDocument(notificationData)) {
+      throw new Error("Notification not populated");
+    }
 
     data = { ...data, notificationID: notificationData._id };
 
     if (!Expo.isExpoPushToken(token)) {
       console.error(`Push token ${token} is not a valid Expo push token`);
-      continue;
+      return;
     }
 
     messages.push({
       to: token,
       sound: "default",
-      vibrate: true,
       body,
       data,
     });

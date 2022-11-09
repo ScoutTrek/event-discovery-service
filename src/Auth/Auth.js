@@ -27,7 +27,7 @@ export const typeDefs = gql`
   type LoginPayload {
     token: String!
     user: User!
-    groupID: ID!
+    groupID: ID
     noGroups: Boolean!
   }
 
@@ -87,8 +87,8 @@ export const resolvers = {
       return {
         token,
         user,
-        noGroups: !user.groups.length,
-        groupID: user?.groups[0]?._id,
+        noGroups: !user.groups?.length,
+        groupID: user.groups?.[0]?._id
       };
     },
   },

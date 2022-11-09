@@ -1,4 +1,4 @@
-import { modelOptions, prop, pre } from "@typegoose/typegoose";
+import { modelOptions, prop, pre, Ref } from "@typegoose/typegoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { Membership, ROLES } from "./TroopAndPatrol";
@@ -30,10 +30,7 @@ export class User {
     required: [true, "To create a valid user you must enter an email address."],
     unique: false,
     lowercase: true,
-    validate: {
-      validator: validator.isEmail,
-      message: "Please provide a valid email."
-    }
+    validate: [validator.isEmail, "Please provide a valid email."]
   })
   public email!: string;
 
@@ -61,10 +58,7 @@ export class User {
   public expoNotificationToken?: string;
 
   @prop({
-    validate: {
-      validator: validator.isMobilePhone,
-      message: "Please provide a valid phone number",
-    },
+    validate: [validator.isMobilePhone, "Please provide a valid phone number"],
     minlength: 10,
     maxlength: 11
   })
@@ -78,14 +72,14 @@ export class User {
   @prop({ required: true })
   public birthday!: Date;
 
-  @prop({ required: true, type: () => [Membership], default: [] })
-  public groups!: Membership[];
+  @prop({ required: true, ref: () => Membership, default: [] })
+  public groups!: Ref<Membership>[];
 
   @prop({ required: true, type: () => [String], default: [] })
   public children!: string[];
 
-  @prop({ required: true, type: () => [Notification], default: [] })
-  public unreadNotifications!: Notification[];
+  @prop({ required: true, ref: () => Notification, default: [] })
+  public unreadNotifications!: Ref<Notification>[];
 
   // @prop({ ref: () => Event })
   // public events?: Ref<Event>[];
