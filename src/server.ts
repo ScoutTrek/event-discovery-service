@@ -28,26 +28,26 @@ mongo.once("open", function () {
 	console.log("Database connected!");
 });
 
-// cron.schedule("* * * * *", async () => {
-// 	const oneDayReminderEvents = await EventModel.find({
-// 		notification: { $lte: new Date() }
-// 	});
-// 	if (oneDayReminderEvents.length > 0) {
-// 		oneDayReminderEvents.map(async (event) => {
-// 			if (!isRefType(event.troop, Types.ObjectId)) {
-// 				throw new Error("Impossible");
-// 			}
-// 			const tokens = await getUserNotificationData(event.troop.toString());
-// 			sendNotifications(
-// 				tokens,
-// 				`Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`,
-// 				{ type: "event", eventType: event.type, ID: event.id }
-// 			);
-// 			event.notification = undefined;
-// 			event.save();
-// 		});
-// 	}
-// });
+cron.schedule("* * * * *", async () => {
+	const oneDayReminderEvents = await EventModel.find({
+		notification: { $lte: new Date() }
+	});
+	if (oneDayReminderEvents.length > 0) {
+		oneDayReminderEvents.map(async (event) => {
+			if (!isRefType(event.troop, Types.ObjectId)) {
+				throw new Error("Impossible");
+			}
+			const tokens = await getUserNotificationData(event.troop.toString());
+			sendNotifications(
+				tokens,
+				`Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`,
+				{ type: "event", eventType: event.type, ID: event.id }
+			);
+			event.notification = undefined;
+			event.save();
+		});
+	}
+});
 
 const apolloServer = new ApolloServer({
 	typeDefs: [userTypes, fileTypes, eventTypes, troopTypes, authTypes],
@@ -79,10 +79,10 @@ const apolloServer = new ApolloServer({
 			currMembership = user.groups.find((membership) => {
 				return membership._id.equals(membershipIDString);
 			});
-			// ret = {
-			// 	...ret,
-			// 	tokens: currMembership ? await getUserNotificationData(getIdFromRef(currMembership.troopID).toString()): null
-			// }
+			ret = {
+				...ret,
+				tokens: currMembership ? await getUserNotificationData(getIdFromRef(currMembership.troopID).toString()): null
+			}
 		}
 
 		return {
