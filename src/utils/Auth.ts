@@ -28,7 +28,6 @@ export function createToken(unsignedToken: UserToken): string {
  * @throws {Error} if user cannot be found from specified token
  */
 export async function getUserFromToken(encodedToken: string): Promise<User & Document> {
-  console.log(encodedToken);
   if (!encodedToken) {
     return Promise.reject();
   }

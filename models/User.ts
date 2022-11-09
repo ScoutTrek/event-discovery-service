@@ -1,4 +1,4 @@
-import { modelOptions, prop, pre, Ref } from "@typegoose/typegoose";
+import { modelOptions, prop, pre, Ref, SubDocumentType, ArraySubDocumentType } from "@typegoose/typegoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { Membership, ROLES } from "./TroopAndPatrol";
@@ -72,14 +72,14 @@ export class User {
   @prop({ required: true })
   public birthday!: Date;
 
-  @prop({ required: true, ref: () => Membership, default: [] })
-  public groups!: Ref<Membership>[];
+  @prop({ required: true, type: () => Membership, default: [] })
+  public groups!: ArraySubDocumentType<Membership>[];
 
   @prop({ required: true, type: () => [String], default: [] })
   public children!: string[];
 
-  @prop({ required: true, ref: () => Notification, default: [] })
-  public unreadNotifications!: Ref<Notification>[];
+  @prop({ required: true, type: () => Notification, default: [] })
+  public unreadNotifications!: ArraySubDocumentType<Notification>[];
 
   // @prop({ ref: () => Event })
   // public events?: Ref<Event>[];

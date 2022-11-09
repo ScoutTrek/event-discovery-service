@@ -117,7 +117,6 @@ export const resolvers = {
       return myTroop.patrols.id(id);
     },
     currPatrol: authenticated(async (_, __, { TroopModel, currMembership }) => {
-      console.log(currMembership)
       const myTroop = await TroopModel.findById(currMembership.troopID);
       return myTroop.patrols.id(currMembership.patrolID);
     }),

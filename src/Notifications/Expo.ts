@@ -2,6 +2,7 @@ import { Expo, ExpoPushMessage } from "expo-server-sdk";
 import { TroopModel, UserModel } from "../../models/models";
 import { Document, Error, Types } from "mongoose";
 import { User } from "../../models/User";
+import { Notification } from "../../models/Notification";
 import { isDocument } from "@typegoose/typegoose";
 
 let expo = new Expo();
@@ -64,21 +65,20 @@ export const sendNotifications = async (userData: UserData[], body: string, data
   for (let user of userData) {
     const { userID, token } = user;
 
-    let doc = await UserModel.findById(userID);
-    if (!doc) {
-      continue;
-    }
-
-    const notification = {
+    const notification: Notification = {
       title: body,
       type: data.type,
       eventType: data.eventType,
       eventID: data.ID,
     };
 
-    let index = doc.unreadNotifications.push(notification);
-    doc.save();
-    const notificationData = doc.unreadNotifications[index - 1];
+    let doc = await UserModel.findByIdAndUpdate(userID, {$push: {unreadNotifications: notification}});
+
+    if (!doc) {
+      continue;
+    }
+    
+    const notificationData = doc.unreadNotifications[doc.unreadNotifications.length - 1];
 
     if (!isDocument(notificationData)) {
       throw new Error("Notification not populated");
