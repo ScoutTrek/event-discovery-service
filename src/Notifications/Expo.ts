@@ -1,9 +1,12 @@
-import { Expo, ExpoPushMessage } from "expo-server-sdk";
-import { TroopModel, UserModel } from "../../models/models";
-import { Document, Error, Types } from "mongoose";
-import { User } from "../../models/User";
-import { Notification } from "../../models/Notification";
-import { isDocument } from "@typegoose/typegoose";
+import { isDocument } from '@typegoose/typegoose';
+import { Expo, ExpoPushMessage } from 'expo-server-sdk';
+import mongoose, { Error, Types } from 'mongoose';
+
+import { TroopModel, UserModel } from '../../models/models';
+import { Notification } from '../../models/Notification';
+import { User } from '../../models/User';
+
+import type { DocumentType } from "@typegoose/typegoose";
 
 let expo = new Expo();
 
@@ -30,7 +33,7 @@ export const getUserNotificationData = async (troopID: string): Promise<Array<Us
    * TODO
    * @param user 
    */
-  const addToUserData = (user: User & Document): Promise<string> => {
+  const addToUserData = (user: DocumentType<User>): Promise<string> => {
     if (user.expoNotificationToken) {
       userData.push({ token: user.expoNotificationToken, userID: user.id });
     }

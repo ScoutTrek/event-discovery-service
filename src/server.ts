@@ -16,10 +16,14 @@ import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 import { UserModel, EventModel, TroopModel } from "../models/models";
 
 import * as authFns from "./utils/Auth";
-import mongoose, { Types } from "mongoose";
-import { getUserNotificationData, sendNotifications } from "./Notifications/Expo";
-import { isDocumentArray, isRefType } from "@typegoose/typegoose";
+import mongoose, { Document, Model, Types } from "mongoose";
+import { getUserNotificationData, sendNotifications, UserData } from "./Notifications/Expo";
+import { isDocumentArray, isRefType, DocumentType } from "@typegoose/typegoose";
 import { getIdFromRef } from "./utils/db";
+import { User } from "../models/User.js";
+import { Event } from "../models/Event.js";
+import { Membership, Troop } from "../models/TroopAndPatrol.js";
+import { Request } from "express";
 mongoose.connect(process.env.MONGO_URL!);
 
 const mongo = mongoose.connection;
@@ -49,11 +53,23 @@ cron.schedule("* * * * *", async () => {
 	}
 });
 
-const apolloServer = new ApolloServer({
+export interface ContextType {
+	UserModel: Model<User>,
+	EventModel: Model<Event>,
+	TroopModel: Model<Troop>,
+	req: Request,
+	authFns: typeof authFns,
+	tokens?: UserData[] | null,
+	membershipIDString?: string,
+	currMembership?: DocumentType<Membership>,
+	user?: DocumentType<User>
+}
+
+const apolloServer = new ApolloServer<ContextType>({
 	typeDefs: [userTypes, fileTypes, eventTypes, troopTypes, authTypes],
 	resolvers: [userResolvers, fileResolvers, eventResolvers, troopResolvers, authResolvers],
 	context: async ({ req }) => {
-		let ret: object = {
+		let ret: ContextType = {
 			UserModel,
 			EventModel,
 			TroopModel,
@@ -70,27 +86,21 @@ const apolloServer = new ApolloServer({
 		// Update this for membership paradigm --(connie: not sure what this means but will leave the comment here )
 		const membership = Array.isArray(req.headers?.membership) ? req.headers?.membership[0] : req.headers?.membership; // this is really bad... 
 
-		const membershipIDString =
-			membership === "undefined" ? undefined : new mongoose.Types.ObjectId(membership).toString();
-
-		let currMembership;
+		const membershipIDString = membership === "undefined" ? undefined : new mongoose.Types.ObjectId(membership).toString();
 
 		if (membershipIDString && user && user.groups) {
-			currMembership = user.groups.find((membership) => {
+			ret.membershipIDString = membershipIDString;
+			ret.user = user;
+			const currMembership = user.groups.find((membership) => {
 				return membership._id.equals(membershipIDString);
 			});
-			ret = {
-				...ret,
-				tokens: currMembership ? await getUserNotificationData(getIdFromRef(currMembership.troopID).toString()): null
+			if (currMembership) {
+				// ret.tokens = await getUserNotificationData(getIdFromRef(currMembership.troopID).toString());
+				ret.currMembership = currMembership;
 			}
 		}
 
-		return {
-			...ret,
-			membershipIDString,
-			currMembership,
-			user
-		};
+		return ret;
 	}
 });
 

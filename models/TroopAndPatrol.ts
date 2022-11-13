@@ -1,9 +1,10 @@
 import { modelOptions, prop } from "@typegoose/typegoose";
-import type { Ref } from "@typegoose/typegoose";
+import type { Ref, ArraySubDocumentType } from "@typegoose/typegoose";
+import mongoose from "mongoose";
 import { Point } from "./Event";
 import { User } from "./User";
 
-export const ROLES = [
+export enum ROLE {
   "SCOUTMASTER",
   "ASST_SCOUTMASTER",
   "SENIOR_PATROL_LEADER",
@@ -12,20 +13,20 @@ export const ROLES = [
   "SCOUT",
   "PARENT",
   "ADULT_VOLUNTEER",
-] as const;
+}
 
 export class Membership {
-  @prop({ ref: () => Troop })
-  public troopID?: Ref<Troop>;
+  @prop({ required: true, ref: () => Troop })
+  public troopID!: Ref<Troop>;
 
-  @prop()
-  public troopNumber?: string;
+  @prop({ required: true })
+  public troopNumber!: string;
 
-  @prop({ ref: () => Patrol })
-  public patrolID?: Ref<Patrol>;
+  @prop({ required: true, ref: () => Patrol })
+  public patrolID!: Ref<Patrol>;
 
-  @prop({ enum: ROLES })
-  public role?: string;
+  @prop({ required: true, enum: ROLE })
+  public role!: ROLE;
 }
 
 @modelOptions({
@@ -72,8 +73,8 @@ export class Troop {
   @prop()
   public meetLocation?: Point;
 
-  @prop({ type: () => [Patrol] })
-  public patrols?: Patrol[];
+  @prop({ required: true, type: () => Patrol, default: [] })
+  public patrols!: mongoose.Types.DocumentArray<ArraySubDocumentType<Patrol>>;
 
   // @prop({ ref: () => Event })
   // public events?: Ref<Event>[];

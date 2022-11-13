@@ -1,7 +1,9 @@
-import { modelOptions, prop, pre, Ref, SubDocumentType, ArraySubDocumentType } from "@typegoose/typegoose";
+import { modelOptions, prop, pre } from "@typegoose/typegoose";
+import type { ArraySubDocumentType } from "@typegoose/typegoose";
+import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
-import { Membership, ROLES } from "./TroopAndPatrol";
+import { Membership, ROLE } from "./TroopAndPatrol";
 import { Notification } from "./Notification";
 
 const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_250/v1645286759/ScoutTrek/DefaultProfile.png";
@@ -19,7 +21,6 @@ const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image
   next();
 })
 export class User {
-
   @prop({
     required: [true, "You must insert your name to create a valid user."],
     trim: true
@@ -73,19 +74,13 @@ export class User {
   public birthday!: Date;
 
   @prop({ required: true, type: () => Membership, default: [] })
-  public groups!: ArraySubDocumentType<Membership>[];
+  public groups!: mongoose.Types.Array<ArraySubDocumentType<Membership>>;
 
   @prop({ required: true, type: () => [String], default: [] })
   public children!: string[];
 
   @prop({ required: true, type: () => Notification, default: [] })
-  public unreadNotifications!: ArraySubDocumentType<Notification>[];
-
-  // @prop({ ref: () => Event })
-  // public events?: Ref<Event>[];
-
-  // @prop({ required: true, enum: ROLES })
-  // public role!: string;
+  public unreadNotifications!: mongoose.Types.DocumentArray<ArraySubDocumentType<Notification>>;
 
   /**
    * TODO: check functionality of function

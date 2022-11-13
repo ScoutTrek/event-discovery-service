@@ -2,7 +2,10 @@ import { verify, sign } from "jsonwebtoken";
 import { User } from "../../models/User";
 import { Request } from "express";
 import { UserModel } from "../../models/models";
-import { Document } from "mongoose";
+import { AuthChecker } from "type-graphql";
+import type { ContextType } from "../server";
+import type { DocumentType } from "@typegoose/typegoose";
+import { ROLE } from "models/TroopAndPatrol";
 
 const SECRET = "themfingsuperobvioussting";
 const DEFAULT_EXPIRES_IN = "55d";
@@ -27,7 +30,7 @@ export function createToken(unsignedToken: UserToken): string {
  * @param {String} token jwt from client
  * @throws {Error} if user cannot be found from specified token
  */
-export async function getUserFromToken(encodedToken: string): Promise<User & Document> {
+export async function getUserFromToken(encodedToken: string): Promise<DocumentType<User>> {
   if (!encodedToken) {
     return Promise.reject();
   }
@@ -82,4 +85,15 @@ export const authorized = (role: string, next: Function) => (root: any, args: an
     );
   }
   return next(root, args, context, info);
+};
+
+export const customAuthChecker: AuthChecker<ContextType, ROLE> = (
+  { root, args, context, info },
+  roles,
+) => {
+  if (!context.user) {
+    return false;
+  }
+
+  return roles.length == 0 || context.currMembership?.role === roles[0];
 };
