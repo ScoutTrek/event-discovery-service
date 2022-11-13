@@ -3,28 +3,34 @@ import type { Ref, ArraySubDocumentType } from "@typegoose/typegoose";
 import mongoose from "mongoose";
 import { Point } from "./Event";
 import { User } from "./User";
+import { Field, ID, ObjectType } from "type-graphql";
 
 export enum ROLE {
-  "SCOUTMASTER",
-  "ASST_SCOUTMASTER",
-  "SENIOR_PATROL_LEADER",
-  "ASST_PATROL_LEADER",
-  "PATROL_LEADER",
-  "SCOUT",
-  "PARENT",
-  "ADULT_VOLUNTEER",
+  SCOUTMASTER = "SCOUTMASTER",
+  ASST_SCOUTMASTER = "ASST_SCOUTMASTER",
+  SENIOR_PATROL_LEADER = "SENIOR_PATROL_LEADER",
+  ASST_PATROL_LEADER = "ASST_PATROL_LEADER",
+  PATROL_LEADER = "PATROL_LEADER",
+  SCOUT = "SCOUT",
+  PARENT = "PARENT",
+  ADULT_VOLUNTEER = "ADULT_VOLUNTEER",
 }
 
+@ObjectType()
 export class Membership {
+  @Field(type => ID)
   @prop({ required: true, ref: () => Troop })
   public troopID!: Ref<Troop>;
 
+  @Field(type => ID)
   @prop({ required: true })
   public troopNumber!: string;
 
+  @Field(type => ID)
   @prop({ required: true, ref: () => Patrol })
   public patrolID!: Ref<Patrol>;
 
+  @Field(type => ROLE)
   @prop({ required: true, enum: ROLE })
   public role!: ROLE;
 }

@@ -2,7 +2,7 @@ import * as validator from "email-validator";
 import { UserModel } from "../../models/models";
 import { Field, InputType, ObjectType, ID, Resolver, Mutation, Args } from "type-graphql";
 import * as authFns from "../utils/Auth";
-import { getIdFromRef } from "src/utils/db";
+import { getIdFromRef } from "../utils/db";
 import { User } from "../User/User";
 
 @InputType()
@@ -49,8 +49,6 @@ export class LoginPayload {
   token!: string;
   @Field(type => User)
   user!: User;
-  @Field()
-  noGroups!: boolean;
   @Field(type => ID)
   groupID!: string;
 }
@@ -116,7 +114,6 @@ export class AuthResolver {
     return {
       token,
       user,
-      noGroups: !user.groups.length,
       groupID: getIdFromRef(user.groups[0]).toString()
     };
   }

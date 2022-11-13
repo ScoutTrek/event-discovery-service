@@ -69,6 +69,7 @@ export const sendNotifications = async (userData: UserData[], body: string, data
     const { userID, token } = user;
 
     const notification: Notification = {
+      _id: new mongoose.Types.ObjectId(),
       title: body,
       type: data.type,
       eventType: data.eventType,

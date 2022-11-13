@@ -1,10 +1,13 @@
-import { modelOptions, prop, pre } from "@typegoose/typegoose";
-import type { ArraySubDocumentType } from "@typegoose/typegoose";
+import { modelOptions, prop as Property, pre } from "@typegoose/typegoose";
+import type { ArraySubDocumentType, Ref } from "@typegoose/typegoose";
 import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { Membership, ROLE } from "./TroopAndPatrol";
 import { Notification } from "./Notification";
+import { Event } from "./Event";
+import { Field, ID, ObjectType } from "type-graphql";
+import { ObjectId } from "mongodb"
 
 const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_250/v1645286759/ScoutTrek/DefaultProfile.png";
 
@@ -20,14 +23,20 @@ const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image
   this.passwordConfirm = undefined;
   next();
 })
+@ObjectType()
 export class User {
-  @prop({
+  @Field(type => ID)
+  readonly _id: ObjectId;
+
+  @Field()
+  @Property({
     required: [true, "You must insert your name to create a valid user."],
     trim: true
   })
   public name!: string;
 
-  @prop({
+  @Field()
+  @Property({
     required: [true, "To create a valid user you must enter an email address."],
     unique: false,
     lowercase: true,
@@ -35,17 +44,18 @@ export class User {
   })
   public email!: string;
 
-  @prop({ default: DEFAULT_USER_PHOTO_URL })
-  public userPhoto?: string;
+  @Field()
+  @Property({ required: true, default: DEFAULT_USER_PHOTO_URL })
+  public userPhoto!: string;
 
-  @prop({
+  @Property({
     required: true,
     minlength: 8,
     select: false
   })
   public password!: string;
 
-  @prop({
+  @Property({
     validate: {
       validator: function (el: string) {
         return el === this.password;
@@ -55,40 +65,54 @@ export class User {
   })
   public passwordConfirm?: string;
 
-  @prop()
+  @Field({nullable: true})
+  @Property()
   public expoNotificationToken?: string;
 
-  @prop({
+  @Field({nullable: true})
+  @Property({
     validate: [validator.isMobilePhone, "Please provide a valid phone number"],
     minlength: 10,
     maxlength: 11
   })
   public phone?: string;
 
-  /**
-   * NOTE:
-   * `birthday` was previously optional
-   * but should be absolute for age() getter to work
-   */
-  @prop({ required: true })
+  @Field()
+  @Property({required: true})
   public birthday!: Date;
 
-  @prop({ required: true, type: () => Membership, default: [] })
+  @Field(type => [Membership])
+  @Property({ required: true, type: () => Membership, default: [] })
   public groups!: mongoose.Types.Array<ArraySubDocumentType<Membership>>;
 
-  @prop({ required: true, type: () => [String], default: [] })
+  @Field(type => [String])
+  @Property({ required: true, type: () => [String], default: [] })
   public children!: string[];
 
-  @prop({ required: true, type: () => Notification, default: [] })
+  @Field(type => [Notification])
+  @Property({ required: true, type: () => Notification, default: [] })
   public unreadNotifications!: mongoose.Types.DocumentArray<ArraySubDocumentType<Notification>>;
 
-  /**
-   * TODO: check functionality of function
-   */
-  public get age(): number {
+  // @Field(type => [Event])
+  // @Property({ required: true, ref: () => Event, default: [] })
+  // public events!: Ref<Event>[];
+
+  @Field({nullable: true})
+  createdAt?: string;
+
+  @Field({nullable: true})
+  updatedAt?: string;
+
+  @Field()
+  age(): number {
     const todayAsMillis = new Date(Date.now()).getUTCMilliseconds();
     const bdayAsMillis = new Date(this.birthday).getUTCMilliseconds();
     return Math.floor((todayAsMillis - bdayAsMillis) / 1000 / 60 / 60 / 24 / 365);
+  }
+
+  @Field()
+  noGroups(): boolean {
+    return this.groups.length === 0;
   }
 
   /**

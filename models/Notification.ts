@@ -1,4 +1,6 @@
 import { modelOptions, prop } from "@typegoose/typegoose";
+import { Field, ID, ObjectType } from "type-graphql";
+import { ObjectId } from "mongodb"
 
 @modelOptions({
 	schemaOptions: {
@@ -7,16 +9,23 @@ import { modelOptions, prop } from "@typegoose/typegoose";
 		timestamps: true
 	}
 })
+@ObjectType()
 export class Notification {
+	@Field(type => ID)
+	readonly _id: ObjectId;
+
+	@Field()
 	@prop()
-	public title?: string;
+	public title!: string;
+
+	@Field()
+	@prop()
+	public type!: string;
 
 	@prop()
-	public type?: string;
+	public eventType!: string;
 
+	@Field()
 	@prop()
-	public eventType?: string;
-
-	@prop()
-	public eventID?: string;
+	public eventID!: string;
 }

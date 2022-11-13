@@ -1,7 +1,11 @@
 import express from "express";
-import server from "./server";
+import apolloServer from "./server";
 
 async function startServer() {
+  let server = await apolloServer;
+  if (server === undefined) {
+    return;
+  }
   await server.start();
 
   const app = express();
