@@ -3,7 +3,7 @@
 import { DocumentType, isRefType } from '@typegoose/typegoose';
 import { ApolloServer } from 'apollo-server-express';
 import { Request } from 'express';
-import mongoose, { Model, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import cron from 'node-cron';
 import { buildSchema } from 'type-graphql';
 
@@ -16,6 +16,8 @@ import { TypegooseMiddleware } from './middleware/typegoose_middlware';
 import { getUserNotificationData, sendNotifications, UserData } from './Notifications/Expo';
 import { UserResolver } from './User/User';
 import * as authFns from './utils/Auth';
+
+import type { ReturnModelType } from '@typegoose/typegoose';
 
 // import { typeDefs as userTypes, resolvers as userResolvers } from "./User/User.js";
 // import { typeDefs as eventTypes, resolvers as eventResolvers } from "./Event/Event";
@@ -57,9 +59,9 @@ cron.schedule("* * * * *", async () => {
 });
 
 export interface ContextType {
-	UserModel: Model<User>,
-	EventModel: Model<Event>,
-	TroopModel: Model<Troop>,
+	UserModel: ReturnModelType<typeof User>,
+	EventModel: ReturnModelType<typeof Event>,
+	TroopModel: ReturnModelType<typeof Troop>,
 	req: Request,
 	authFns: typeof authFns,
 	tokens?: UserData[] | null,
