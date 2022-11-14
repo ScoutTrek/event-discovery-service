@@ -1,7 +1,21 @@
 // const { ApolloServer } = require("apollo-server-express");
 // const cron = require("node-cron");
-import { ApolloServer } from "apollo-server-express";
-import cron from "node-cron";
+import { DocumentType, isRefType } from '@typegoose/typegoose';
+import { ApolloServer } from 'apollo-server-express';
+import { Request } from 'express';
+import mongoose, { Model, Types } from 'mongoose';
+import cron from 'node-cron';
+import { buildSchema } from 'type-graphql';
+
+import { Event } from '../models/Event.js';
+import { EventModel, TroopModel, UserModel } from '../models/models';
+import { Membership, Troop } from '../models/TroopAndPatrol.js';
+import { User } from '../models/User.js';
+import { AuthResolver } from './Auth/Auth';
+import { TypegooseMiddleware } from './middleware/typegoose_middlware';
+import { getUserNotificationData, sendNotifications, UserData } from './Notifications/Expo';
+import { UserResolver } from './User/User';
+import * as authFns from './utils/Auth';
 
 // import { typeDefs as userTypes, resolvers as userResolvers } from "./User/User.js";
 // import { typeDefs as eventTypes, resolvers as eventResolvers } from "./Event/Event";
@@ -12,23 +26,7 @@ import cron from "node-cron";
 // import { typeDefs as fileTypes, resolvers as fileResolvers } from "./Event/SharedAssets";
 // import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 
-import { UserResolver } from "./User/User";
-
 // Models
-import { UserModel, EventModel, TroopModel } from "../models/models";
-
-import * as authFns from "./utils/Auth";
-import mongoose, { Document, Model, Types } from "mongoose";
-import { getUserNotificationData, sendNotifications, UserData } from "./Notifications/Expo";
-import { isDocumentArray, isRefType, DocumentType } from "@typegoose/typegoose";
-import { getIdFromRef } from "./utils/db";
-import { User } from "../models/User.js";
-import { Event } from "../models/Event.js";
-import { Membership, Troop } from "../models/TroopAndPatrol.js";
-import { Request } from "express";
-import { buildSchema } from "type-graphql";
-import { TypegooseMiddleware } from "./middleware/typegoose_middlware";
-
 mongoose.connect(process.env.MONGO_URL!);
 
 const mongo = mongoose.connection;
@@ -113,7 +111,7 @@ async function bootstrap() {
 	try {
 		// build TypeGraphQL executable schema
 		const schema = await buildSchema({
-			resolvers: [UserResolver],
+			resolvers: [AuthResolver, UserResolver],
 			globalMiddlewares: [TypegooseMiddleware],
 			authChecker: authFns.customAuthChecker,
 		});

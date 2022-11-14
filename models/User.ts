@@ -1,13 +1,14 @@
-import { modelOptions, prop as Property, pre } from "@typegoose/typegoose";
+import { modelOptions, pre, prop as Property } from '@typegoose/typegoose';
+import bcrypt from 'bcrypt';
+import { ObjectId } from 'mongodb';
+import mongoose from 'mongoose';
+import { Field, ID, ObjectType } from 'type-graphql';
+import validator from 'validator';
+
+import { Notification } from './Notification';
+import { Membership } from './TroopAndPatrol';
+
 import type { ArraySubDocumentType, Ref } from "@typegoose/typegoose";
-import mongoose from "mongoose";
-import validator from "validator";
-import bcrypt from "bcrypt";
-import { Membership, ROLE } from "./TroopAndPatrol";
-import { Notification } from "./Notification";
-import { Event } from "./Event";
-import { Field, ID, ObjectType } from "type-graphql";
-import { ObjectId } from "mongodb"
 
 const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image/upload/c_scale,w_250/v1645286759/ScoutTrek/DefaultProfile.png";
 
@@ -25,7 +26,7 @@ const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image
 })
 @ObjectType()
 export class User {
-  @Field(type => ID)
+  @Field(type => ID, {name: "id"})
   readonly _id: ObjectId;
 
   @Field()

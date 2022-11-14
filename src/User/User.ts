@@ -1,32 +1,10 @@
 import mongoose, { Error } from 'mongoose';
-import type { ObjectId } from 'mongoose';
-import {
-  Arg,
-  Authorized,
-  Ctx,
-  Field,
-  FieldResolver,
-  ID,
-  InputType,
-  Int,
-  Mutation,
-  ObjectType,
-  Query,
-  registerEnumType,
-  Resolver,
-  Root,
-} from 'type-graphql';
+import { Arg, Authorized, Ctx, Field, FieldResolver, ID, InputType, Int, Query, Resolver, Root } from 'type-graphql';
 
 import { Membership, ROLE } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
-import { Troop } from '../../models/TroopAndPatrol';
 
 import type { ContextType } from "../server";
-
-registerEnumType(ROLE, {
-  name: "Role",
-  description: "A user's role within a patrol"
-});
 
 // @InputType()
 // class AddMembershipInput implements Partial<Membership>{

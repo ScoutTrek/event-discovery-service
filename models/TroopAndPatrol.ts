@@ -1,9 +1,12 @@
-import { modelOptions, prop } from "@typegoose/typegoose";
-import type { Ref, ArraySubDocumentType } from "@typegoose/typegoose";
-import mongoose from "mongoose";
-import { Point } from "./Event";
-import { User } from "./User";
-import { Field, ID, ObjectType } from "type-graphql";
+import { modelOptions, prop } from '@typegoose/typegoose';
+import { ObjectId } from 'mongodb';
+import mongoose from 'mongoose';
+import { Field, ID, ObjectType, registerEnumType } from 'type-graphql';
+
+import { Event, Point } from './Event';
+import { User } from './User';
+
+import type { Ref, ArraySubDocumentType } from '@typegoose/typegoose';
 
 export enum ROLE {
   SCOUTMASTER = "SCOUTMASTER",
@@ -16,8 +19,16 @@ export enum ROLE {
   ADULT_VOLUNTEER = "ADULT_VOLUNTEER",
 }
 
+registerEnumType(ROLE, {
+  name: "Role",
+  description: "A user's role within a patrol"
+});
+
 @ObjectType()
 export class Membership {
+  @Field(type => ID, {name: "id"})
+  readonly _id: ObjectId;
+
   @Field(type => ID)
   @prop({ required: true, ref: () => Troop })
   public troopID!: Ref<Troop>;
@@ -42,15 +53,22 @@ export class Membership {
     timestamps: true
   }
 })
+@ObjectType()
 export class Patrol {
+  @Field(type => ID, {name: "id"})
+  readonly _id: ObjectId;
+
+  @Field()
   @prop({ required: true })
   public name!: string;
 
+  @Field(type => [User])
   @prop({ required: true, ref: () => User, default: [] })
   public members!: Ref<User>[];
 
-  // @prop({ required: true, ref: () => Event, default: [] })
-  // public events!: Ref<Event>[];
+  @Field(type => [Event])
+  @prop({ required: true, ref: () => Event, default: [] })
+  public events!: Ref<Event>[];
 }
 
 @modelOptions({
@@ -60,28 +78,39 @@ export class Patrol {
     timestamps: true
   }
 })
+@ObjectType()
 export class Troop {
+  @Field(type => ID, {name: "id"})
+  readonly _id: ObjectId;
+  
+  @Field()
   @prop({ required: true })
   public council!: string;
 
+  @Field()
   @prop({ required: true })
   public state!: string;
 
+  @Field()
   @prop({ required: true })
   public unitNumber!: number;
 
-  @prop()
-  public city?: string;
+  @Field()
+  @prop({ required: true })
+  public city: string;
 
+  @Field({nullable: true})
   @prop()
   public scoutMaster?: string;
 
+  @Field({nullable: true})
   @prop()
   public meetLocation?: Point;
 
-  @prop({ required: true, type: () => Patrol, default: [] })
+  @Field()
+  @prop({ required: true, type: () => [Patrol], default: [] })
   public patrols!: mongoose.Types.DocumentArray<ArraySubDocumentType<Patrol>>;
 
-  // @prop({ ref: () => Event })
-  // public events?: Ref<Event>[];
+  @prop({ ref: () => Event })
+  public events?: Ref<Event>[];
 }

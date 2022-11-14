@@ -1,4 +1,4 @@
-import { modelOptions, prop } from "@typegoose/typegoose";
+import { modelOptions, prop } from "@typegoose/typegoose"
 import { Field, ID, ObjectType } from "type-graphql";
 import { ObjectId } from "mongodb"
 
@@ -11,7 +11,7 @@ import { ObjectId } from "mongodb"
 })
 @ObjectType()
 export class Notification {
-	@Field(type => ID)
+	@Field(type => ID, {name: "id"})
 	readonly _id: ObjectId;
 
 	@Field()

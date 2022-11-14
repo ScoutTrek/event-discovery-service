@@ -1,9 +1,12 @@
-import * as validator from "email-validator";
-import { UserModel } from "../../models/models";
-import { Field, InputType, ObjectType, ID, Resolver, Mutation, Args } from "type-graphql";
-import * as authFns from "../utils/Auth";
-import { getIdFromRef } from "../utils/db";
-import { User } from "../User/User";
+import * as validator from 'email-validator';
+import { Arg, Ctx, Field, ID, InputType, Mutation, ObjectType, Resolver } from 'type-graphql';
+
+import { UserModel } from '../../models/models';
+import { User } from '../../models/User';
+import * as authFns from '../utils/Auth';
+import { getIdFromRef } from '../utils/db';
+
+import type { ContextType } from '../server';
 
 @InputType()
 export class LoginInput {
@@ -55,10 +58,10 @@ export class LoginPayload {
 
 @Resolver()
 export class AuthResolver {
-
   @Mutation(returns => SignupPayload)
   async signup(
-    @Args() input: SignupInput
+    @Arg("input") input: SignupInput,
+    @Ctx() ctx: ContextType
   ): Promise<SignupPayload> {
     if (!validator.validate(input.email)) {
       throw new Error("Please enter a valid email.");
@@ -73,10 +76,10 @@ export class AuthResolver {
     };
 
     // TODO: double check this return type
-    const user = await UserModel.create({ ...userInput });
+    const user = await ctx.UserModel.create({ ...userInput });
 
     const token = authFns.createToken({
-      id: user._id
+      id: user._id.toString()
     });
 
     return {
@@ -88,7 +91,8 @@ export class AuthResolver {
 
   @Mutation(returns => LoginPayload)
   async login(
-    @Args() input: LoginInput
+    @Arg("input") input: LoginInput,
+    @Ctx() ctx: ContextType
   ): Promise<LoginPayload> {
     const { email, password } = input;
 
@@ -96,7 +100,7 @@ export class AuthResolver {
       throw new Error("Please provide an email and password.");
     }
 
-    const user = await UserModel.findOne({ email }).select("+password");
+    const user = await ctx.UserModel.findOne({ email }).select("+password");
 
     if (!user || !(await user.isValidPassword(password, user.password))) {
       throw new Error("Invalid login");
