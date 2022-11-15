@@ -52,8 +52,8 @@ export class LoginPayload {
   token!: string;
   @Field(type => User)
   user!: User;
-  @Field(type => ID)
-  groupID!: string;
+  @Field(type => ID, {nullable: true})
+  groupID?: string;
 }
 
 @Resolver()
@@ -67,18 +67,8 @@ export class AuthResolver {
       throw new Error("Please enter a valid email.");
     }
 
-    const userInput = {
-      name: input.name,
-      email: input.email,
-      expoNotificationToken: input.expoNotificationToken,
-      password: input.password,
-      passwordConfirm: input.passwordConfirm,
-      phone: input.phone,
-      birthday: input.birthday,
-    };
-
     // TODO: double check this return type
-    const user = await ctx.UserModel.create({ ...userInput });
+    const user = await ctx.UserModel.create(input);
 
     const token = authFns.createToken({
       id: user._id.toString()
@@ -120,7 +110,7 @@ export class AuthResolver {
     return {
       token,
       user,
-      groupID: getIdFromRef(user.groups[0]).toString()
+      groupID: user.groups.length > 0 ? getIdFromRef(user.groups[0]).toString() : undefined,
     };
   }
 }

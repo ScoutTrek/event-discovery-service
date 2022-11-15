@@ -99,10 +99,10 @@ export class User {
   // public events!: Ref<Event>[];
 
   @Field({nullable: true})
-  createdAt?: string;
+  createdAt?: Date;
 
   @Field({nullable: true})
-  updatedAt?: string;
+  updatedAt?: Date;
 
   @Field()
   age(): number {
