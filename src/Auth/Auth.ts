@@ -32,8 +32,8 @@ export class SignupInput {
   expoNotificationToken?: string;
   @Field({ nullable: true })
   phone?: string;
-  @Field({ nullable: true })
-  birthday?: string;
+  @Field()
+  birthday!: Date;
 }
 
 @ObjectType()
@@ -73,6 +73,8 @@ export class AuthResolver {
       expoNotificationToken: input.expoNotificationToken,
       password: input.password,
       passwordConfirm: input.passwordConfirm,
+      phone: input.phone,
+      birthday: input.birthday,
     };
 
     // TODO: double check this return type

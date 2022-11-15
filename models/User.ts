@@ -106,9 +106,7 @@ export class User {
 
   @Field()
   age(): number {
-    const todayAsMillis = new Date(Date.now()).getUTCMilliseconds();
-    const bdayAsMillis = new Date(this.birthday).getUTCMilliseconds();
-    return Math.floor((todayAsMillis - bdayAsMillis) / 1000 / 60 / 60 / 24 / 365);
+    return Math.floor((Date.now() - this.birthday.getTime()) / 1000 / 60 / 60 / 24 / 365);
   }
 
   @Field()

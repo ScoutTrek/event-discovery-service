@@ -70,45 +70,6 @@ export interface ContextType {
 	user?: DocumentType<User>
 }
 
-// const apolloServer = new ApolloServer<ContextType>({
-// 	typeDefs: [userTypes, fileTypes, eventTypes, troopTypes, authTypes],
-// 	resolvers: [userResolvers, fileResolvers, eventResolvers, troopResolvers, authResolvers],
-	// context: async ({ req }) => {
-	// 	let ret: ContextType = {
-	// 		UserModel,
-	// 		EventModel,
-	// 		TroopModel,
-	// 		req,
-	// 		authFns
-	// 	};
-
-	// 	const token = authFns.getTokenFromReq(req);
-	// 	if (!token) {
-	// 		return ret;
-	// 	}
-	// 	const user = await authFns.getUserFromToken(token);
-
-	// 	// Update this for membership paradigm --(connie: not sure what this means but will leave the comment here )
-	// 	const membership = Array.isArray(req.headers?.membership) ? req.headers?.membership[0] : req.headers?.membership; // this is really bad... 
-
-	// 	const membershipIDString = membership === "undefined" ? undefined : new mongoose.Types.ObjectId(membership).toString();
-
-	// 	if (membershipIDString && user && user.groups) {
-	// 		ret.membershipIDString = membershipIDString;
-	// 		ret.user = user;
-	// 		const currMembership = user.groups.find((membership) => {
-	// 			return membership._id.equals(membershipIDString);
-	// 		});
-	// 		if (currMembership) {
-	// 			// ret.tokens = await getUserNotificationData(getIdFromRef(currMembership.troopID).toString());
-	// 			ret.currMembership = currMembership;
-	// 		}
-	// 	}
-
-	// 	return ret;
-// 	}
-// });
-
 async function bootstrap() {
 	try {
 		// build TypeGraphQL executable schema
