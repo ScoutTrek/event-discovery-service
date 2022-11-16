@@ -1,6 +1,6 @@
-import { modelOptions, prop } from "@typegoose/typegoose"
-import { Field, ID, ObjectType } from "type-graphql";
-import { ObjectId } from "mongodb"
+import { modelOptions, prop } from '@typegoose/typegoose';
+import mongoose from 'mongoose';
+import { Field, ID, ObjectType } from 'type-graphql';
 
 @modelOptions({
 	schemaOptions: {
@@ -12,7 +12,7 @@ import { ObjectId } from "mongodb"
 @ObjectType()
 export class Notification {
 	@Field(type => ID, {name: "id"})
-	readonly _id: ObjectId;
+	readonly _id: mongoose.Types.ObjectId;
 
 	@Field()
 	@prop()

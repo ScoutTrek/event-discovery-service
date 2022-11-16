@@ -95,5 +95,5 @@ export const customAuthChecker: AuthChecker<ContextType, ROLE> = (
     return false;
   }
 
-  return roles.length == 0 || context.currMembership?.role === roles[0];
+  return roles.length == 0 || context.currMembership !== undefined && roles.includes(context.currMembership.role);
 };

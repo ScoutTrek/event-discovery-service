@@ -7,26 +7,20 @@ import mongoose, { Types } from 'mongoose';
 import cron from 'node-cron';
 import { buildSchema } from 'type-graphql';
 
-import { Event } from '../models/Event.js';
+import { Event } from '../models/Event';
 import { EventModel, TroopModel, UserModel } from '../models/models';
-import { Membership, Troop } from '../models/TroopAndPatrol.js';
-import { User } from '../models/User.js';
+import { Membership, Troop } from '../models/TroopAndPatrol';
+import { User } from '../models/User';
 import { AuthResolver } from './Auth/Auth';
 import { TypegooseMiddleware } from './middleware/typegoose_middlware';
 import { getUserNotificationData, sendNotifications, UserData } from './Notifications/Expo';
+import { PatrolResolver, TroopResolver } from './ScoutHierarchy/TroopAndPatrol';
 import { UserResolver } from './User/User';
 import * as authFns from './utils/Auth';
 
 import type { ReturnModelType } from '@typegoose/typegoose';
-
-// import { typeDefs as userTypes, resolvers as userResolvers } from "./User/User.js";
 // import { typeDefs as eventTypes, resolvers as eventResolvers } from "./Event/Event";
-// import {
-// 	typeDefs as troopTypes,
-// 	resolvers as troopResolvers
-// } from "./ScoutHierarchy/TroopAndPatrol";
 // import { typeDefs as fileTypes, resolvers as fileResolvers } from "./Event/SharedAssets";
-// import { typeDefs as authTypes, resolvers as authResolvers } from "./Auth/Auth";
 
 // Models
 mongoose.connect(process.env.MONGO_URL!);
@@ -74,7 +68,7 @@ async function bootstrap() {
 	try {
 		// build TypeGraphQL executable schema
 		const schema = await buildSchema({
-			resolvers: [AuthResolver, UserResolver],
+			resolvers: [AuthResolver, UserResolver, TroopResolver, PatrolResolver],
 			globalMiddlewares: [TypegooseMiddleware],
 			authChecker: authFns.customAuthChecker,
 		});

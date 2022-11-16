@@ -1,6 +1,5 @@
 import { modelOptions, pre, prop as Property } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
-import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
 import { Field, ID, ObjectType } from 'type-graphql';
 import validator from 'validator';
@@ -27,7 +26,7 @@ const DEFAULT_USER_PHOTO_URL = "https://res.cloudinary.com/wow-your-client/image
 @ObjectType()
 export class User {
   @Field(type => ID, {name: "id"})
-  readonly _id: ObjectId;
+  readonly _id: mongoose.Types.ObjectId;
 
   @Field()
   @Property({
@@ -96,7 +95,7 @@ export class User {
 
   // @Field(type => [Event])
   // @Property({ required: true, ref: () => Event, default: [] })
-  // public events!: Ref<Event>[];
+  // public events!: Ref<Event, mongoose.Types.ObjectId>[];
 
   @Field({nullable: true})
   createdAt?: Date;

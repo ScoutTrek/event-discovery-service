@@ -4,7 +4,6 @@ import { Arg, Ctx, Field, ID, InputType, Mutation, ObjectType, Resolver } from '
 import { UserModel } from '../../models/models';
 import { User } from '../../models/User';
 import * as authFns from '../utils/Auth';
-import { getIdFromRef } from '../utils/db';
 
 import type { ContextType } from '../server';
 
@@ -110,7 +109,7 @@ export class AuthResolver {
     return {
       token,
       user,
-      groupID: user.groups.length > 0 ? getIdFromRef(user.groups[0]).toString() : undefined,
+      groupID: user.groups.length > 0 ? user.groups[0]!._id : undefined,
     };
   }
 }

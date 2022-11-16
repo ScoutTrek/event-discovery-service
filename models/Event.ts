@@ -1,13 +1,12 @@
 import { prop } from '@typegoose/typegoose';
-import { ObjectId } from 'mongodb';
-import { Field, ID, ObjectType } from 'type-graphql';
+import mongoose from 'mongoose';
+import { Field, ID, ObjectType, registerEnumType } from 'type-graphql';
 
 import { Roster } from './Roster';
 import { Patrol, Troop } from './TroopAndPatrol';
 import { User } from './User';
 
 import type { Ref } from "@typegoose/typegoose";
-
 export const DAYS_OF_WEEK = [
   "Monday",
   "Tuesday",
@@ -43,6 +42,10 @@ export enum EVENT_TYPE {
   SWIM_TEST = "SWIM_TEST",
 }
 
+registerEnumType(EVENT_TYPE, {
+  name: "EventType",
+});
+
 export class Point {
   @prop({ required: true, enum: ["Point"] as const })
   public type!: string;
@@ -76,7 +79,7 @@ export class Message {
 @ObjectType()
 export class Event {
   @Field(type => ID, {name: "id"})
-  readonly _id: ObjectId;
+  readonly _id: mongoose.Types.ObjectId;
 
   @Field(type => EVENT_TYPE)
   @prop({ required: true, enum: EVENT_TYPE })
@@ -84,11 +87,11 @@ export class Event {
 
   @Field(type => Troop)
   @prop({ required: true, ref: () => Troop })
-  public troop!: Ref<Troop>;
+  public troop!: Ref<Troop, mongoose.Types.ObjectId>;
 
   @Field(type => Patrol)
   @prop({ required: true, ref: () => Patrol })
-  public patrol!: Ref<Patrol>;
+  public patrol!: Ref<Patrol, mongoose.Types.ObjectId>;
 
   @Field()
   @prop({ required: [true, "An event cannot have a blank title."] })
@@ -158,7 +161,7 @@ export class Event {
 
   @Field(type => User, { nullable: true })
   @prop({ ref: () => User })
-  public creator?: Ref<User>;
+  public creator?: Ref<User, mongoose.Types.ObjectId>;
 
   @prop()
   public notification?: Date;
