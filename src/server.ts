@@ -11,11 +11,12 @@ import { Event } from '../models/Event';
 import { EventModel, TroopModel, UserModel } from '../models/models';
 import { Membership, Troop } from '../models/TroopAndPatrol';
 import { User } from '../models/User';
-import { AuthResolver } from './Auth/Auth';
 import { TypegooseMiddleware } from './middleware/typegoose_middlware';
-import { getUserNotificationData, sendNotifications, UserData } from './Notifications/Expo';
-import { PatrolResolver, TroopResolver } from './ScoutHierarchy/TroopAndPatrol';
-import { UserResolver } from './User/User';
+import { getUserNotificationData, sendNotifications, UserData } from './notifications';
+import { AuthResolver } from './resolvers/auth';
+import { PatrolResolver } from './resolvers/patrol';
+import { TroopResolver } from './resolvers/troop';
+import { UserResolver } from './resolvers/user';
 import * as authFns from './utils/Auth';
 
 import type { ReturnModelType } from '@typegoose/typegoose';

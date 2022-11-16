@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { sendNotifications } from "../Notifications/Expo";
+import { sendNotifications } from "../notifications";
 
 const EventSchemas = require("./EventSchemas.json");
 

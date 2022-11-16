@@ -2,9 +2,9 @@ import { isDocument } from '@typegoose/typegoose';
 import { Expo, ExpoPushMessage } from 'expo-server-sdk';
 import mongoose, { Error, Types } from 'mongoose';
 
-import { TroopModel, UserModel } from '../../models/models';
-import { Notification } from '../../models/Notification';
-import { User } from '../../models/User';
+import { TroopModel, UserModel } from '../models/models';
+import { Notification } from '../models/Notification';
+import { User } from '../models/User';
 
 import type { DocumentType } from "@typegoose/typegoose";
 

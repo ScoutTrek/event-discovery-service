@@ -57,36 +57,6 @@ export function getTokenFromReq(req: Request): string | null {
   return authReq.replace("Bearer ", "");
 };
 
-// based on how/where the two functions below are being used, root, args, context, and info can be a bunch
-// of different things...
-
-/**
- * checks if the user is on the context object
- * continues to the next resolver if true
- * @param {Function} next next resolver function to run
- */
-export const authenticated = (next: Function) => (root: any, args: any, context: any, info: any) => {
-  if (!context?.user) {
-    throw new Error("You must be logged in to complete this action.");
-  }
-  return next(root, args, context, info);
-};
-
-/**
- * checks if the user on the context has the specified role.
- * continues to the next resolver if true
- * @param {String} role enum role to check for
- * @param {Function} next next resolver function to run
- */
-export const authorized = (role: string, next: Function) => (root: any, args: any, context: any, info: any) => {
-  if (context?.user?.role !== role) {
-    throw new Error(
-      "You are not authorized to access this route. Please request higher permissions from an administrator."
-    );
-  }
-  return next(root, args, context, info);
-};
-
 export const customAuthChecker: AuthChecker<ContextType, ROLE> = (
   { root, args, context, info },
   roles,
