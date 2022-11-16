@@ -1,4 +1,4 @@
-import { modelOptions, prop } from '@typegoose/typegoose';
+import { modelOptions, prop as Property } from '@typegoose/typegoose';
 import mongoose from 'mongoose';
 import { Field, Float, ID, ObjectType, registerEnumType } from 'type-graphql';
 
@@ -39,19 +39,19 @@ export class Membership {
   readonly _id: mongoose.Types.ObjectId;
 
   @Field(type => ID)
-  @prop({ required: true, ref: () => Troop })
+  @Property({ required: true, ref: () => Troop })
   public troopID!: Ref<Troop, mongoose.Types.ObjectId>;
 
   @Field(type => ID)
-  @prop({ required: true })
+  @Property({ required: true })
   public troopNumber!: string;
 
   @Field(type => ID)
-  @prop({ required: true, ref: () => Patrol })
+  @Property({ required: true, ref: () => Patrol })
   public patrolID!: Ref<Patrol, mongoose.Types.ObjectId>;
 
   @Field(type => ROLE)
-  @prop({ required: true, enum: ROLE })
+  @Property({ required: true, enum: ROLE })
   public role!: ROLE;
 }
 
@@ -68,15 +68,15 @@ export class Patrol {
   readonly _id: mongoose.Types.ObjectId;
 
   @Field()
-  @prop({ required: true })
+  @Property({ required: true })
   public name!: string;
 
   @Field(type => [User])
-  @prop({ required: true, ref: () => User, default: [] })
+  @Property({ required: true, ref: () => User, default: [] })
   public members!: Ref<User, mongoose.Types.ObjectId>[];
 
   @Field(type => [Event])
-  @prop({ required: true, ref: () => Event, default: [] })
+  @Property({ required: true, ref: () => Event, default: [] })
   public events!: Ref<Event, mongoose.Types.ObjectId>[];
 }
 
@@ -93,34 +93,34 @@ export class Troop {
   readonly _id: mongoose.Types.ObjectId;
   
   @Field()
-  @prop({ required: true })
+  @Property({ required: true })
   public council!: string;
 
   @Field()
-  @prop({ required: true })
+  @Property({ required: true })
   public state!: string;
 
   @Field()
-  @prop({ required: true })
+  @Property({ required: true })
   public unitNumber!: number;
 
   @Field()
-  @prop({ required: true })
+  @Property({ required: true })
   public city: string;
 
   @Field(type => User, {nullable: true})
-  @prop({ref: () => User})
+  @Property({ref: () => User})
   public scoutMaster?: Ref<User, mongoose.Types.ObjectId>;
 
   @Field(type => Location, {nullable: true})
-  @prop()
+  @Property()
   public meetLocation?: Point;
 
   @Field(type => [Patrol])
-  @prop({ required: true, type: () => [Patrol], default: [] })
+  @Property({ required: true, type: () => [Patrol], default: [] })
   public patrols!: mongoose.Types.DocumentArray<ArraySubDocumentType<Patrol>>;
 
   // @Field(type => [Event])
-  @prop({ ref: () => Event })
+  @Property({ ref: () => Event })
   public events?: Ref<Event, mongoose.Types.ObjectId>[];
 }

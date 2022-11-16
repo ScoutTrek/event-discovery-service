@@ -18,19 +18,18 @@ import {
 import { Membership, Patrol, ROLE, Troop } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 
-import type { Ref } from '@typegoose/typegoose';
 import type { ContextType } from "../server";
 
 @InputType()
 class AddMembershipInput implements Partial<Membership>{
   @Field(type => ID)
-  troopID!: Ref<Troop, mongoose.Types.ObjectId>;
+  troopID!: mongoose.Types.ObjectId;
 
   @Field(type => ID)
   troopNumber!: string;
 
   @Field(type => ID)
-  patrolID!: Ref<Patrol, mongoose.Types.ObjectId>;
+  patrolID!: mongoose.Types.ObjectId;
 
   @Field(type => ROLE)
   role!: ROLE;

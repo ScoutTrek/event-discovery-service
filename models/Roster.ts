@@ -1,4 +1,4 @@
-import { modelOptions, prop, Ref } from '@typegoose/typegoose';
+import { modelOptions, prop as Property, Ref } from '@typegoose/typegoose';
 import mongoose from 'mongoose';
 import { Field, ObjectType } from 'type-graphql';
 
@@ -13,21 +13,21 @@ import { User } from './User';
 @ObjectType()
 export class Roster {
   @Field(type => [Troop])
-  @prop({
+  @Property({
     required: [true, "You must associate your event with at least one group."],
     ref: () => Troop
   })
   public groups!: Ref<Troop, mongoose.Types.ObjectId>[];
 
   @Field(type => [Patrol])
-  @prop({
+  @Property({
     required: true,
     ref: () => Patrol
   })
   public patrols!: Ref<Patrol, mongoose.Types.ObjectId>[];
 
   @Field(type => [User])
-  @prop({
+  @Property({
     required: true,
     ref: () => User
   })

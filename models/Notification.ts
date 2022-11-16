@@ -1,4 +1,4 @@
-import { modelOptions, prop } from '@typegoose/typegoose';
+import { modelOptions, prop as Property } from '@typegoose/typegoose';
 import mongoose from 'mongoose';
 import { Field, ID, ObjectType } from 'type-graphql';
 
@@ -15,17 +15,17 @@ export class Notification {
 	readonly _id: mongoose.Types.ObjectId;
 
 	@Field()
-	@prop()
+	@Property()
 	public title!: string;
 
 	@Field()
-	@prop()
+	@Property()
 	public type!: string;
 
-	@prop()
+	@Property()
 	public eventType!: string;
 
 	@Field()
-	@prop()
+	@Property()
 	public eventID!: string;
 }

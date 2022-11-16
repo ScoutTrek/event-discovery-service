@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Arg, Authorized, Ctx, Field, ID, InputType, Int, Mutation, Query, Resolver } from 'type-graphql';
 
-import { Patrol, Troop } from '../../models/TroopAndPatrol';
+import { Troop } from '../../models/TroopAndPatrol';
 
 import type { ContextType } from '../server';
 

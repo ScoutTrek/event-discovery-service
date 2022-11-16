@@ -1,4 +1,4 @@
-import { prop } from '@typegoose/typegoose';
+import { prop as Property } from '@typegoose/typegoose';
 import mongoose from 'mongoose';
 import { Field, ID, ObjectType, registerEnumType } from 'type-graphql';
 
@@ -47,32 +47,32 @@ registerEnumType(EVENT_TYPE, {
 });
 
 export class Point {
-  @prop({ required: true, enum: ["Point"] as const })
+  @Property({ required: true, enum: ["Point"] as const })
   public type!: string;
 
-  @prop({ required: true, type: () => [Number] })
+  @Property({ required: true, type: () => [Number] })
   public coordinates!: number[];
 
-  @prop()
+  @Property()
   public address?: string;
 }
 
 export class MessageUser {
-  @prop({ required: true })
+  @Property({ required: true })
   public name!: string;
 }
 
 export class Message {
-  @prop()
+  @Property()
   public text?: string;
 
-  @prop()
+  @Property()
   public image?: string;
 
-  @prop({ default: Date.now })
+  @Property({ default: Date.now })
   public createdAt?: Date;
 
-  @prop()
+  @Property()
   public user?: MessageUser;
 }
 
@@ -82,88 +82,88 @@ export class Event {
   readonly _id: mongoose.Types.ObjectId;
 
   @Field(type => EVENT_TYPE)
-  @prop({ required: true, enum: EVENT_TYPE })
+  @Property({ required: true, enum: EVENT_TYPE })
   public type!: EVENT_TYPE;
 
   @Field(type => Troop)
-  @prop({ required: true, ref: () => Troop })
+  @Property({ required: true, ref: () => Troop })
   public troop!: Ref<Troop, mongoose.Types.ObjectId>;
 
   @Field(type => Patrol)
-  @prop({ required: true, ref: () => Patrol })
+  @Property({ required: true, ref: () => Patrol })
   public patrol!: Ref<Patrol, mongoose.Types.ObjectId>;
 
   @Field()
-  @prop({ required: [true, "An event cannot have a blank title."] })
+  @Property({ required: [true, "An event cannot have a blank title."] })
   public title!: string;
 
   @Field({ nullable: true })
-  @prop()
+  @Property()
   public description?: string;
 
   @Field()
-  @prop({ required: true })
+  @Property({ required: true })
   public date!: Date;
 
   @Field()
-  @prop({ required: true })
+  @Property({ required: true })
   public startTime?: Date;
 
   @Field({ nullable: true })
-  @prop()
+  @Property()
   public uniqueMeetLocation?: string;
 
   @Field({ nullable: true })
-  @prop()
+  @Property()
   public meetTime?: Date;
 
   @Field({ nullable: true })
-  @prop()
+  @Property()
   public leaveTime?: Date;
 
   @Field({ nullable: true })
-  @prop()
+  @Property()
   public pickupTime?: Date;
 
   @Field({ nullable: true })
-  @prop()
+  @Property()
   public endTime?: Date;
 
-  @prop()
+  @Property()
   public locationPoint?: Point;
 
-  @prop()
+  @Property()
   public meetLocationPoint?: Point;
 
-  @prop({ required: true, type: () => [Message], default: [] })
+  @Property({ required: true, type: () => [Message], default: [] })
   public messages!: Message[];
 
   @Field(type => Roster)
-  @prop({ required: true, default: {groups: [], patrols: [], individuals: []} })
+  @Property({ required: true, default: {groups: [], patrols: [], individuals: []} })
   public invited!: Roster;
 
   @Field(type => Roster)
-  @prop({ required: true, default: {groups: [], patrols: [], individuals: []}})
+  @Property({ required: true, default: {groups: [], patrols: [], individuals: []}})
   public attending!: Roster;
 
-  @prop({ enum: DAYS_OF_WEEK })
+  @Property({ enum: DAYS_OF_WEEK })
   public day?: string;
 
   @Field({ nullable: true })
-  @prop()
+  @Property()
   public distance?: number;
 
-  @prop()
+  @Property()
   public shakedown?: boolean;
 
-  @prop()
+  @Property()
   public published?: boolean;
 
   @Field(type => User, { nullable: true })
-  @prop({ ref: () => User })
+  @Property({ ref: () => User })
   public creator?: Ref<User, mongoose.Types.ObjectId>;
 
-  @prop()
+  @Property()
   public notification?: Date;
 
   @Field({nullable: true})
