@@ -192,14 +192,16 @@ export class PatrolResolver {
     return await patrol.remove();
   }
 
-  @Authorized()
-  @FieldResolver(returns => Troop)
-  async troop(@Ctx() ctx: ContextType): Promise<Troop | undefined> {
-    if (ctx.currMembership) {
-      return await ctx.TroopModel.findById(ctx.currMembership.troopID._id) ?? undefined;
-    }
-  }
+  // TODO: this doesn't actually get the patrol's troop
+  // @Authorized()
+  // @FieldResolver(returns => Troop)
+  // async troop(@Ctx() ctx: ContextType): Promise<Troop | undefined> {
+  //   if (ctx.currMembership) {
+  //     return await ctx.TroopModel.findById(ctx.currMembership.troopID._id) ?? undefined;
+  //   }
+  // }
 
+  // TODO: This is breaking idk why, seems like patrol is the wrong type? I swear this was working before...
   @FieldResolver(returns => [User])
   async members(@Root() patrol: Patrol, @Ctx() ctx: ContextType): Promise<User[]> {
     const members = await ctx.UserModel.find().where("_id").in(patrol.members.map(m => m._id));

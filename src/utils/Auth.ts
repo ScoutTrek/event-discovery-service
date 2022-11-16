@@ -1,11 +1,13 @@
-import { verify, sign } from "jsonwebtoken";
-import { User } from "../../models/User";
-import { Request } from "express";
-import { UserModel } from "../../models/models";
-import { AuthChecker } from "type-graphql";
+import { Request } from 'express';
+import { sign, verify } from 'jsonwebtoken';
+import { AuthChecker, ResolverData } from 'type-graphql';
+
+import { UserModel } from '../../models/models';
+import { ROLE } from '../../models/TroopAndPatrol';
+import { User } from '../../models/User';
+
 import type { ContextType } from "../server";
 import type { DocumentType } from "@typegoose/typegoose";
-import { ROLE } from "models/TroopAndPatrol";
 
 const SECRET = "themfingsuperobvioussting";
 const DEFAULT_EXPIRES_IN = "55d";
@@ -45,21 +47,21 @@ export async function getUserFromToken(encodedToken: string): Promise<DocumentTy
 };
 
 /**
- * TODO
+ * TODO:
  * @param req
  */
 export function getTokenFromReq(req: Request): string | null {
   const authReq = req.headers.authorization;
-
   if (!authReq) {
     return null;
   }
+
   return authReq.replace("Bearer ", "");
 };
 
 export const customAuthChecker: AuthChecker<ContextType, ROLE> = (
-  { root, args, context, info },
-  roles,
+  { context }: ResolverData<ContextType>,
+  roles: ROLE[]
 ) => {
   if (!context.user) {
     return false;

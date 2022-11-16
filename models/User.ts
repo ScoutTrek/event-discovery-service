@@ -114,7 +114,7 @@ export class User {
   }
 
   /**
-   * TODO
+   * TODO:
    */
   public async isValidPassword(
     submittedPass: string,

@@ -30,7 +30,7 @@ export const getUserNotificationData = async (troopID: string): Promise<Array<Us
   const validPatrols = troop.patrols.filter((patrol) => patrol.members.length);
 
   /**
-   * TODO
+   * TODO:
    * @param user 
    */
   const addToUserData = (user: DocumentType<User>): Promise<string> => {
@@ -41,7 +41,7 @@ export const getUserNotificationData = async (troopID: string): Promise<Array<Us
   };
 
   /**
-   * TODO
+   * TODO:
    * @param memberId
    */
   const getUser = async (memberId: string): Promise<Array<UserData>> => {

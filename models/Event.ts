@@ -173,7 +173,7 @@ export class Event {
   updatedAt?: string;
 
   /**
-   * TODO
+   * TODO:
    */
   public get time(): string {
     let date = new Date(this.date ?? Date.now());
