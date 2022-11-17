@@ -71,11 +71,9 @@ export class Patrol {
   @Property({ required: true })
   public name!: string;
 
-  @Field(type => [User])
   @Property({ required: true, ref: () => User, default: [] })
   public members!: Ref<User, mongoose.Types.ObjectId>[];
 
-  @Field(type => [Event])
   @Property({ required: true, ref: () => Event, default: [] })
   public events!: Ref<Event, mongoose.Types.ObjectId>[];
 }
@@ -121,6 +119,6 @@ export class Troop {
   public patrols!: mongoose.Types.DocumentArray<ArraySubDocumentType<Patrol>>;
 
   // @Field(type => [Event])
-  @Property({ ref: () => Event })
-  public events?: Ref<Event, mongoose.Types.ObjectId>[];
+  // @Property({ ref: () => Event })
+  // public events?: Ref<Event, mongoose.Types.ObjectId>[];
 }

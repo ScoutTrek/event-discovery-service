@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Arg, Authorized, Ctx, Field, FieldResolver, ID, InputType, Mutation, Query, Resolver, Root } from 'type-graphql';
 
-import { Patrol, ROLE, Troop } from '../../models/TroopAndPatrol';
+import { Patrol, ROLE } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 
 import type { ContextType } from '../server';
@@ -74,16 +74,16 @@ export class PatrolResolver {
   @Authorized()
   @Query(returns => Patrol)
   async currPatrol(
-    @Ctx() ctx: ContextType
+    @Ctx() {currMembership, TroopModel}: ContextType
   ): Promise<Patrol | null> {
-    if (ctx.currMembership === undefined) {
+    if (currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
+    const myTroop = await TroopModel.findById(currMembership.troopID._id);
     if (myTroop === null) {
       throw new Error("Selected troop does not exist");
     }
-    return myTroop.patrols.id(ctx.currMembership.patrolID._id);
+    return myTroop.patrols.id(currMembership.patrolID._id);
   }
 
   // Will need to figure out how to create a Troop and a Patrol at the same time.
@@ -201,11 +201,9 @@ export class PatrolResolver {
   //   }
   // }
 
-  // TODO: This is breaking idk why, seems like patrol is the wrong type? I swear this was working before...
   @FieldResolver(returns => [User])
   async members(@Root() patrol: Patrol, @Ctx() ctx: ContextType): Promise<User[]> {
-    const members = await ctx.UserModel.find().where("_id").in(patrol.members.map(m => m._id));
-    return members;
+    return await ctx.UserModel.find().where("_id").in(patrol.members.map((m: any) => m._id));
   }
 
 //   @FieldResolver(returns => [Event])
