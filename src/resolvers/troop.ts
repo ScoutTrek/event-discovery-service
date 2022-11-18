@@ -1,7 +1,20 @@
 import mongoose from 'mongoose';
-import { Arg, Authorized, Ctx, Field, ID, InputType, Int, Mutation, Query, Resolver } from 'type-graphql';
+import {
+  Arg,
+  Authorized,
+  Ctx,
+  Field,
+  FieldResolver,
+  ID,
+  InputType,
+  Int,
+  Mutation,
+  Query,
+  Resolver,
+  Root,
+} from 'type-graphql';
 
-import { Troop } from '../../models/TroopAndPatrol';
+import { Location, Troop } from '../../models/TroopAndPatrol';
 
 import type { ContextType } from '../server';
 
@@ -82,6 +95,18 @@ export class TroopResolver {
     @Ctx() ctx: ContextType
   ): Promise<Troop> {
     return await ctx.TroopModel.create(input);
+  }
+
+  @FieldResolver(returns => Location)
+  meetLocation(@Root() troop: Troop, @Ctx() ctx: ContextType): Location | null {
+    if (troop.meetLocation && troop.meetLocation.coordinates.length == 2) {
+      return {
+        lng: troop.meetLocation.coordinates[0]!,
+        lat: troop.meetLocation.coordinates[1]!,
+        address: troop.meetLocation.address,
+      };
+    }
+    return null;
   }
 
   // TODO: The following were missing from the existing resolvers?

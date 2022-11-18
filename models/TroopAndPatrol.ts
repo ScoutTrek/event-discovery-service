@@ -24,13 +24,13 @@ registerEnumType(ROLE, {
 });
 
 @ObjectType()
-class Location {
+export class Location {
   @Field(type => Float)
-  lat: number;
+  lat!: number;
   @Field(type => Float)
-  lng: number;
+  lng!: number;
   @Field({nullable: true})
-  address: string;
+  address?: string;
 }
 
 @ObjectType()
