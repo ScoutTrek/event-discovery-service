@@ -16,6 +16,7 @@
 		"baseUrl": "./",
 		"typeRoots": ["node_modules/@types"],
 		"outDir": "dist",
+		"resolveJsonModule": true,
 
 		// Ensure that .d.ts files are created by tsc, but not .js files
 		"declaration": true,
