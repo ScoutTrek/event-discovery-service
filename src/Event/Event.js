@@ -225,26 +225,26 @@ export const resolvers = {
     },
   },
   Query: {
-    events: authenticated(
-      async (_, { first, skip }, { EventModel, currMembership }) => {
-        const events = await EventModel.find(
-          {
-            date: {
-              $gte: new Date(Date.now() - 86400000 * 1.5),
-              $lte: new Date(Date.now() + 6.04e8 * 10),
-            },
-            troop: currMembership?.troopID,
-          },
-          null,
-          {
-            first,
-            skip,
-          }
-        ).sort({ date: 1 });
-        return events;
-      }
-    ),
-    event: async (_, { id }, { EventModel }) => await EventModel.findById(id),
+    // events: authenticated(
+    //   async (_, { first, skip }, { EventModel, currMembership }) => {
+    //     const events = await EventModel.find(
+    //       {
+    //         date: {
+    //           $gte: new Date(Date.now() - 86400000 * 1.5),
+    //           $lte: new Date(Date.now() + 6.04e8 * 10),
+    //         },
+    //         troop: currMembership?.troopID,
+    //       },
+    //       null,
+    //       {
+    //         first,
+    //         skip,
+    //       }
+    //     ).sort({ date: 1 });
+    //     return events;
+    //   }
+    // ),
+    // event: async (_, { id }, { EventModel }) => await EventModel.findById(id),
     eventSchemas: () => EventSchemas,
   },
   Mutation: {

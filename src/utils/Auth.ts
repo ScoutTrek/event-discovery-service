@@ -26,7 +26,7 @@ export function createToken(unsignedToken: UserToken): string {
 }
 
 /**
- * will attemp to verify a jwt and find a user in the
+ * will attempt to verify a jwt and find a user in the
  * db associated with it. Catches any error and returns
  * a null user
  * @param {String} token jwt from client
