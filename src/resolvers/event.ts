@@ -4,6 +4,9 @@ import { Event } from '../../models/Event'
 import type { ContextType } from "../server";
 import EventSchemas from "../Event/EventSchemas.json";
 import { EventModel } from 'models/models';
+import { Location, Troop } from '../../models/TroopAndPatrol'
+import { Patrol } from '../../models/TroopAndPatrol';
+import { User } from '../../models/User';
 
 export type EventType =
   "AQUATIC_EVENT"
@@ -130,7 +133,7 @@ export class EventResolver {
         first,
         skip,
       }
-    ); // need to add / figure the date part out >> .sort({ date: 1 });
+    ).sort({ date: 1 }); 
 
     return events;
   }
@@ -158,4 +161,45 @@ export class EventResolver {
   // ): Promise<Event> {
 
   // }
+
+  @FieldResolver(returns => Troop)
+  async troop(@Root() event: Event, @Ctx() ctx: ContextType): Promise<Troop | undefined> {
+    return await ctx.TroopModel.findById(event.troop) ?? undefined;
+  }
+
+  @FieldResolver(returns => Patrol)
+  async patrol(@Root() event: Event, @Ctx() ctx: ContextType): Promise<Patrol | undefined> {
+    const troop = await ctx.TroopModel.findById(event.troop);
+    const patrol = await troop?.patrols?.id(event.patrol);
+    return patrol ?? undefined;
+  }
+
+  @FieldResolver(returns => User)
+  async creator(@Root() event: Event, @Ctx() ctx: ContextType): Promise<User | undefined> {
+    return await ctx.UserModel.findById(event.creator) ?? undefined;
+  }
+  
+  @FieldResolver(returns => Location, { nullable: true })
+  location(@Root() event: Event): Location | null{
+    if (event.locationPoint && event.locationPoint.coordinates.length == 2) {
+      return {
+        lng: event.locationPoint.coordinates[0]!,
+        lat: event.locationPoint.coordinates[1]!,
+        address: event.locationPoint.address,
+      };
+    }
+    return null;
+  }
+
+  @FieldResolver(returns => Location, { nullable: true })
+  meetLocation(@Root() event: Event): Location | null{
+    if (event.meetLocationPoint && event.meetLocationPoint.coordinates.length == 2) {
+      return {
+        lng: event.meetLocationPoint.coordinates[0]!,
+        lat: event.meetLocationPoint.coordinates[1]!,
+        address: event.meetLocationPoint.address,
+      };
+    }
+    return null;
+  }
 }

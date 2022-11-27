@@ -194,35 +194,35 @@ export const resolvers = {
 	JSON: GraphQLJSON,
 	Event: {
 		/** TODO: WILL HAVE @FieldResolver annotations */
-		troop: async (parent, __, { TroopModel }) => {
-			await TroopModel.findById(parent.troop);
-		},
-		patrol: async (parent, __, { TroopModel }) => {
-			const myTroop = await TroopModel.findById(parent.troop);
-			const myPatrol = await myTroop.patrols.id(parent.patrol);
-			return myPatrol;
-		},
-		creator: async (parent, __, { UserModel }) => await UserModel.findById(parent.creator),
-		location: (parent) => {
-			if (parent.location) {
-				return {
-					lng: parent.location.coordinates[0],
-					lat: parent.location.coordinates[1],
-					address: parent.location.address
-				};
-			}
-			return null;
-		},
-		meetLocation: (parent) => {
-			if (parent.meetLocation) {
-				return {
-					lng: parent.meetLocation.coordinates[0],
-					lat: parent.meetLocation.coordinates[1],
-					address: parent.meetLocation.address
-				};
-			}
-			return null;
-		}
+		// troop: async (parent, __, { TroopModel }) => {
+		// 	await TroopModel.findById(parent.troop);
+		// },
+		// patrol: async (parent, __, { TroopModel }) => {
+		// 	const myTroop = await TroopModel.findById(parent.troop);
+		// 	const myPatrol = await myTroop.patrols.id(parent.patrol);
+		// 	return myPatrol;
+		// },
+		// creator: async (parent, __, { UserModel }) => await UserModel.findById(parent.creator),
+		// location: (parent) => {
+		// 	if (parent.location) {
+		// 		return {
+		// 			lng: parent.location.coordinates[0],
+		// 			lat: parent.location.coordinates[1],
+		// 			address: parent.location.address
+		// 		};
+		// 	}
+		// 	return null;
+		// },
+		// meetLocation: (parent) => {
+		// 	if (parent.meetLocation) {
+		// 		return {
+		// 			lng: parent.meetLocation.coordinates[0],
+		// 			lat: parent.meetLocation.coordinates[1],
+		// 			address: parent.meetLocation.address
+		// 		};
+		// 	}
+		// 	return null;
+		// }
 	},
 	Query: {
 		// events: authenticated(
