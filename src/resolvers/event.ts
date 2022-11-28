@@ -1,12 +1,13 @@
 import mongoose, { ObjectId } from 'mongoose';
-import { Arg, Authorized, Ctx, Int, Field, FieldResolver, ID, InputType, Mutation, Query, Resolver, Root } from 'type-graphql';
-import { Event } from '../../models/Event'
+import { Arg, Authorized, Float, Ctx, Int, Field, FieldResolver, ID, InputType, Mutation, Query, Resolver, Root } from 'type-graphql';
+import { Event , Point} from '../../models/Event'
 import type { ContextType } from "../server";
 import EventSchemas from "../Event/EventSchemas.json";
 import { EventModel } from 'models/models';
 import { Location, Troop } from '../../models/TroopAndPatrol'
 import { Patrol } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
+import { sendNotifications } from "../notifications";
 
 export type EventType =
   "AQUATIC_EVENT"
@@ -47,7 +48,8 @@ class AddRosterInput {
 }
 
 @InputType()
-class AddEventInput {
+class EventInput { 
+  // since AddEventInput and UpdateEvent input are the same, combining to one class
   @Field()
   type!: string;
   @Field(type => [AddRosterInput])
@@ -57,41 +59,56 @@ class AddEventInput {
   @Field(type => String)
   title!: string;
   @Field(type => String)
-  description!: string;
+  description: string;
   @Field(type => Date)
   date!: Date;
   @Field(type => Date)
   startTime!: Date;
   @Field(type => Date)
-  meetTime!: Date;
+  meetTime: Date;
   @Field(type => Date)
-  leaveTime!: Date;
+  leaveTime: Date;
   @Field(type => Date)
-  endTime!: Date;
+  endTime: Date;
   @Field(type => Date)
-  pickupTime!: Date;
+  pickupTime: Date;
   @Field(type => String)
-  uniqueMeetLocation!: string;
+  uniqueMeetLocation: string;
+  @Field(type => UpdateLocationInput) 
+  location: any; 
+  // must have this, otherwise will have type conversion errors due to trying to 
+  // make updateLocationInput be a Point
+  // let's discuss if we want to get rid of the point type
   @Field(type => UpdateLocationInput)
-  location!: UpdateLocationInput;
-  @Field(type => UpdateLocationInput)
-  meetLocation!: UpdateLocationInput;
+  meetLocation: any;
   @Field(type => Date)
-  checkoutTime!: Date;
+  checkoutTime: Date;
   @Field(type => Int)
-  distance!: number;
+  distance: number;
   @Field(type => Boolean)
-  published!: boolean;
+  published: boolean;
+}
+
+@InputType()
+class UpdateEventInput {
+  @Field()
+  type: string
 }
 
 @InputType()
 class UpdateLocationInput {
-  // TODO
+  // if this is the same as the imported location type, can we remove?
+  @Field(type => Float)
+  lat: number;
+  @Field(type => Float)
+  lng: number;
+  @Field({nullable: true})
+  address?: string;
 }
 
 @Resolver(of => Event)
 export class EventResolver {
-
+  // what is the json in resolvers??? 
   @Authorized()
   @Query(returns => Event)
   async event(
@@ -154,13 +171,93 @@ export class EventResolver {
     return await ctx.EventModel.findByIdAndDelete(id);
   }
 
-  // @Authorized()
-  // @Mutation(returns => Event)
-  // async addEvent(
-  //   input: AddEventInput
-  // ): Promise<Event> {
+  @Authorized()
+  @Mutation(returns => Event)
+  async addEvent(
+    @Arg("input") input: EventInput,
+    @Ctx() ctx: ContextType
+  ): Promise<Event> {
+    if (input.type === "TROOP_MEETING") {
+      // odn't fully get the point of this, let's discuss
+      input.title = "Troop Meeting"
+    }
 
-  // }
+    // what is the difference between meetTime and startTime ?????
+    let startDatetime = new Date(input?.meetTime || input?.startTime);
+    const eventDate = new Date(input?.date);
+	  startDatetime.setMonth(eventDate.getMonth());
+		startDatetime.setDate(eventDate.getDate());
+    const mutationObject = {
+      ...input,
+      troop: ctx.currMembership?.troopID,
+      patrol: ctx.currMembership?.patrolID,
+      creator: ctx.user?._id,
+      // note to self double check this ;-;
+      notification: new Date(startDatetime.valueOf() - 86400000) 
+    };
+
+    if (input.location) {
+      mutationObject.location = {
+        type: "Point",
+        coordinates: [input.location.lng, input.location.lat],
+        address: input.location.address
+      };
+    }
+    if (input.meetLocation) {
+      mutationObject.meetLocation = {
+        type: "Point",
+        coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+        address: input.meetLocation.address
+      };
+    }
+
+    const event = await ctx.EventModel.create(mutationObject);
+    sendNotifications(ctx.tokens ?? [], `${input.title} event has been created. See details.`, {
+      type: "event",
+      eventType: event.type,
+      ID: event.id
+    });
+    return event;
+  }
+
+  @Authorized()
+  @Mutation(returns => Event)
+  async updateEvent(
+    @Arg("input") input: EventInput,
+    @Arg("id", type => ID) id: string,
+    @Ctx() ctx: ContextType
+  ): Promise<Event | null>  {
+    const newVals = { ...input };
+    if (input.location) {
+      newVals.location = {
+        type: "Point",
+        coordinates: [input.location.lng, input.location.lat],
+        address: input.location.address
+      };
+    }
+    if (input.meetLocation) {
+      newVals.meetLocation = {
+        type: "Point",
+        coordinates: [input.meetLocation.lng, input.meetLocation.lat],
+        address: input.meetLocation.address
+      };
+    }
+
+    await EventModel.updateOne({ _id: id }, newVals, {
+      new: true
+    });
+
+    // or should we instead just create a new event if updatedEvents is null,
+    // that way we don't need to return Event | null and can just return Event
+    const updatedEvent = await EventModel.findById(id);
+
+    sendNotifications(ctx.tokens ?? [], `${updatedEvent?.title} event has been updated!`, {
+      type: "event",
+      eventType: updatedEvent?.type ?? "",
+      ID: updatedEvent?.id ?? ""
+    });
+    return updatedEvent;
+  }
 
   @FieldResolver(returns => Troop)
   async troop(@Root() event: Event, @Ctx() ctx: ContextType): Promise<Troop | undefined> {
