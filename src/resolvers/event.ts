@@ -1,41 +1,14 @@
 import mongoose, { ObjectId } from 'mongoose';
 import { Arg, Authorized, Float, Ctx, Int, Field, FieldResolver, ID, InputType, Mutation, Query, Resolver, Root } from 'type-graphql';
-import { Event , Point} from '../../models/Event'
+import { GraphQLScalarType } from "graphql";
+import { Event } from '../../models/Event';
 import type { ContextType } from "../server";
 import EventSchemas from "../Event/EventSchemas.json";
-import { EventModel } from 'models/models';
-import { Location, Troop } from '../../models/TroopAndPatrol'
+// import { EventModel } from 'models/models';
+import { Location, Troop } from '../../models/TroopAndPatrol';
 import { Patrol } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 import { sendNotifications } from "../notifications";
-
-export type EventType =
-  "AQUATIC_EVENT"
-  | "BACKPACK_TRIP"
-  | "BIKE_RIDE"
-  | "BOARD_OF_REVIEW"
-  | "CAMPOUT"
-  | "CANOE_TRIP"
-  | "COMMITTEE_MEETING"
-  | "CUSTOM_EVENT"
-  | "EAGLE_PROJECT"
-  | "FISHING_TRIP"
-  | "FLAG_RETIREMENT"
-  | "FUNDRAISER"
-  | "TROOP_MEETING"
-  | "HIKE"
-  | "KAYAK_TRIP"
-  | "MERIT_BADGE_CLASS"
-  | "PARENT_MEETING"
-  | "SCOUTMASTER_CONFERENCE"
-  | "SERVICE_PROJECT"
-  | "SPECIAL_EVENT"
-  | "SUMMER_CAMP"
-  | "SWIM_TEST";
-
-export interface EventMetadata {
-  eventType: EventType;
-}
 
 @InputType()
 class AddRosterInput {
@@ -106,6 +79,22 @@ class UpdateLocationInput {
   address?: string;
 }
 
+// custom scalar type so that we can query for event schemas without throwing an error
+// this is the barest of bare-bone implementations but it works
+const EventSchemaScalar = new GraphQLScalarType({
+  name: "EventSchemaType",
+  description: "scalar for event schema",
+  serialize(value: Object) {
+    return value;
+  },
+  parseValue(value: Object) {
+    return value;
+  },
+  parseLiteral(value) {
+    return value;
+  }
+})
+
 @Resolver(of => Event)
 export class EventResolver {
   // what is the json in resolvers??? 
@@ -155,8 +144,8 @@ export class EventResolver {
     return events;
   }
 
-  @Query(returns => JSON)
-  eventSchemas(): any {
+  @Query(returns => EventSchemaScalar)
+  eventSchemas(): Object {
     // TODO: fix return type once jaron is done correcting the type
     return EventSchemas;
   }
@@ -243,13 +232,13 @@ export class EventResolver {
       };
     }
 
-    await EventModel.updateOne({ _id: id }, newVals, {
+    await ctx.EventModel.updateOne({ _id: id }, newVals, {
       new: true
     });
 
     // or should we instead just create a new event if updatedEvents is null,
     // that way we don't need to return Event | null and can just return Event
-    const updatedEvent = await EventModel.findById(id);
+    const updatedEvent = await ctx.EventModel.findById(id);
 
     sendNotifications(ctx.tokens ?? [], `${updatedEvent?.title} event has been updated!`, {
       type: "event",
