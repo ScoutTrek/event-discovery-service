@@ -18,6 +18,7 @@ import { PatrolResolver } from './resolvers/patrol';
 import { TroopResolver } from './resolvers/troop';
 import { UserResolver } from './resolvers/user';
 import { EventResolver } from './resolvers/event';
+import { SharedAssetsResolver } from './resolvers/sharedAssets';
 import * as authFns from './utils/Auth';
 
 import type { ReturnModelType } from '@typegoose/typegoose';
@@ -70,7 +71,7 @@ async function bootstrap() {
 	try {
 		// build TypeGraphQL executable schema
 		const schema = await buildSchema({
-			resolvers: [AuthResolver, EventResolver, UserResolver, TroopResolver, PatrolResolver],
+			resolvers: [AuthResolver, EventResolver, UserResolver, TroopResolver, PatrolResolver, SharedAssetsResolver],
 			globalMiddlewares: [TypegooseMiddleware],
 			authChecker: authFns.customAuthChecker,
 		});
