@@ -1,7 +1,7 @@
-import mongoose, { ObjectId } from 'mongoose';
+import mongoose from 'mongoose';
 import { Arg, Authorized, Float, Ctx, Int, Field, FieldResolver, ID, InputType, Mutation, Query, Resolver, Root } from 'type-graphql';
 import { GraphQLScalarType } from "graphql";
-import { Event } from '../../models/Event';
+import { Event, EVENT_TYPE } from '../../models/Event';
 import type { ContextType } from "../server";
 import EventSchemas from "../Event/EventSchemas.json";
 // import { EventModel } from 'models/models';
@@ -9,64 +9,18 @@ import { Location, Troop } from '../../models/TroopAndPatrol';
 import { Patrol } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 import { sendNotifications } from "../notifications";
+import { UpdateResult } from 'mongodb';
 
 @InputType()
 class AddRosterInput {
   @Field(type => [ID])
-  id!: ObjectId[];
+  groups!: mongoose.Types.ObjectId[];
   @Field(type => [ID])
-  patrols!: ObjectId[];
+  patrols!: mongoose.Types.ObjectId[];
   @Field(type => [ID])
-  individuals!: ObjectId[];
+  individuals!: mongoose.Types.ObjectId[];
 }
 
-@InputType()
-class EventInput { 
-  // since AddEventInput and UpdateEvent input are the same, combining to one class
-  @Field()
-  type!: string;
-  @Field(type => [AddRosterInput])
-  invited!: AddRosterInput[];
-  @Field(type => [AddRosterInput])
-  attending!: AddRosterInput[];
-  @Field(type => String)
-  title!: string;
-  @Field(type => String)
-  description: string;
-  @Field(type => Date)
-  date!: Date;
-  @Field(type => Date)
-  startTime!: Date;
-  @Field(type => Date)
-  meetTime: Date;
-  @Field(type => Date)
-  leaveTime: Date;
-  @Field(type => Date)
-  endTime: Date;
-  @Field(type => Date)
-  pickupTime: Date;
-  @Field(type => String)
-  uniqueMeetLocation: string;
-  @Field(type => UpdateLocationInput) 
-  location: any; 
-  // must have this, otherwise will have type conversion errors due to trying to 
-  // make updateLocationInput be a Point
-  // let's discuss if we want to get rid of the point type
-  @Field(type => UpdateLocationInput)
-  meetLocation: any;
-  @Field(type => Date)
-  checkoutTime: Date;
-  @Field(type => Int)
-  distance: number;
-  @Field(type => Boolean)
-  published: boolean;
-}
-
-@InputType()
-class UpdateEventInput {
-  @Field()
-  type: string
-}
 
 @InputType()
 class UpdateLocationInput {
@@ -77,6 +31,91 @@ class UpdateLocationInput {
   lng: number;
   @Field({nullable: true})
   address?: string;
+}
+
+@InputType()
+class AddEventInput {
+  @Field(type => EVENT_TYPE)
+  type!: EVENT_TYPE;
+  @Field(type => AddRosterInput, { nullable: true })
+  invited?: AddRosterInput;
+  @Field()
+  title!: string;
+  @Field({ nullable: true })
+  description?: string;
+  @Field(type => Date, { nullable: true })
+  date?: Date;
+  @Field({ nullable: true })
+  startTime?: string;
+  @Field(type => Date, { nullable: true })
+  meetTime?: Date;
+  @Field(type => Date, { nullable: true })
+  leaveTime?: Date;
+  @Field({ nullable: true })
+  endTime?: string;
+  @Field(type => Date, { nullable: true })
+  endDate?: Date;
+  @Field(type => Date, { nullable: true })
+  pickupTime?: Date;
+  @Field({ nullable: true })
+  uniqueMeetLocation?: string;
+  @Field(type => UpdateLocationInput, { nullable: true }) 
+  location?: UpdateLocationInput; 
+  // must have this, otherwise will have type conversion errors due to trying to 
+  // make updateLocationInput be a Point
+  // let's discuss if we want to get rid of the point type
+  @Field(type => UpdateLocationInput, { nullable: true })
+  meetLocation?: UpdateLocationInput;
+  @Field(type => Date, { nullable: true })
+  checkoutTime?: Date;
+  @Field(type => Int, { nullable: true })
+  distance?: number;
+  @Field(type => Boolean, { nullable: true })
+  published?: boolean;
+}
+
+
+@InputType()
+class UpdateEventInput { 
+  @Field(type => EVENT_TYPE, { nullable: true })
+  type?: EVENT_TYPE;
+  @Field(type => AddRosterInput, { nullable: true })
+  invited?: AddRosterInput;
+  @Field(type => AddRosterInput, { nullable: true })
+  attending?: AddRosterInput;
+  @Field({ nullable: true })
+  title?: string;
+  @Field({ nullable: true })
+  description?: string;
+  @Field(type => Date, { nullable: true })
+  date?: Date;
+  @Field({ nullable: true })
+  startTime?: string;
+  @Field(type => Date, { nullable: true })
+  meetTime?: Date;
+  @Field(type => Date, { nullable: true })
+  leaveTime?: Date;
+  @Field({ nullable: true })
+  endTime?: string;
+  @Field(type => Date, { nullable: true })
+  endDate?: Date;
+  @Field(type => Date, { nullable: true })
+  pickupTime?: Date;
+  @Field({ nullable: true })
+  uniqueMeetLocation?: string;
+  @Field(type => UpdateLocationInput, { nullable: true }) 
+  location?: UpdateLocationInput; 
+  // must have this, otherwise will have type conversion errors due to trying to 
+  // make updateLocationInput be a Point
+  // let's discuss if we want to get rid of the point type
+  @Field(type => UpdateLocationInput, { nullable: true })
+  meetLocation?: UpdateLocationInput;
+  @Field(type => Date, { nullable: true })
+  checkoutTime?: Date;
+  @Field(type => Int, { nullable: true })
+  distance?: number;
+  @Field(type => Boolean, { nullable: true })
+  published?: boolean;
 }
 
 // custom scalar type so that we can query for event schemas without throwing an error
@@ -163,40 +202,47 @@ export class EventResolver {
   @Authorized()
   @Mutation(returns => Event)
   async addEvent(
-    @Arg("input") input: EventInput,
+    @Arg("input") input: AddEventInput,
     @Ctx() ctx: ContextType
   ): Promise<Event> {
+    if (ctx.currMembership === undefined) {
+      throw new Error("No membership selected!");
+    }
+
     if (input.type === "TROOP_MEETING") {
       // odn't fully get the point of this, let's discuss
       input.title = "Troop Meeting"
     }
 
     // what is the difference between meetTime and startTime ?????
-    let startDatetime = new Date(input?.meetTime || input?.startTime);
-    const eventDate = new Date(input?.date);
+    const startTime = input?.meetTime || input?.startTime;
+    let startDatetime = new Date(startTime ?? Date.now());
+    const eventDate = new Date(input?.date ?? Date.now());
 	  startDatetime.setMonth(eventDate.getMonth());
 		startDatetime.setDate(eventDate.getDate());
-    const mutationObject = {
-      ...input,
-      troop: ctx.currMembership?.troopID,
-      patrol: ctx.currMembership?.patrolID,
-      creator: ctx.user?._id,
+
+    const {location, meetLocation, ...restInput} = input;
+    const mutationObject: Partial<Event> = {
+      ...restInput,
+      troop: ctx.currMembership.troopID,
+      patrol: ctx.currMembership.patrolID,
+      creator: ctx.user!._id,
       // note to self double check this ;-;
-      notification: new Date(startDatetime.valueOf() - 86400000) 
+      notification: new Date(startDatetime.valueOf() - 86400000),
     };
 
-    if (input.location) {
-      mutationObject.location = {
-        type: "Point",
-        coordinates: [input.location.lng, input.location.lat],
-        address: input.location.address
+    if (location) {
+      mutationObject.locationPoint = {
+        type: 'Point',
+        coordinates: [location.lng, location.lat],
+        address: location.address
       };
     }
-    if (input.meetLocation) {
-      mutationObject.meetLocation = {
-        type: "Point",
-        coordinates: [input.meetLocation.lng, input.meetLocation.lat],
-        address: input.meetLocation.address
+    if (meetLocation) {
+      mutationObject.meetLocationPoint = {
+        type: 'Point',
+        coordinates: [meetLocation.lng, meetLocation.lat],
+        address: meetLocation.address
       };
     }
 
@@ -212,29 +258,27 @@ export class EventResolver {
   @Authorized()
   @Mutation(returns => Event)
   async updateEvent(
-    @Arg("input") input: EventInput,
+    @Arg("input") input: UpdateEventInput,
     @Arg("id", type => ID) id: string,
     @Ctx() ctx: ContextType
   ): Promise<Event | null>  {
-    const newVals = { ...input };
-    if (input.location) {
-      newVals.location = {
+    const {location, meetLocation, ...restInput} = input;
+    const newVals: Partial<Event> = { ...restInput };
+    if (location) {
+      newVals.locationPoint = {
         type: "Point",
-        coordinates: [input.location.lng, input.location.lat],
-        address: input.location.address
+        coordinates: [location.lng, location.lat],
+        address: location.address
       };
     }
-    if (input.meetLocation) {
-      newVals.meetLocation = {
+    if (meetLocation) {
+      newVals.meetLocationPoint = {
         type: "Point",
-        coordinates: [input.meetLocation.lng, input.meetLocation.lat],
-        address: input.meetLocation.address
+        coordinates: [meetLocation.lng, meetLocation.lat],
+        address: meetLocation.address
       };
     }
-
-    await ctx.EventModel.updateOne({ _id: id }, newVals, {
-      new: true
-    });
+    await ctx.EventModel.updateOne({ _id: id }, newVals);
 
     // or should we instead just create a new event if updatedEvents is null,
     // that way we don't need to return Event | null and can just return Event

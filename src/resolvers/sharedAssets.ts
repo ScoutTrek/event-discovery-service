@@ -29,7 +29,7 @@ class Upload {
   createReadStream: (_: any) => ReadStream;
 }
 
-@Resolver(of => String)
+@Resolver()
 export class SharedAssetsResolver {
 
   @Authorized()

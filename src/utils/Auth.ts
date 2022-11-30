@@ -39,7 +39,7 @@ export async function getUserFromToken(encodedToken: string): Promise<DocumentTy
   const jwtUserInfo = verify(encodedToken, SECRET) as UserToken;
   const user = await UserModel.findById(jwtUserInfo.id);
 
-  if (user == null) {
+  if (user === null) {
     throw new Error("User could not be found.");
   }
 
@@ -51,7 +51,7 @@ export async function getUserFromToken(encodedToken: string): Promise<DocumentTy
  * @param req
  */
 export function getTokenFromReq(req: Request): string | null {
-  const authReq = req.headers.authorization;
+  const authReq = req?.headers.authorization;
   if (!authReq) {
     return null;
   }

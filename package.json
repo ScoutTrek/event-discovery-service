@@ -5,14 +5,14 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "ts-node -r dotenv/config src/index",
-		"test": "jest --watchAll"
+		"test": "jest --runInBand --watchAll"
 	},
 	"jest": {
-		"globalSetup": "./tests/jest/globalSetup.ts",
-		"globalTeardown": "./tests/jest/globalTeardown.ts",
-		"setupFiles": [
-			"dotenv/config"
-		]
+		"testEnvironment": "node",
+		"transform": {
+			"^.+\\.js?$": "babel-jest",
+			"^.+\\.ts?$": "ts-jest"
+		}
 	},
 	"license": "MIT",
 	"dependencies": {
@@ -22,7 +22,6 @@
 		"@babel/register": "^7.18.9",
 		"@google-cloud/storage": "^6.5.0",
 		"@typegoose/typegoose": "^9.12.1",
-		"apollo-boost": "^0.4.9",
 		"apollo-server-express": "^3.10.2",
 		"bcrypt": "^5.1.0",
 		"bcryptjs": "^2.4.3",
@@ -56,15 +55,17 @@
 		"@types/bcrypt": "^5.0.0",
 		"@types/bcryptjs": "^2.4.2",
 		"@types/express": "^4.17.14",
-		"@types/jest": "^29.2.0",
+		"@types/jest": "^29.2.3",
 		"@types/jsonwebtoken": "^8.5.9",
 		"@types/mongoose": "^5.11.97",
 		"@types/node": "^18.11.2",
 		"@types/node-cron": "^3.0.4",
 		"@types/validator": "^13.7.10",
 		"apollo": "^2.34.0",
+		"babel-jest": "^29.3.1",
 		"babel-plugin-graphql-tag": "^3.3.0",
 		"eslint": "^8.25.0",
+		"ts-jest": "^29.0.3",
 		"typescript": "^4.8.4"
 	}
 }

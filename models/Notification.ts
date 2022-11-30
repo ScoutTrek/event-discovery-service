@@ -22,10 +22,17 @@ export class Notification {
 	@Property()
 	public type!: string;
 
+	@Field()
 	@Property()
 	public eventType!: string;
 
 	@Field()
 	@Property()
 	public eventID!: string;
+
+	@Field({nullable: true})
+	createdAt?: Date;
+  
+	@Field({nullable: true})
+	updatedAt?: Date;
 }

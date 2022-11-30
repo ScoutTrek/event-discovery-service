@@ -28,5 +28,5 @@
 		// "noImplicitThis": true
 	},
 	// "exclude": ["node_modules"]
-	"include": ["src/**/*", "models/**/*", "test/**/*"]
+	"include": ["src/**/*", "models/**/*", "tests/**/*"]
 }

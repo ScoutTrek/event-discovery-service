@@ -59,7 +59,7 @@ export interface ContextType {
 	UserModel: ReturnModelType<typeof User>,
 	EventModel: ReturnModelType<typeof Event>,
 	TroopModel: ReturnModelType<typeof Troop>,
-	req: Request,
+	req?: Request,
 	authFns: typeof authFns,
 	tokens?: UserData[] | null,
 	membershipIDString?: string,
@@ -89,7 +89,9 @@ async function bootstrap() {
 				};
 		
 				const token = authFns.getTokenFromReq(req);
+				console.log(token, "\n\n");
 				if (!token) {
+					console.log("here");
 					return ret;
 				}
 				const user = await authFns.getUserFromToken(token);
@@ -106,7 +108,7 @@ async function bootstrap() {
 						return membership._id.equals(membershipIDString);
 					});
 					if (currMembership) {
-						// ret.tokens = await getUserNotificationData(getIdFromRef(currMembership.troopID).toString());
+						// ret.tokens = await getUserNotificationData(currMembership.troopID._id.toString());
 						ret.currMembership = currMembership;
 					}
 				}

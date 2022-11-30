@@ -31,32 +31,20 @@ export const getUserNotificationData = async (troopID: string): Promise<Array<Us
 
   /**
    * TODO:
-   * @param user 
+   * @param memberId
    */
-  const addToUserData = (user: DocumentType<User>): Promise<string> => {
+  const addUser = async (memberId: mongoose.Types.ObjectId): Promise<void> => {
+    const user = await UserModel.findById(memberId);
+    if (!user) return Promise.resolve();;
     if (user.expoNotificationToken) {
       userData.push({ token: user.expoNotificationToken, userID: user.id });
     }
-    return Promise.resolve("ok");
-  };
-
-  /**
-   * TODO:
-   * @param memberId
-   */
-  const getUser = async (memberId: string): Promise<Array<UserData>> => {
-    const user = await UserModel.findById(memberId);
-    if (!user) return [];
-    await addToUserData(user);
-    return userData;
+    return Promise.resolve();
   };
 
   await Promise.all(
     validPatrols.map((patrol) =>
-      Promise.all(patrol.members.map((member) => {
-        let memberId = member as Types.ObjectId;
-        return getUser(memberId.toString());
-      }))
+      Promise.all(patrol.members.map((member) => addUser(member._id)))
     )
   );
 
@@ -84,11 +72,7 @@ export const sendNotifications = async (userData: UserData[], body: string, data
     
     const notificationData = doc.unreadNotifications[doc.unreadNotifications.length - 1];
 
-    if (!isDocument(notificationData)) {
-      throw new Error("Notification not populated");
-    }
-
-    data = { ...data, notificationID: notificationData._id };
+    data = { ...data, notificationID: notificationData!._id };
 
     if (!Expo.isExpoPushToken(token)) {
       console.error(`Push token ${token} is not a valid Expo push token`);

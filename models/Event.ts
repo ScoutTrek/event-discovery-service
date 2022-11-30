@@ -101,13 +101,17 @@ export class Event {
   @Property()
   public description?: string;
 
-  @Field()
-  @Property({ required: true })
-  public date!: Date;
+  @Field({ nullable: true })
+  @Property()
+  public date?: Date;
 
-  @Field()
-  @Property({ required: true })
-  public startTime?: Date;
+  @Field({ nullable: true })
+  @Property()
+  public endDate?: Date;
+
+  @Field({ nullable: true })
+  @Property()
+  public startTime?: string;
 
   @Field({ nullable: true })
   @Property()
@@ -127,7 +131,7 @@ export class Event {
 
   @Field({ nullable: true })
   @Property()
-  public endTime?: Date;
+  public endTime?: string;
 
   @Property()
   public locationPoint?: Point;
@@ -171,15 +175,6 @@ export class Event {
 
   @Field({nullable: true})
   updatedAt?: string;
-
-  /**
-   * TODO:
-   */
-  public get time(): string {
-    let date = new Date(this.date ?? Date.now());
-    const formattedDate = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-    return formattedDate;
-  }
 }
 
 // type Location {
