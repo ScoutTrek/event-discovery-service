@@ -5,6 +5,7 @@ import { AuthChecker, ResolverData } from 'type-graphql';
 import { UserModel } from '../../models/models';
 import { ROLE } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
+import { UnauthorizedError } from '../errors/UnauthorizedError';
 
 import type { ContextType } from "../server";
 import type { DocumentType } from "@typegoose/typegoose";
@@ -32,7 +33,7 @@ export function createToken(unsignedToken: UserToken): string {
  * @param {String} token jwt from client
  * @throws {Error} if user cannot be found from specified token
  */
-export async function getUserFromToken(encodedToken: string): Promise<DocumentType<User>> {
+export async function getUserFromToken(encodedToken: string): Promise<DocumentType<User> | null> {
   if (!encodedToken) {
     return Promise.reject();
   }
@@ -40,7 +41,8 @@ export async function getUserFromToken(encodedToken: string): Promise<DocumentTy
   const user = await UserModel.findById(jwtUserInfo.id);
 
   if (user === null) {
-    throw new Error("User could not be found.");
+    return null;
+    // throw new Error("User could not be found.");
   }
 
   return user;
@@ -64,7 +66,7 @@ export const customAuthChecker: AuthChecker<ContextType, ROLE> = (
   roles: ROLE[]
 ) => {
   if (!context.user) {
-    return false;
+    throw new UnauthorizedError('Not authorized!');
   }
 
   return roles.length == 0 || context.currMembership !== undefined && roles.includes(context.currMembership.role);

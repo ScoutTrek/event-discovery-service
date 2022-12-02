@@ -14,11 +14,11 @@ import { User } from '../models/User';
 import { TypegooseMiddleware } from './middleware/typegoose_middlware';
 import { getUserNotificationData, sendNotifications, UserData } from './notifications';
 import { AuthResolver } from './resolvers/auth';
+import { EventResolver } from './resolvers/event';
 import { PatrolResolver } from './resolvers/patrol';
+import { SharedAssetsResolver } from './resolvers/sharedAssets';
 import { TroopResolver } from './resolvers/troop';
 import { UserResolver } from './resolvers/user';
-import { EventResolver } from './resolvers/event';
-import { SharedAssetsResolver } from './resolvers/sharedAssets';
 import * as authFns from './utils/Auth';
 
 import type { ReturnModelType } from '@typegoose/typegoose';
@@ -89,12 +89,13 @@ async function bootstrap() {
 				};
 		
 				const token = authFns.getTokenFromReq(req);
-				console.log(token, "\n\n");
 				if (!token) {
-					console.log("here");
 					return ret;
 				}
 				const user = await authFns.getUserFromToken(token);
+				if (!user) {
+					return ret;
+				}
 		
 				// Update this for membership paradigm --(connie: not sure what this means but will leave the comment here )
 				const membership = Array.isArray(req.headers?.membership) ? req.headers?.membership[0] : req.headers?.membership; // this is really bad... 
