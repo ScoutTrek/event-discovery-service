@@ -23,7 +23,7 @@ interface UserToken {
  * @param {Object} user the user to create a jwt for
  */
 export function createToken(unsignedToken: UserToken): string {
-  return sign({id: unsignedToken.id}, SECRET, { expiresIn: DEFAULT_EXPIRES_IN });
+  return sign({ id: unsignedToken.id }, SECRET, { expiresIn: DEFAULT_EXPIRES_IN });
 }
 
 /**
@@ -54,7 +54,8 @@ export async function getUserFromToken(encodedToken: string): Promise<DocumentTy
  */
 export function getTokenFromReq(req: Request): string | null {
   const authReq = req?.headers.authorization;
-  if (!authReq) {
+  const regex = new RegExp("^Bearer .+");
+  if (!authReq || !regex.test(authReq)) {
     return null;
   }
 
