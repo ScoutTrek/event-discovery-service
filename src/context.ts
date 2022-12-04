@@ -54,7 +54,7 @@ const contextFn: ContextFunction = async ({ req }) => {
             return membership._id.equals(membershipIDString);
         });
         if (currMembership) {
-            ret.tokens = await getUserNotificationData(currMembership.troop._id.toString());
+            ret.tokens = await getUserNotificationData(currMembership.troopID._id.toString());
             ret.currMembership = currMembership;
         }
     }

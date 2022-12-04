@@ -40,7 +40,7 @@ export class Membership {
 
   @Field(type => ID)
   @Property({ required: true, ref: () => Troop })
-  public troop!: Ref<Troop, mongoose.Types.ObjectId>;
+  public troopID!: Ref<Troop, mongoose.Types.ObjectId>;
 
   @Field(type => ID)
   @Property({ required: true })
@@ -48,7 +48,7 @@ export class Membership {
 
   @Field(type => ID)
   @Property({ required: true, ref: () => Patrol })
-  public patrol!: Ref<Patrol, mongoose.Types.ObjectId>;
+  public patrolID!: Ref<Patrol, mongoose.Types.ObjectId>;
 
   @Field(type => ROLE)
   @Property({ required: true, enum: ROLE })

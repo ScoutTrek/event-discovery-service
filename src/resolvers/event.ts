@@ -166,7 +166,7 @@ export class EventResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
+    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
     if (myTroop === null) {
       throw new Error("Selected troop does not exist");
     }
@@ -229,8 +229,8 @@ export class EventResolver {
     const {location, meetLocation, ...restInput} = input;
     const mutationObject: Partial<Event> = {
       ...restInput,
-      troop: ctx.currMembership.troop,
-      patrol: ctx.currMembership.patrol,
+      troop: ctx.currMembership.troopID,
+      patrol: ctx.currMembership.patrolID,
       creator: ctx.user!._id,
       notification: new Date(startDatetime.valueOf() - 86400000),
     };
