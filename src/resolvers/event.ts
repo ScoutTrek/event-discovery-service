@@ -216,7 +216,6 @@ export class EventResolver {
     }
 
     if (input.type === "TROOP_MEETING") {
-      // odn't fully get the point of this, let's discuss
       input.title = "Troop Meeting"
     }
 
@@ -233,7 +232,6 @@ export class EventResolver {
       troop: ctx.currMembership.troop,
       patrol: ctx.currMembership.patrol,
       creator: ctx.user!._id,
-      // note to self double check this ;-;
       notification: new Date(startDatetime.valueOf() - 86400000),
     };
 
@@ -286,8 +284,6 @@ export class EventResolver {
     }
     await ctx.EventModel.updateOne({ _id: id }, newVals);
 
-    // or should we instead just create a new event if updatedEvents is null,
-    // that way we don't need to return Event | null and can just return Event
     const updatedEvent = await ctx.EventModel.findById(id);
 
     sendNotifications(ctx.tokens ?? [], `${updatedEvent?.title} event has been updated!`, {

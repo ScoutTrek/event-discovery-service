@@ -14,10 +14,11 @@ import {
   Resolver,
   Root,
 } from 'type-graphql';
-
 import { Location, Troop } from '../../models/TroopAndPatrol';
-
 import type { ContextType } from '../context';
+
+// note: some resolvers in the old backend (such as updating troops) weren't implemented, hence why
+// we have a lot of code commented out in this file. these may be worth looking into/implementing later.
 
 @InputType()
 class AddTroopInput implements Partial<Troop> {

@@ -21,8 +21,7 @@ class Upload {
   @Field(type => String)
   mimetype: string;
 
-  @Field(type => String) // this is a lie i have no clue what's happening rn
-  // this will throw an error or this is definitely wrong in some way shape or form
+  @Field(type => String) // in issue #14, check this bc it's def inaccurate right now
   createReadStream: (_: any) => ReadStream;
 }
 

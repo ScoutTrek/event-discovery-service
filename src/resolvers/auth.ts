@@ -68,7 +68,6 @@ export class AuthResolver {
       throw new Error("Please enter a valid email.");
     }
 
-    // TODO: double check this return type
     const user = await ctx.UserModel.create(input);
 
     const token = authFns.createToken({
