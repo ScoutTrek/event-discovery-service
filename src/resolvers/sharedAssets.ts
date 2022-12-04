@@ -1,11 +1,8 @@
-import { gql } from "apollo-server-express";
-import { Storage } from "@google-cloud/storage";
-import { Arg, Authorized, Ctx, Field, InputType, Mutation, Resolver} from 'type-graphql';
-import type { ContextType } from "src/server";
-import { ReadStream } from "fs-capacitor";
-// const { gql } = require("apollo-server-express");
-// const { authenticated, authorized } = require("../utils/Auth");
-// const { Storage } = require("@google-cloud/storage");
+import { Storage } from '@google-cloud/storage';
+import { ReadStream } from 'fs-capacitor';
+import { Arg, Authorized, Ctx, Field, InputType, Mutation, Resolver } from 'type-graphql';
+
+import type { ContextType } from '../context';
 
 const gcs = new Storage();
 

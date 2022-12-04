@@ -5,7 +5,7 @@ import { UserModel } from '../../models/models';
 import { User } from '../../models/User';
 import * as authFns from '../utils/Auth';
 
-import type { ContextType } from '../server';
+import type { ContextType } from '../context';
 
 @InputType()
 export class LoginInput {

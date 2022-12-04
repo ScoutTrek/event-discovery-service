@@ -7,7 +7,7 @@ import { ROLE } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 import { UnauthorizedError } from '../errors/UnauthorizedError';
 
-import type { ContextType } from "../server";
+import type { ContextType } from '../context';
 import type { DocumentType } from "@typegoose/typegoose";
 
 const SECRET = "themfingsuperobvioussting";
@@ -34,18 +34,18 @@ export function createToken(unsignedToken: UserToken): string {
  * @throws {Error} if user cannot be found from specified token
  */
 export async function getUserFromToken(encodedToken: string): Promise<DocumentType<User> | null> {
-  if (!encodedToken) {
-    return Promise.reject();
-  }
-  const jwtUserInfo = verify(encodedToken, SECRET) as UserToken;
-  const user = await UserModel.findById(jwtUserInfo.id);
+  try {
+    const jwtUserInfo = verify(encodedToken, SECRET) as UserToken;
+    const user = await UserModel.findById(jwtUserInfo.id);
 
-  if (user === null) {
+    if (user === null) {
+      return null;
+    }
+
+    return user;
+  } catch (e) {
     return null;
-    // throw new Error("User could not be found.");
   }
-
-  return user;
 };
 
 /**

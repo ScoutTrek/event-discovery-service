@@ -1,3 +1,4 @@
+import { User } from 'models/User';
 import mongoose from 'mongoose';
 import {
   Arg,
@@ -16,7 +17,7 @@ import {
 
 import { Location, Troop } from '../../models/TroopAndPatrol';
 
-import type { ContextType } from '../server';
+import type { ContextType } from '../context';
 
 @InputType()
 class AddTroopInput implements Partial<Troop> {
@@ -139,4 +140,9 @@ export class TroopResolver {
   // deleteCurrTroop(@Ctx() ctx: ContextType): Troop {
     
   // }
+
+  @FieldResolver()
+  async scoutMaster(@Root() troop: Troop, @Ctx() ctx: ContextType): Promise<User | null> {
+    return await ctx.UserModel.findById(troop.scoutMaster?._id);
+  }
 }

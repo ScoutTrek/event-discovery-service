@@ -1,16 +1,28 @@
+import { GraphQLScalarType } from 'graphql';
 import mongoose from 'mongoose';
-import { Arg, Authorized, Float, Ctx, Int, Field, FieldResolver, ID, InputType, Mutation, Query, Resolver, Root } from 'type-graphql';
-import { GraphQLScalarType } from "graphql";
-import { Event, EVENT_TYPE } from '../../models/Event';
-import type { ContextType } from "../server";
-import EventSchemas from "../Event/EventSchemas.json";
-// import { EventModel } from 'models/models';
-import { Location, Troop } from '../../models/TroopAndPatrol';
-import { Patrol } from '../../models/TroopAndPatrol';
-import { User } from '../../models/User';
-import { sendNotifications } from "../notifications";
-import { UpdateResult } from 'mongodb';
+import {
+  Arg,
+  Authorized,
+  Ctx,
+  Field,
+  FieldResolver,
+  Float,
+  ID,
+  InputType,
+  Int,
+  Mutation,
+  Query,
+  Resolver,
+  Root,
+} from 'type-graphql';
 
+import { Event, EVENT_TYPE } from '../../models/Event';
+import { Location, Patrol, Troop } from '../../models/TroopAndPatrol';
+import { User } from '../../models/User';
+import EventSchemas from '../Event/EventSchemas.json';
+import { sendNotifications } from '../notifications';
+
+import type { ContextType } from '../context';
 @InputType()
 class AddRosterInput {
   @Field(type => [ID])
@@ -39,8 +51,8 @@ class AddEventInput {
   type!: EVENT_TYPE;
   @Field(type => AddRosterInput, { nullable: true })
   invited?: AddRosterInput;
-  @Field()
-  title!: string;
+  @Field({ nullable: true })
+  title?: string;
   @Field({ nullable: true })
   description?: string;
   @Field(type => Date, { nullable: true })
@@ -61,9 +73,6 @@ class AddEventInput {
   uniqueMeetLocation?: string;
   @Field(type => UpdateLocationInput, { nullable: true }) 
   location?: UpdateLocationInput; 
-  // must have this, otherwise will have type conversion errors due to trying to 
-  // make updateLocationInput be a Point
-  // let's discuss if we want to get rid of the point type
   @Field(type => UpdateLocationInput, { nullable: true })
   meetLocation?: UpdateLocationInput;
   @Field(type => Date, { nullable: true })
@@ -105,9 +114,6 @@ class UpdateEventInput {
   uniqueMeetLocation?: string;
   @Field(type => UpdateLocationInput, { nullable: true }) 
   location?: UpdateLocationInput; 
-  // must have this, otherwise will have type conversion errors due to trying to 
-  // make updateLocationInput be a Point
-  // let's discuss if we want to get rid of the point type
   @Field(type => UpdateLocationInput, { nullable: true })
   meetLocation?: UpdateLocationInput;
   @Field(type => Date, { nullable: true })

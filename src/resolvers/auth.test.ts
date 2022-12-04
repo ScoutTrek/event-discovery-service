@@ -1,5 +1,5 @@
 import { UserModel, EventModel, TroopModel } from "../../models/models";
-import { ContextType } from "src/server";
+import { ContextType } from "../context";
 import { AuthResolver } from "./auth";
 import * as authFns from "../utils/Auth";
 

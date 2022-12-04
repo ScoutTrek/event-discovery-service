@@ -4,7 +4,7 @@ import { Arg, Authorized, Ctx, Field, FieldResolver, ID, InputType, Mutation, Qu
 import { Patrol, ROLE } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 
-import type { ContextType } from '../server';
+import type { ContextType } from '../context';
 
 @InputType()
 class AddPatrolInput implements Partial<Patrol> {

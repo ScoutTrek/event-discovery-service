@@ -1,18 +1,12 @@
-// const { ApolloServer } = require("apollo-server-express");
-// const cron = require("node-cron");
-import { DocumentType, isRefType } from '@typegoose/typegoose';
 import { ApolloServer } from 'apollo-server-express';
-import { Request } from 'express';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import cron from 'node-cron';
 import { buildSchema } from 'type-graphql';
 
-import { Event } from '../models/Event';
-import { EventModel, TroopModel, UserModel } from '../models/models';
-import { Membership, Troop } from '../models/TroopAndPatrol';
-import { User } from '../models/User';
+import { EventModel } from '../models/models';
+import contextFn from './context';
 import { TypegooseMiddleware } from './middleware/typegoose_middlware';
-import { getUserNotificationData, sendNotifications, UserData } from './notifications';
+import { getUserNotificationData, sendNotifications } from './notifications';
 import { AuthResolver } from './resolvers/auth';
 import { EventResolver } from './resolvers/event';
 import { PatrolResolver } from './resolvers/patrol';
@@ -20,10 +14,6 @@ import { SharedAssetsResolver } from './resolvers/sharedAssets';
 import { TroopResolver } from './resolvers/troop';
 import { UserResolver } from './resolvers/user';
 import * as authFns from './utils/Auth';
-
-import type { ReturnModelType } from '@typegoose/typegoose';
-// import { typeDefs as eventTypes, resolvers as eventResolvers } from "./Event/Event";
-// import { typeDefs as fileTypes, resolvers as fileResolvers } from "./Event/SharedAssets";
 
 // Models
 mongoose.connect(process.env.MONGO_URL!);
@@ -40,10 +30,7 @@ cron.schedule("* * * * *", async () => {
 	});
 	if (oneDayReminderEvents.length > 0) {
 		oneDayReminderEvents.map(async (event) => {
-			if (!isRefType(event.troop, Types.ObjectId)) {
-				throw new Error("Impossible");
-			}
-			const tokens = await getUserNotificationData(event.troop.toString());
+			const tokens = await getUserNotificationData(event.troop._id.toString());
 			sendNotifications(
 				tokens,
 				`Friendly ScoutTrek Reminder that ${event.title} happens tomorrow!`,
@@ -54,18 +41,6 @@ cron.schedule("* * * * *", async () => {
 		});
 	}
 });
-
-export interface ContextType {
-	UserModel: ReturnModelType<typeof User>,
-	EventModel: ReturnModelType<typeof Event>,
-	TroopModel: ReturnModelType<typeof Troop>,
-	req?: Request,
-	authFns: typeof authFns,
-	tokens?: UserData[] | null,
-	membershipIDString?: string,
-	currMembership?: DocumentType<Membership>,
-	user?: DocumentType<User>
-}
 
 async function bootstrap() {
 	try {
@@ -79,43 +54,7 @@ async function bootstrap() {
 		// Create GraphQL server
 		const server = new ApolloServer({
 			schema,
-			context: async ({ req }) => {
-				let ret: ContextType = {
-					UserModel,
-					EventModel,
-					TroopModel,
-					req,
-					authFns
-				};
-
-				const token = authFns.getTokenFromReq(req);
-				if (!token) {
-					return ret;
-				}
-				const user = await authFns.getUserFromToken(token);
-				if (!user) {
-					return ret;
-				}
-
-				// Update this for membership paradigm --(connie: not sure what this means but will leave the comment here )
-				const membership = Array.isArray(req.headers?.membership) ? req.headers?.membership[0] : req.headers?.membership; // this is really bad... 
-
-				const membershipIDString = membership === "undefined" ? undefined : new mongoose.Types.ObjectId(membership).toString();
-
-				if (membershipIDString && user && user.groups) {
-					ret.membershipIDString = membershipIDString;
-					ret.user = user;
-					const currMembership = user.groups.find((membership) => {
-						return membership._id.equals(membershipIDString);
-					});
-					if (currMembership) {
-						// ret.tokens = await getUserNotificationData(currMembership.troopID._id.toString());
-						ret.currMembership = currMembership;
-					}
-				}
-
-				return ret;
-			},
+			context: contextFn,
 		});
 
 		return server;

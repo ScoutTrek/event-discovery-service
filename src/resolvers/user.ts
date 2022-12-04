@@ -18,7 +18,7 @@ import {
 import { Membership, Patrol, ROLE, Troop } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 
-import type { ContextType } from "../server";
+import type { ContextType } from '../context';
 
 @InputType()
 class AddMembershipInput implements Partial<Membership>{
@@ -41,7 +41,7 @@ class AddMembershipInput implements Partial<Membership>{
 @ObjectType()
 class MembershipPayload implements Partial<Membership> {
   @Field(type => ID)
-  troopID: mongoose.Types.ObjectId;
+  groupID: mongoose.Types.ObjectId;
   @Field()
   troopNumber: string;
 }
@@ -131,7 +131,7 @@ export class UserResolver {
     ctx.user!.save();
 
     return {
-      troopID: newGroupID,
+      groupID: newGroupID,
       troopNumber: input.troopNumber
     };
   }
