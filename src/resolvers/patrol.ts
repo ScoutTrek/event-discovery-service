@@ -36,7 +36,7 @@ export class PatrolResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
+    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
     if (myTroop === null) {
       throw new Error("Selected troop does not exist");
     }
@@ -64,7 +64,7 @@ export class PatrolResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
+    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
     if (myTroop === null) {
       throw new Error("Selected troop does not exist");
     }
@@ -79,11 +79,11 @@ export class PatrolResolver {
     if (currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const myTroop = await TroopModel.findById(currMembership.troopID._id);
+    const myTroop = await TroopModel.findById(currMembership.troop._id);
     if (myTroop === null) {
       throw new Error("Selected troop does not exist");
     }
-    return myTroop.patrols.id(currMembership.patrolID._id);
+    return myTroop.patrols.id(currMembership.patrol._id);
   }
 
   // Will need to figure out how to create a Troop and a Patrol at the same time.
@@ -116,7 +116,7 @@ export class PatrolResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const troop = await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
+    const troop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
     if (troop === null) {
       throw new Error("Selected troop does not exist");
     }
@@ -139,11 +139,11 @@ export class PatrolResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const troop = await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
+    const troop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
     if (troop === null) {
       throw new Error("Selected troop does not exist");
     }
-    const patrol = troop.patrols.id(ctx.currMembership.patrolID._id);
+    const patrol = troop.patrols.id(ctx.currMembership.patrol._id);
     if (patrol === null) {
       throw new Error("Patrol does not exist");
     }
@@ -163,7 +163,7 @@ export class PatrolResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const troop = await ctx.TroopModel.findById(ctx.currMembership.troopID);
+    const troop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
     if (troop === null) {
       throw new Error("Selected troop does not exist");
     }
@@ -181,11 +181,11 @@ export class PatrolResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const troop = await ctx.TroopModel.findById(ctx.currMembership.troopID);
+    const troop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
     if (troop === null) {
       throw new Error("Selected troop does not exist");
     }
-    const patrol = troop.patrols.id(ctx.currMembership.patrolID);
+    const patrol = troop.patrols.id(ctx.currMembership.patrol);
     if (patrol === null) {
       throw new Error("Patrol does not exist");
     }
@@ -197,7 +197,7 @@ export class PatrolResolver {
   // @FieldResolver(returns => Troop)
   // async troop(@Ctx() ctx: ContextType): Promise<Troop | undefined> {
   //   if (ctx.currMembership) {
-  //     return await ctx.TroopModel.findById(ctx.currMembership.troopID._id) ?? undefined;
+  //     return await ctx.TroopModel.findById(ctx.currMembership.troop._id) ?? undefined;
   //   }
   // }
 

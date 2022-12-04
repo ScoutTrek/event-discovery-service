@@ -86,7 +86,7 @@ export class TroopResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    return await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
+    return await ctx.TroopModel.findById(ctx.currMembership.troop._id);
   }
 
   @Authorized()

@@ -166,7 +166,7 @@ export class EventResolver {
     if (ctx.currMembership === undefined) {
       throw new Error("No membership selected!");
     }
-    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
+    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
     if (myTroop === null) {
       throw new Error("Selected troop does not exist");
     }
@@ -230,8 +230,8 @@ export class EventResolver {
     const {location, meetLocation, ...restInput} = input;
     const mutationObject: Partial<Event> = {
       ...restInput,
-      troop: ctx.currMembership.troopID,
-      patrol: ctx.currMembership.patrolID,
+      troop: ctx.currMembership.troop,
+      patrol: ctx.currMembership.patrol,
       creator: ctx.user!._id,
       // note to self double check this ;-;
       notification: new Date(startDatetime.valueOf() - 86400000),
@@ -300,19 +300,19 @@ export class EventResolver {
 
   @FieldResolver(returns => Troop)
   async troop(@Root() event: Event, @Ctx() ctx: ContextType): Promise<Troop | undefined> {
-    return await ctx.TroopModel.findById(event.troop) ?? undefined;
+    return await ctx.TroopModel.findById(event.troop._id) ?? undefined;
   }
 
   @FieldResolver(returns => Patrol)
   async patrol(@Root() event: Event, @Ctx() ctx: ContextType): Promise<Patrol | undefined> {
-    const troop = await ctx.TroopModel.findById(event.troop);
+    const troop = await ctx.TroopModel.findById(event.troop._id);
     const patrol = await troop?.patrols?.id(event.patrol);
     return patrol ?? undefined;
   }
 
   @FieldResolver(returns => User)
   async creator(@Root() event: Event, @Ctx() ctx: ContextType): Promise<User | undefined> {
-    return await ctx.UserModel.findById(event.creator) ?? undefined;
+    return await ctx.UserModel.findById(event.creator._id) ?? undefined;
   }
   
   @FieldResolver(returns => Location, { nullable: true })

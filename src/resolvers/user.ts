@@ -23,13 +23,13 @@ import type { ContextType } from '../context';
 @InputType()
 class AddMembershipInput implements Partial<Membership>{
   @Field(type => ID)
-  troopID!: mongoose.Types.ObjectId;
+  troop!: mongoose.Types.ObjectId;
 
   @Field(type => ID)
   troopNumber!: string;
 
   @Field(type => ID)
-  patrolID!: mongoose.Types.ObjectId;
+  patrol!: mongoose.Types.ObjectId;
 
   @Field(type => ROLE)
   role!: ROLE;
@@ -107,15 +107,15 @@ export class UserResolver {
   ): Promise<MembershipPayload> {
     const newGroupID = new mongoose.Types.ObjectId();
 
-    const troopDoc = await ctx.TroopModel.findById(input.troopID);
+    const troopDoc = await ctx.TroopModel.findById(input.troop._id);
     if (!troopDoc) {
       throw new Error("No such troop");
     }
     if (input.role === ROLE.SCOUTMASTER) {
       troopDoc.scoutMaster = ctx.user!._id;
     }
-    if (input.patrolID) {
-      const patrol = troopDoc.patrols.id(input.patrolID);
+    if (input.patrol) {
+      const patrol = troopDoc.patrols.id(input.patrol);
       if (!patrol) {
         throw new Error("No such patrol");
       }
@@ -205,7 +205,7 @@ export class UserResolver {
   @FieldResolver(returns => Troop)
   async currTroop(@Root() user: User, @Ctx() ctx: ContextType): Promise<Troop | undefined> {
     if (user._id.equals(ctx.user!._id) && ctx.currMembership) {
-      return await ctx.TroopModel.findById(ctx.currMembership.troopID) ?? undefined;
+      return await ctx.TroopModel.findById(ctx.currMembership.troop._id) ?? undefined;
     }
   }
 
@@ -213,9 +213,9 @@ export class UserResolver {
   @FieldResolver(returns => Patrol)
   async currPatrol(@Root() user: User, @Ctx() ctx: ContextType): Promise<Patrol | undefined> {
     if (user._id.equals(ctx.user!._id) && ctx.currMembership) {
-      const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troopID);
+      const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troop._id);
       if (myTroop) {
-        return myTroop.patrols.id(ctx.currMembership.patrolID) ?? undefined;
+        return myTroop.patrols.id(ctx.currMembership.patrol) ?? undefined;
       }
     }
   }
