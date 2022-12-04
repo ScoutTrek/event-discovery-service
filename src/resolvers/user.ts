@@ -107,7 +107,7 @@ export class UserResolver {
   ): Promise<MembershipPayload> {
     const newGroupID = new mongoose.Types.ObjectId();
 
-    const troopDoc = await ctx.TroopModel.findById(input.troopID._id);
+    const troopDoc = await ctx.TroopModel.findById(input.troopID);
     if (!troopDoc) {
       throw new Error("No such troop");
     }
