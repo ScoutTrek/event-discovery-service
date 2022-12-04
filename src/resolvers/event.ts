@@ -312,7 +312,7 @@ export class EventResolver {
 
   @FieldResolver(returns => User)
   async creator(@Root() event: Event, @Ctx() ctx: ContextType): Promise<User | undefined> {
-    return await ctx.UserModel.findById(event.creator._id) ?? undefined;
+    return await ctx.UserModel.findById(event.creator?._id) ?? undefined;
   }
   
   @FieldResolver(returns => Location, { nullable: true })
