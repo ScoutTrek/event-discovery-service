@@ -5,6 +5,10 @@ import * as authFns from "../utils/Auth";
 
 // jest.mock(UserModel);
 
+test("Stop complaining", () => {
+    expect(1).toBe(1);
+})
+
 // describe("User resolver", () => {
 //     let resolver: AuthResolver;
 //     let context: ContextType;

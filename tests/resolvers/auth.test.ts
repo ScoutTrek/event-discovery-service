@@ -1,5 +1,6 @@
 // Models
 import { ApolloServer, gql } from 'apollo-server-express';
+import { GraphQLResponse } from 'apollo-server-types';
 import { buildSchemaSync } from 'type-graphql';
 
 import { UserModel } from '../../models/models';
@@ -26,31 +27,51 @@ const server = new ApolloServer({
   context: contextFn,
 });
 
-test("Creates a new user", async () => {
-  const createUser = gql`
-    mutation {
-      signup(
-        input: {
-          name: "Elise Chavenport"
-          email: "elisemeChavenport@gmail.com"
-          password: "password"
-          passwordConfirm: "password"
-          phone: "8658061326"
-          birthday: "2000-12-12"
-        }
-      ) {
-        user {
-          id
-          name
-        }
-        token
-      }
-    }
-  `;
-  const response = await server.executeOperation({
-    query: createUser,
-  });
+describe("User signup", () => {
+  describe("Create a new user", () => {
+    let response: GraphQLResponse;
 
-  const count = await UserModel.count({ _id: response.data?.signup.user.id });
-  expect(count).toBe(1);
+    beforeEach(async () => {
+      const createUser = gql`
+        mutation {
+          signup(
+            input: {
+              name: "Test User"
+              email: "test@example.com"
+              password: "password"
+              passwordConfirm: "password"
+              phone: "1234567890"
+              birthday: "2000-12-12"
+            }
+          ) {
+            user {
+              id
+              name
+              email
+              phone
+              birthday
+            }
+            token
+            noGroups
+          }
+        }
+      `;
+      response = await server.executeOperation({
+        query: createUser,
+      });
+    });
+
+    test('correct fields should be returned', async () => {
+      const createdUser = response.data?.signup.user;
+      expect(createdUser.name).toBe("Test User");
+      expect(createdUser.email).toBe("test@example.com");
+      expect(createdUser.phone).toBe("1234567890");
+      expect(new Date(createdUser.birthday).getTime()).toBe(new Date("2000-12-12").getTime());
+    });
+
+    test('user should be created in the db', async () => {
+      const count = await UserModel.count({ _id: response.data?.signup.user.id });
+      expect(count).toBe(1);
+    });
+  });
 });
