@@ -6754,10 +6754,10 @@ node-releases@^2.0.6:
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.6.tgz#8a7088c63a55e493845683ebf3c828d8c51c5503"
   integrity sha512-PiVXnNuFm5+iYkLBNeq5211hvO38y63T0i2KKh2KnUs3RpzJ+JtODFjkD8yjLwnDkTYF1eKXheUwdssR+NRZdg==
 
-node@^16.18.0:
-  version "16.18.0"
-  resolved "https://registry.yarnpkg.com/node/-/node-16.18.0.tgz#5c3ce04bc3e28e13bd8b70fdc16cf73e12a15d26"
-  integrity sha512-cGHh+QFy24iHfaOaMZv5tuJP0xGFwj2ZlSmvOBV/D6E0V4n894zw8zmF3ZZCXTSjzKJ2BsQ5lNcKKuq/oTksbw==
+node@^17.9.0:
+  version "17.9.1"
+  resolved "https://registry.yarnpkg.com/node/-/node-17.9.1.tgz#2f6094597b22e8d56c57c129bb88c91aa17c15b2"
+  integrity sha512-Jmv4WrsWcZI6/SEUF6G0+9R73yQnVN/9VQnqkC1s/VJrxUkwyCodnOQLvXEVqfh13RNeHpFO92cWxjV0TB5Rww==
   dependencies:
     node-bin-setup "^1.0.0"
 
@@ -8064,10 +8064,10 @@ type-is@~1.6.18:
     media-typer "0.3.0"
     mime-types "~2.1.24"
 
-typescript@^4.8.4:
-  version "4.8.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.8.4.tgz#c464abca159669597be5f96b8943500b238e60e6"
-  integrity sha512-QCh+85mCy+h0IGff8r5XWzOVSbBO+KfeYrMQh7NJ58QujwcE22u+NUSmUxqF+un70P9GXKxa2HCNiTTMJknyjQ==
+typescript@^4.9.3:
+  version "4.9.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.3.tgz#3aea307c1746b8c384435d8ac36b8a2e580d85db"
+  integrity sha512-CIfGzTelbKNEnLpLdGFgdyKhG23CKdKgQPOBc+OUNrkJ2vr+KSzsSV5kq5iWhEQbok+quxgGzrAtGWCyU7tHnA==
 
 unbox-primitive@^1.0.2:
   version "1.0.2"
