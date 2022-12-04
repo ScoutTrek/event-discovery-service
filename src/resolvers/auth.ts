@@ -31,8 +31,8 @@ export class SignupInput {
   expoNotificationToken?: string;
   @Field({ nullable: true })
   phone?: string;
-  @Field()
-  birthday!: Date;
+  @Field({ nullable: true })
+  birthday?: Date;
 }
 
 @ObjectType()
