@@ -77,9 +77,9 @@ export class User {
   })
   public phone?: string;
 
-  @Field()
-  @Property({required: true})
-  public birthday!: Date;
+  @Field({ nullable: true })
+  @Property()
+  public birthday?: Date;
 
   @Field(type => [Membership])
   @Property({ required: true, type: () => Membership, default: [] })
@@ -104,8 +104,8 @@ export class User {
   updatedAt?: Date;
 
   @Field()
-  age(): number {
-    return Math.floor((Date.now() - this.birthday.getTime()) / 1000 / 60 / 60 / 24 / 365);
+  age(): number | null {
+    return this.birthday ? Math.floor((Date.now() - this.birthday.getTime()) / 1000 / 60 / 60 / 24 / 365) : null;
   }
 
   @Field()
