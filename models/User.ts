@@ -1,7 +1,7 @@
 import { modelOptions, pre, prop as Property } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
-import { Field, ID, ObjectType } from 'type-graphql';
+import { Field, ID, Int, ObjectType } from 'type-graphql';
 import validator from 'validator';
 
 import { Notification } from './Notification';
@@ -103,7 +103,7 @@ export class User {
   @Field({nullable: true})
   updatedAt?: Date;
 
-  @Field()
+  @Field(type => Int, {nullable: true})
   age(): number | null {
     return this.birthday ? Math.floor((Date.now() - this.birthday.getTime()) / 1000 / 60 / 60 / 24 / 365) : null;
   }
