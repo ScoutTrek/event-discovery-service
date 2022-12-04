@@ -42,14 +42,15 @@ const contextFn: ContextFunction = async ({ req }) => {
         return ret;
     }
 
+    ret.user = user;
+
     // Update this for membership paradigm --(connie: not sure what this means but will leave the comment here )
     const membership = Array.isArray(req.headers?.membership) ? req.headers?.membership[0] : req.headers?.membership; // this is really bad... 
 
     const membershipIDString = membership === "undefined" ? undefined : new mongoose.Types.ObjectId(membership).toString();
 
-    if (membershipIDString && user && user.groups) {
+    if (membershipIDString && user.groups) {
         ret.membershipIDString = membershipIDString;
-        ret.user = user;
         const currMembership = user.groups.find((membership) => {
             return membership._id.equals(membershipIDString);
         });
