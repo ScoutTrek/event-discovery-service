@@ -51,6 +51,8 @@ export class LoginPayload {
   token!: string;
   @Field(type => User)
   user!: User;
+  @Field()
+  noGroups!: boolean;
   @Field(type => ID, {nullable: true})
   groupID?: string;
 }
@@ -109,6 +111,7 @@ export class AuthResolver {
     return {
       token,
       user,
+      noGroups: !user.groups.length,
       groupID: user.groups.length > 0 ? user.groups[0]!._id : undefined,
     };
   }

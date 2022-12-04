@@ -88,17 +88,12 @@ async function bootstrap() {
 					authFns
 				};
 
-				console.log(`Headers: ${req.headers}`);
 				const token = authFns.getTokenFromReq(req);
-				console.log(`Token: ${token}`);
 				if (!token) {
-					console.log(`If null Token: ${token}`);
 					return ret;
 				}
 				const user = await authFns.getUserFromToken(token);
-				console.log(`User: ${user}`);
 				if (!user) {
-					console.log(`If null user: ${user}`);
 					return ret;
 				}
 
