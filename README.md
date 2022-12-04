@@ -9,9 +9,12 @@
 
 ## Tech
 
+* Typescript
 * Apollo Server
 * Mongoose + Atlas MongoDB Database
 * Google Cloud App Engine
+
+Note: Important libraries include type-graphql and typegoose, which help with types for graphql and mongoose respectively
 
 
 ## Setting up on local
