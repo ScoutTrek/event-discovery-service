@@ -1,4 +1,8 @@
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import { GraphQLError } from 'graphql';
 import mongoose, { Error } from 'mongoose';
+import * as EmailService from '../services/email';
 import {
   Arg,
   Authorized,
@@ -15,13 +19,14 @@ import {
   Root,
 } from 'type-graphql';
 
+import { TOKEN_TYPE } from '../../models/Token';
 import { Membership, Patrol, ROLE, Troop } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 
 import type { ContextType } from '../context';
 
 @InputType()
-class AddMembershipInput implements Partial<Membership>{
+class AddMembershipInput implements Partial<Membership> {
   @Field(type => ID)
   troopID!: mongoose.Types.ObjectId;
 
@@ -60,12 +65,20 @@ class UpdateUserInput { // implements Partial<User>
   phone?: string;
   @Field({nullable: true})
   birthday?: Date;
-  @Field(type => ROLE, {nullable: true})
-  role?: ROLE;
   @Field(type => [AddMembershipInput], {nullable: true})
   groups?: AddMembershipInput[];
   @Field(type => [String], {nullable: true})
   children?: string[];
+}
+
+@InputType()
+class ResetPasswordInput {
+  @Field()
+  email!: string;
+  @Field()
+  token!: string;
+  @Field()
+  password!: string;
 }
 
 @Resolver(of => User)
@@ -136,23 +149,25 @@ export class UserResolver {
     };
   }
 
-  @Authorized([ROLE.SCOUTMASTER])
+  @Authorized()
   @Mutation(returns => User)
   async updateUser(
     @Arg("input") input: UpdateUserInput,
-    @Arg("id", type => ID) id: mongoose.Types.ObjectId,
+    @Arg("id", type => ID) id: string,
     @Ctx() ctx: ContextType
   ): Promise<User> {
-    if (input.password) {
-      const userDoc = await ctx.UserModel.findById(id);
-      if (!userDoc) {
-        throw new Error("No such user")
-      }
-      userDoc.password = input.password;
-      userDoc.save();
-      delete input.password;
+    if (id !== ctx.user!._id.toString()) {
+      throw new GraphQLError("Can't update a different user", {
+        extensions: {
+          code: "FORBIDDEN",
+        },
+      });
     }
-    const userDoc = await ctx.UserModel.findByIdAndUpdate(id, { ...input }, { new: true });
+    // If password is changed, hash it since findAndUpdate doesn't call pre-save
+    if (input.password) {
+      input.password = await bcrypt.hash(input.password, 12);
+    }
+    const userDoc = await ctx.UserModel.findByIdAndUpdate(id, input, { new: true });
     if (!userDoc) {
       throw new Error("No such user");
     }
@@ -192,6 +207,45 @@ export class UserResolver {
     return true;
   }
   
+  @Mutation()
+  requestPasswordReset(
+    @Arg("email") email: string,
+    @Ctx() ctx: ContextType
+  ): boolean {
+    ctx.UserModel.findOne({email}).then((user) => {
+      if (!user) {
+        return;
+      }
+      ctx.TokenModel.create({
+        type: TOKEN_TYPE.PASS_RESET,
+        user: user._id,
+        token: crypto.randomUUID(),
+      }).then((tok) => {
+        EmailService.sendResetPasswordEmail(email, tok.token);
+      });
+    });
+
+    return true; // Always return true
+  }
+
+  @Mutation(returns => User, {nullable: true})
+  async resetPassword(
+    @Arg("input") input: ResetPasswordInput,
+    @Ctx() ctx: ContextType
+  ): Promise<User | null> {
+    const user = await ctx.UserModel.findOne({email: input.email});
+    if (!user) {
+      return null;
+    }
+    const token = await ctx.TokenModel.findOne({user: {_id: user._id}, token: input.token, type: TOKEN_TYPE.PASS_RESET});
+    if (!token) {
+      return null;
+    }
+    user.password = input.password;
+    const ret = await user.save();
+    token.delete();
+    return ret;
+  }
 
   @Authorized()
   @FieldResolver(returns => ROLE, {nullable: true})
