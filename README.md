@@ -23,5 +23,6 @@ Note: Important libraries include type-graphql and typegoose, which help with ty
 3. Reach out to a ScoutTrek developer for MongoDB and Google Cloud invite. Check notion for 
 instructions on setting up Google Cloud. 
 4. In the terminal, run `yarn install`
-5. Run `yarn start` to start the server
-6. Make sure you have `ScoutTrek-Frontend` set up as well -- see the [readme](https://github.com/sandboxnu/ScoutTrek-Frontend#readme) to begin developing
+5. Install [MongoDB](https://www.mongodb.com/docs/manual/installation/)
+6. Run `yarn start` to start the server
+7. Make sure you have `ScoutTrek-Frontend` set up as well -- see the [readme](https://github.com/sandboxnu/ScoutTrek-Frontend#readme) to begin developing
