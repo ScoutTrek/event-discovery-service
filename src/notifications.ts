@@ -64,7 +64,7 @@ export const sendNotifications = async (userData: UserData[], body: string, data
       eventID: data.ID,
     };
 
-    let doc = await UserModel.findByIdAndUpdate(userID, {$push: {unreadNotifications: notification}});
+    let doc = await UserModel.findByIdAndUpdate(userID, {$push: {unreadNotifications: notification}}, {new: true});
 
     if (!doc) {
       continue;

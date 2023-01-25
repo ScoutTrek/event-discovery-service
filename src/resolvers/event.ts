@@ -17,7 +17,7 @@ import {
 } from 'type-graphql';
 
 import { Event, EVENT_TYPE } from '../../models/Event';
-import { Location, Patrol, Troop } from '../../models/TroopAndPatrol';
+import { Location, Patrol, ROLE, Troop } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 import EventSchemas from '../Event/EventSchemas.json';
 import { sendNotifications } from '../notifications';
@@ -196,13 +196,13 @@ export class EventResolver {
   }
 
   @Authorized()
-  @Mutation(returns => ID)
+  @Mutation(returns => Boolean)
   async deleteEvent(
     @Arg("id", type => ID) id: string,
     @Ctx() ctx: ContextType
-  ): Promise<Event | null> {
-    // TODO: double check `id` parameter type and Promise return type
-    return await ctx.EventModel.findByIdAndDelete(id);
+  ): Promise<boolean> {
+    await ctx.EventModel.findByIdAndDelete(id);
+    return true;
   }
 
   @Authorized()
