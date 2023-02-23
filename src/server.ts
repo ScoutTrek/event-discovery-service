@@ -9,7 +9,6 @@ import { getUserNotificationData, sendNotifications } from './notifications';
 import { AuthResolver } from './resolvers/auth';
 import { EventResolver } from './resolvers/event';
 import { PatrolResolver } from './resolvers/patrol';
-import { SharedAssetsResolver } from './resolvers/sharedAssets';
 import { TroopResolver } from './resolvers/troop';
 import { UserResolver } from './resolvers/user';
 import * as authFns from './utils/Auth';
@@ -45,7 +44,7 @@ async function bootstrap() {
 	try {
 		// build TypeGraphQL executable schema
 		const schema = await buildSchema({
-			resolvers: [AuthResolver, EventResolver, UserResolver, TroopResolver, PatrolResolver, SharedAssetsResolver],
+			resolvers: [AuthResolver, EventResolver, UserResolver, TroopResolver, PatrolResolver],
 			globalMiddlewares: [TypegooseMiddleware],
 			authChecker: authFns.customAuthChecker,
 		});
