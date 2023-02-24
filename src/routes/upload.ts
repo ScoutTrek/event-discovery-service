@@ -31,33 +31,29 @@ export function uploadPhotoRoute(app: Express) {
     if (!user) {
       return res.status(401).send({ message: 'Unauthorized' });
     }
-
     if (!req.file) {
       return res.status(400).send({ message: 'Please upload a file!' });
     }
+    const filename = req.file.originalname;
     try {
-      const filename = req.file.originalname;
       const newFile = bucket.file(filename);
       await new Promise((resolves, rejects) => {
-        const blobStream = newFile
-          .createWriteStream({
-            resumable: false,
-          })
-          .on('error', (err: Error) => {
-            rejects(err);
-          })
-          .on('finish', resolves);
-        blobStream.end(req.file!.buffer);
+        newFile
+          .createWriteStream({ resumable: false })
+          .on('finish', resolves)
+          .on('error', rejects)
+          .end(req.file!.buffer); // Write the input buffer to the file and end
       });
       const newPhoto = getPublicUrl(filename);
       const oldFile = getFileName(user.userPhoto);
       if (oldFile) bucket.file(oldFile).delete();
+
       user.userPhoto = newPhoto;
       await user.save();
       res.status(200).send({ url: newPhoto });
     } catch (err) {
       return res.status(500).send({
-        message: `Could not upload the file: ${req.file.originalname}. ${err}`,
+        message: `Could not upload the file: ${filename}. ${err}`,
       });
     }
   });
