@@ -4,8 +4,8 @@ import cors from 'cors';
 import express from 'express';
 
 import contextFn from './context';
-import apolloServer from './server';
 import { uploadPhotoRoute } from './routes/upload';
+import apolloServer from './server';
 
 async function startServer() {
   let server = await apolloServer;
