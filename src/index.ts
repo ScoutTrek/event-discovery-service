@@ -4,6 +4,7 @@ import cors from 'cors';
 import express from 'express';
 
 import contextFn from './context';
+import { uploadPhotoRoute } from './routes/upload';
 import apolloServer from './server';
 
 async function startServer() {
@@ -25,7 +26,8 @@ async function startServer() {
 
   const port = process.env.PORT || 4000;
 
-  // await new Promise((resolve) => app.listen({ port }, resolve));
+  uploadPhotoRoute(app);
+
   await new Promise((resolve) => {
     const serverResponse = app.listen(port);
     resolve(serverResponse);
