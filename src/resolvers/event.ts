@@ -17,12 +17,12 @@ import {
 } from 'type-graphql';
 
 import { Event, EVENT_TYPE } from '../../models/Event';
+import { Roster } from '../../models/Roster';
 import { Location, Patrol, Troop } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 import EventSchemas from '../Event/EventSchemas.json';
 import { sendNotifications } from '../notifications';
 
-import { Roster } from '../../models/Roster';
 import type { ContextType } from '../context';
 @InputType()
 class AddRosterInput {
