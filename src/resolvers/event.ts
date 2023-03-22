@@ -13,7 +13,7 @@ import {
   Mutation,
   Query,
   Resolver,
-  Root,
+  Root
 } from 'type-graphql';
 
 import { Event, EVENT_TYPE } from '../../models/Event';
@@ -230,24 +230,28 @@ export class EventResolver {
       });
     }
 
-    switch (response) {
-      case 0:
-        event.roster.no.push(ctx.user!._id);
-        break;
-      case 1:
-        event.roster.yes.push(ctx.user!._id);
-        break;
-      case 2:
-        event.roster.maybe.push(ctx.user!._id);
-        break;
-      default:
-        throw new GraphQLError('Invalid RSVP', {
-          extensions: {
-            code: 'BAD_REQUEST',
-          }
-        });
-    }
-    event.save();
+    const userID = ctx.user!._id;
+    if (response === 0)
+      await ctx.EventModel.updateOne({_id: eventID}, {
+        $pull: {"roster.yes": userID, "roster.maybe": userID},
+        $addToSet: {"roster.no": userID},
+      });
+    else if (response === 1)
+      await ctx.EventModel.updateOne({_id: eventID}, {
+        $pull: {"roster.no": userID, "roster.maybe": userID},
+        $addToSet: {"roster.yes": userID},
+      });
+    else if (response === 2)
+      await ctx.EventModel.updateOne({_id: eventID}, {
+        $pull: {"roster.yes": userID, "roster.no": userID},
+        $addToSet: {"roster.maybe": userID},
+      });
+    else throw new GraphQLError('Invalid RSVP', {
+      extensions: {
+        code: 'BAD_REQUEST',
+      }
+    });
+
     return true;
   }
 
@@ -386,9 +390,10 @@ export class EventResolver {
     @Root() event: Event,
     @Ctx() ctx: ContextType
   ): Promise<Roster> {
-    let populated = await ctx.EventModel.populate(event, 'roster.yes');
-    populated = await ctx.EventModel.populate(populated, 'roster.no');
-    populated = await ctx.EventModel.populate(populated, 'roster.maybe');
+    let populated = await ctx.EventModel.populate(event, [
+      {path: 'roster.yes'},
+      {path: 'roster.no'},
+      {path: 'roster.maybe'}]);
     return populated.roster;
   }
 }
