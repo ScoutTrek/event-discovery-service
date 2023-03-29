@@ -1,4 +1,4 @@
-import { GraphQLScalarType } from 'graphql';
+import { GraphQLError, GraphQLScalarType } from 'graphql';
 import mongoose from 'mongoose';
 import {
   Arg,
@@ -13,11 +13,12 @@ import {
   Mutation,
   Query,
   Resolver,
-  Root,
+  Root
 } from 'type-graphql';
 
 import { Event, EVENT_TYPE } from '../../models/Event';
-import { Location, Patrol, ROLE, Troop } from '../../models/TroopAndPatrol';
+import { Roster } from '../../models/Roster';
+import { Location, Patrol, Troop } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 import EventSchemas from '../Event/EventSchemas.json';
 import { sendNotifications } from '../notifications';
@@ -26,11 +27,11 @@ import type { ContextType } from '../context';
 @InputType()
 class AddRosterInput {
   @Field(type => [ID])
-  groups!: mongoose.Types.ObjectId[];
+  yes!: mongoose.Types.ObjectId[];
   @Field(type => [ID])
-  patrols!: mongoose.Types.ObjectId[];
+  no!: mongoose.Types.ObjectId[];
   @Field(type => [ID])
-  individuals!: mongoose.Types.ObjectId[];
+  maybe!: mongoose.Types.ObjectId[];
 }
 
 
@@ -49,8 +50,6 @@ class UpdateLocationInput {
 class AddEventInput {
   @Field(type => EVENT_TYPE)
   type!: EVENT_TYPE;
-  @Field(type => AddRosterInput, { nullable: true })
-  invited?: AddRosterInput;
   @Field({ nullable: true })
   title?: string;
   @Field({ nullable: true })
@@ -88,8 +87,6 @@ class AddEventInput {
 class UpdateEventInput { 
   @Field(type => EVENT_TYPE, { nullable: true })
   type?: EVENT_TYPE;
-  @Field(type => AddRosterInput, { nullable: true })
-  invited?: AddRosterInput;
   @Field(type => AddRosterInput, { nullable: true })
   attending?: AddRosterInput;
   @Field({ nullable: true })
@@ -202,6 +199,59 @@ export class EventResolver {
     @Ctx() ctx: ContextType
   ): Promise<boolean> {
     await ctx.EventModel.findByIdAndDelete(id);
+    return true;
+  }
+
+  @Authorized()
+  @Mutation(returns => Boolean)
+  async rsvp(
+    @Arg("event_id", type => ID) eventID: string,
+    @Arg("response", type => Number) response: number,
+    @Ctx() ctx: ContextType
+  ) : Promise<boolean> {
+    if (ctx.currMembership === undefined) {
+      throw new Error("No membership selected!");
+    }
+    const myTroop = await ctx.TroopModel.findById(ctx.currMembership.troopID._id);
+    if (myTroop === null) {
+      throw new Error("Selected troop does not exist");
+    }
+
+    const event = await ctx.EventModel.findById(eventID);
+    if (!event) {
+      throw new Error("Event does not exist");
+    }
+
+    if (!event.troop._id.equals(myTroop._id)) {
+      throw new GraphQLError('Forbidden', {
+        extensions: {
+          code: 'FORBIDDEN',
+        },
+      });
+    }
+
+    const userID = ctx.user!._id;
+    if (response === 0)
+      await ctx.EventModel.updateOne({_id: eventID}, {
+        $pull: {"roster.yes": userID, "roster.maybe": userID},
+        $addToSet: {"roster.no": userID},
+      });
+    else if (response === 1)
+      await ctx.EventModel.updateOne({_id: eventID}, {
+        $pull: {"roster.no": userID, "roster.maybe": userID},
+        $addToSet: {"roster.yes": userID},
+      });
+    else if (response === 2)
+      await ctx.EventModel.updateOne({_id: eventID}, {
+        $pull: {"roster.yes": userID, "roster.no": userID},
+        $addToSet: {"roster.maybe": userID},
+      });
+    else throw new GraphQLError('Invalid RSVP', {
+      extensions: {
+        code: 'BAD_REQUEST',
+      }
+    });
+
     return true;
   }
 
@@ -333,5 +383,17 @@ export class EventResolver {
       };
     }
     return null;
+  }
+
+  @FieldResolver(returns => Roster)
+  async roster(
+    @Root() event: Event,
+    @Ctx() ctx: ContextType
+  ): Promise<Roster> {
+    let populated = await ctx.EventModel.populate(event, [
+      {path: 'roster.yes'},
+      {path: 'roster.no'},
+      {path: 'roster.maybe'}]);
+    return populated.roster;
   }
 }
