@@ -22,8 +22,10 @@ import { Location, Patrol, Troop } from '../../models/TroopAndPatrol';
 import { User } from '../../models/User';
 import EventSchemas from '../Event/EventSchemas.json';
 import { sendNotifications } from '../notifications';
+import { getDocument, getDocuments } from '../utils/mongoose';
 
 import type { ContextType } from '../context';
+
 @InputType()
 class AddRosterInput {
   @Field(type => [ID])
@@ -384,16 +386,76 @@ export class EventResolver {
     }
     return null;
   }
+}
 
-  @FieldResolver(returns => Roster)
-  async roster(
-    @Root() event: Event,
+@Resolver(of => Roster)
+export class RosterResolver {
+  @FieldResolver(returns => [User])
+  async yes(
+    @Root() roster: Roster,
     @Ctx() ctx: ContextType
-  ): Promise<Roster> {
-    let populated = await ctx.EventModel.populate(event, [
-      {path: 'roster.yes'},
-      {path: 'roster.no'},
-      {path: 'roster.maybe'}]);
-    return populated.roster;
+  ): Promise<User[]> {
+    const event = await ctx.EventModel.findById(roster.eventId);
+    if (!event) {
+      throw new GraphQLError('No such event', {
+        extensions: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+    return getDocuments((await event.populate("roster.yes")).roster.yes);
+  }
+
+  @FieldResolver(returns => [User])
+  async no(
+    @Root() roster: Roster,
+    @Ctx() ctx: ContextType
+  ): Promise<User[]> {
+    const event = await ctx.EventModel.findById(roster.eventId);
+    if (!event) {
+      throw new GraphQLError('No such event', {
+        extensions: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+    return getDocuments((await event.populate("roster.no")).roster.no);
+  }
+
+  @FieldResolver(returns => [User])
+  async maybe(
+    @Root() roster: Roster,
+    @Ctx() ctx: ContextType
+  ): Promise<User[]> {
+    const event = await ctx.EventModel.findById(roster.eventId);
+    if (!event) {
+      throw new GraphQLError('No such event', {
+        extensions: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+    return getDocuments((await event.populate("roster.maybe")).roster.maybe);
+  }
+
+  @FieldResolver(returns => [User])
+  async noResponse(
+    @Root() roster: Roster,
+    @Ctx() ctx: ContextType
+  ): Promise<User[]> {
+    const event = await ctx.EventModel.findById(roster.eventId);
+    if (!event) {
+      throw new GraphQLError('No such event', {
+        extensions: {
+          code: 'NOT_FOUND',
+        },
+      });
+    }
+    await event.populate('troop');
+    const troop = getDocument(event.troop);
+    const invited = new Set(troop.patrols.flatMap(p => p.members.map(u=>u._id.toString())));
+    const responded = new Set(roster.yes.concat(roster.no).concat(roster.maybe).map(u=>u._id.toString()));
+    const notResponded = [...invited].filter(u=>!responded.has(u));
+    return await ctx.UserModel.find({ _id: { $in: notResponded }});
   }
 }

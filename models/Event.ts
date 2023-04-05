@@ -143,7 +143,9 @@ export class Event {
   public messages!: Message[];
 
   @Field(type => Roster)
-  @Property({ required: true, default: {yes: [], no: [], maybe: []}})
+  @Property({ required: true, default(this: Event) {
+    return {eventId: this._id, yes: [], no: [], maybe: []}
+  }})
   public roster!: Roster;
 
   @Property({ enum: DAYS_OF_WEEK })
