@@ -7,7 +7,7 @@ import { EventModel } from '../models/models';
 import { TypegooseMiddleware } from './middleware/typegoose_middlware';
 import { getUserNotificationData, sendNotifications } from './notifications';
 import { AuthResolver } from './resolvers/auth';
-import { EventResolver } from './resolvers/event';
+import { EventResolver, RosterResolver } from './resolvers/event';
 import { PatrolResolver } from './resolvers/patrol';
 import { TroopResolver } from './resolvers/troop';
 import { UserResolver } from './resolvers/user';
@@ -44,7 +44,7 @@ async function bootstrap() {
 	try {
 		// build TypeGraphQL executable schema
 		const schema = await buildSchema({
-			resolvers: [AuthResolver, EventResolver, UserResolver, TroopResolver, PatrolResolver],
+			resolvers: [AuthResolver, EventResolver, UserResolver, TroopResolver, PatrolResolver, RosterResolver],
 			globalMiddlewares: [TypegooseMiddleware],
 			authChecker: authFns.customAuthChecker,
 		});
