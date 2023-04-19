@@ -5,4 +5,5 @@ module.exports = {
   trailingComma: 'es5',
   importOrderSeparation: true,
   importOrderSortSpecifiers: true,
+  arrowParens: 'avoid',
 };
