@@ -1,5 +1,5 @@
-import { GraphQLError, GraphQLScalarType } from 'graphql';
-import mongoose from 'mongoose';
+import { GraphQLError, GraphQLScalarType } from "graphql";
+import mongoose from "mongoose";
 import {
   Arg,
   Authorized,
@@ -14,35 +14,35 @@ import {
   Query,
   Resolver,
   Root,
-} from 'type-graphql';
+} from "type-graphql";
 
-import { Event, EVENT_TYPE } from '../../models/Event';
-import { Roster } from '../../models/Roster';
-import { Location, Patrol, Troop } from '../../models/TroopAndPatrol';
-import { User } from '../../models/User';
-import EventSchemas from '../Event/EventSchemas.json';
-import { sendNotifications } from '../notifications';
-import { getDocument, getDocuments } from '../utils/mongoose';
+import { Event, EVENT_TYPE } from "../../models/Event";
+import { Roster } from "../../models/Roster";
+import { Location, Patrol, Troop } from "../../models/TroopAndPatrol";
+import { User } from "../../models/User";
+import EventSchemas from "../Event/EventSchemas.json";
+import { sendNotifications } from "../notifications";
+import { getDocument, getDocuments } from "../utils/mongoose";
 
-import type { ContextType } from '../context';
-import { Ref } from '@typegoose/typegoose';
+import type { ContextType } from "../context";
+import { Ref } from "@typegoose/typegoose";
 
 @InputType()
 class AddRosterInput {
-  @Field((type) => [ID])
+  @Field(type => [ID])
   yes!: mongoose.Types.ObjectId[];
-  @Field((type) => [ID])
+  @Field(type => [ID])
   no!: mongoose.Types.ObjectId[];
-  @Field((type) => [ID])
+  @Field(type => [ID])
   maybe!: mongoose.Types.ObjectId[];
 }
 
 @InputType()
 class UpdateLocationInput {
   // if this is the same as the imported location type, can we remove?
-  @Field((type) => Float)
+  @Field(type => Float)
   lat: number;
-  @Field((type) => Float)
+  @Field(type => Float)
   lng: number;
   @Field({ nullable: true })
   address?: string;
@@ -50,85 +50,85 @@ class UpdateLocationInput {
 
 @InputType()
 class AddEventInput {
-  @Field((type) => EVENT_TYPE)
+  @Field(type => EVENT_TYPE)
   type!: EVENT_TYPE;
   @Field({ nullable: true })
   title?: string;
   @Field({ nullable: true })
   description?: string;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   date?: Date;
   @Field({ nullable: true })
   startTime?: string;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   meetTime?: Date;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   leaveTime?: Date;
   @Field({ nullable: true })
   endTime?: string;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   endDate?: Date;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   pickupTime?: Date;
   @Field({ nullable: true })
   uniqueMeetLocation?: string;
-  @Field((type) => UpdateLocationInput, { nullable: true })
+  @Field(type => UpdateLocationInput, { nullable: true })
   location?: UpdateLocationInput;
-  @Field((type) => UpdateLocationInput, { nullable: true })
+  @Field(type => UpdateLocationInput, { nullable: true })
   meetLocation?: UpdateLocationInput;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   checkoutTime?: Date;
-  @Field((type) => Int, { nullable: true })
+  @Field(type => Int, { nullable: true })
   distance?: number;
-  @Field((type) => Boolean, { nullable: true })
+  @Field(type => Boolean, { nullable: true })
   published?: boolean;
 }
 
 @InputType()
 class UpdateEventInput {
-  @Field((type) => User, { nullable: true })
+  @Field(type => User, { nullable: true })
   creator?: mongoose.Types.ObjectId;
-  @Field((type) => EVENT_TYPE, { nullable: true })
+  @Field(type => EVENT_TYPE, { nullable: true })
   type?: EVENT_TYPE;
-  @Field((type) => AddRosterInput, { nullable: true })
+  @Field(type => AddRosterInput, { nullable: true })
   attending?: AddRosterInput;
   @Field({ nullable: true })
   title?: string;
   @Field({ nullable: true })
   description?: string;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   date?: Date;
   @Field({ nullable: true })
   startTime?: string;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   meetTime?: Date;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   leaveTime?: Date;
   @Field({ nullable: true })
   endTime?: string;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   endDate?: Date;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   pickupTime?: Date;
   @Field({ nullable: true })
   uniqueMeetLocation?: string;
-  @Field((type) => UpdateLocationInput, { nullable: true })
+  @Field(type => UpdateLocationInput, { nullable: true })
   location?: UpdateLocationInput;
-  @Field((type) => UpdateLocationInput, { nullable: true })
+  @Field(type => UpdateLocationInput, { nullable: true })
   meetLocation?: UpdateLocationInput;
-  @Field((type) => Date, { nullable: true })
+  @Field(type => Date, { nullable: true })
   checkoutTime?: Date;
-  @Field((type) => Int, { nullable: true })
+  @Field(type => Int, { nullable: true })
   distance?: number;
-  @Field((type) => Boolean, { nullable: true })
+  @Field(type => Boolean, { nullable: true })
   published?: boolean;
 }
 
 // custom scalar type so that we can query for event schemas without throwing an error
 // this is the barest of bare-bone implementations but it works
 const EventSchemaScalar = new GraphQLScalarType({
-  name: 'EventSchemaType',
-  description: 'scalar for event schema',
+  name: "EventSchemaType",
+  description: "scalar for event schema",
   serialize(value: Object) {
     return value;
   },
@@ -140,37 +140,37 @@ const EventSchemaScalar = new GraphQLScalarType({
   },
 });
 
-@Resolver((of) => Event)
+@Resolver(of => Event)
 export class EventResolver {
   // what is the json in resolvers???
   @Authorized()
-  @Query((returns) => Event)
+  @Query(returns => Event)
   async event(
-    @Arg('id', (type) => ID) id: string,
+    @Arg("id", type => ID) id: string,
     @Ctx() ctx: ContextType
   ): Promise<Event> {
     const event = await ctx.EventModel.findById(id);
     if (!event) {
-      throw new Error('Event could not be found');
+      throw new Error("Event could not be found");
     }
     return event;
   }
 
   @Authorized()
-  @Query((returns) => [Event])
+  @Query(returns => [Event])
   async events(
-    @Arg('first', (type) => Int, { nullable: true }) first: number,
-    @Arg('skip', (type) => Int, { nullable: true }) skip: number,
+    @Arg("first", type => Int, { nullable: true }) first: number,
+    @Arg("skip", type => Int, { nullable: true }) skip: number,
     @Ctx() ctx: ContextType
   ): Promise<Event[]> {
     if (ctx.currMembership === undefined) {
-      throw new Error('No membership selected!');
+      throw new Error("No membership selected!");
     }
     const myTroop = await ctx.TroopModel.findById(
       ctx.currMembership.troopID._id
     );
     if (myTroop === null) {
-      throw new Error('Selected troop does not exist');
+      throw new Error("Selected troop does not exist");
     }
 
     const events = await ctx.EventModel.find(
@@ -191,16 +191,16 @@ export class EventResolver {
     return events;
   }
 
-  @Query((returns) => EventSchemaScalar)
+  @Query(returns => EventSchemaScalar)
   eventSchemas(): Object {
     // TODO: fix return type once jaron is done correcting the type
     return EventSchemas;
   }
 
   @Authorized()
-  @Mutation((returns) => Boolean)
+  @Mutation(returns => Boolean)
   async deleteEvent(
-    @Arg('id', (type) => ID) id: string,
+    @Arg("id", type => ID) id: string,
     @Ctx() ctx: ContextType
   ): Promise<boolean> {
     await ctx.EventModel.findByIdAndDelete(id);
@@ -208,31 +208,31 @@ export class EventResolver {
   }
 
   @Authorized()
-  @Mutation((returns) => Boolean)
+  @Mutation(returns => Boolean)
   async rsvp(
-    @Arg('event_id', (type) => ID) eventID: string,
-    @Arg('response', (type) => Number) response: number,
+    @Arg("event_id", type => ID) eventID: string,
+    @Arg("response", type => Number) response: number,
     @Ctx() ctx: ContextType
   ): Promise<boolean> {
     if (ctx.currMembership === undefined) {
-      throw new Error('No membership selected!');
+      throw new Error("No membership selected!");
     }
     const myTroop = await ctx.TroopModel.findById(
       ctx.currMembership.troopID._id
     );
     if (myTroop === null) {
-      throw new Error('Selected troop does not exist');
+      throw new Error("Selected troop does not exist");
     }
 
     const event = await ctx.EventModel.findById(eventID);
     if (!event) {
-      throw new Error('Event does not exist');
+      throw new Error("Event does not exist");
     }
 
     if (!event.troop._id.equals(myTroop._id)) {
-      throw new GraphQLError('Forbidden', {
+      throw new GraphQLError("Forbidden", {
         extensions: {
-          code: 'FORBIDDEN',
+          code: "FORBIDDEN",
         },
       });
     }
@@ -242,30 +242,30 @@ export class EventResolver {
       await ctx.EventModel.updateOne(
         { _id: eventID },
         {
-          $pull: { 'roster.yes': userID, 'roster.maybe': userID },
-          $addToSet: { 'roster.no': userID },
+          $pull: { "roster.yes": userID, "roster.maybe": userID },
+          $addToSet: { "roster.no": userID },
         }
       );
     else if (response === 1)
       await ctx.EventModel.updateOne(
         { _id: eventID },
         {
-          $pull: { 'roster.no': userID, 'roster.maybe': userID },
-          $addToSet: { 'roster.yes': userID },
+          $pull: { "roster.no": userID, "roster.maybe": userID },
+          $addToSet: { "roster.yes": userID },
         }
       );
     else if (response === 2)
       await ctx.EventModel.updateOne(
         { _id: eventID },
         {
-          $pull: { 'roster.yes': userID, 'roster.no': userID },
-          $addToSet: { 'roster.maybe': userID },
+          $pull: { "roster.yes": userID, "roster.no": userID },
+          $addToSet: { "roster.maybe": userID },
         }
       );
     else
-      throw new GraphQLError('Invalid RSVP', {
+      throw new GraphQLError("Invalid RSVP", {
         extensions: {
-          code: 'BAD_REQUEST',
+          code: "BAD_REQUEST",
         },
       });
 
@@ -273,17 +273,17 @@ export class EventResolver {
   }
 
   @Authorized()
-  @Mutation((returns) => Event)
+  @Mutation(returns => Event)
   async addEvent(
-    @Arg('input') input: AddEventInput,
+    @Arg("input") input: AddEventInput,
     @Ctx() ctx: ContextType
   ): Promise<Event> {
     if (ctx.currMembership === undefined) {
-      throw new Error('No membership selected!');
+      throw new Error("No membership selected!");
     }
 
-    if (input.type === 'TROOP_MEETING') {
-      input.title = 'Troop Meeting';
+    if (input.type === "TROOP_MEETING") {
+      input.title = "Troop Meeting";
     }
 
     // what is the difference between meetTime and startTime ?????
@@ -304,14 +304,14 @@ export class EventResolver {
 
     if (location) {
       mutationObject.locationPoint = {
-        type: 'Point',
+        type: "Point",
         coordinates: [location.lng, location.lat],
         address: location.address,
       };
     }
     if (meetLocation) {
       mutationObject.meetLocationPoint = {
-        type: 'Point',
+        type: "Point",
         coordinates: [meetLocation.lng, meetLocation.lat],
         address: meetLocation.address,
       };
@@ -322,7 +322,7 @@ export class EventResolver {
       ctx.tokens ?? [],
       `${input.title} event has been created. See details.`,
       {
-        type: 'event',
+        type: "event",
         eventType: event.type,
         ID: event.id,
       }
@@ -331,24 +331,24 @@ export class EventResolver {
   }
 
   @Authorized()
-  @Mutation((returns) => Event)
+  @Mutation(returns => Event)
   async updateEvent(
-    @Arg('input') input: UpdateEventInput,
-    @Arg('id', (type) => ID) id: string,
+    @Arg("input") input: UpdateEventInput,
+    @Arg("id", type => ID) id: string,
     @Ctx() ctx: ContextType
   ): Promise<Event | null> {
     const { location, meetLocation, ...restInput } = input;
     const newVals: Partial<Event> = { ...restInput };
     if (location) {
       newVals.locationPoint = {
-        type: 'Point',
+        type: "Point",
         coordinates: [location.lng, location.lat],
         address: location.address,
       };
     }
     if (meetLocation) {
       newVals.meetLocationPoint = {
-        type: 'Point',
+        type: "Point",
         coordinates: [meetLocation.lng, meetLocation.lat],
         address: meetLocation.address,
       };
@@ -361,15 +361,15 @@ export class EventResolver {
       ctx.tokens ?? [],
       `${updatedEvent?.title} event has been updated!`,
       {
-        type: 'event',
-        eventType: updatedEvent?.type ?? '',
-        ID: updatedEvent?.id ?? '',
+        type: "event",
+        eventType: updatedEvent?.type ?? "",
+        ID: updatedEvent?.id ?? "",
       }
     );
     return updatedEvent;
   }
 
-  @FieldResolver((returns) => Troop)
+  @FieldResolver(returns => Troop)
   async troop(
     @Root() event: Event,
     @Ctx() ctx: ContextType
@@ -377,7 +377,7 @@ export class EventResolver {
     return (await ctx.TroopModel.findById(event.troop._id)) ?? undefined;
   }
 
-  @FieldResolver((returns) => Patrol)
+  @FieldResolver(returns => Patrol)
   async patrol(
     @Root() event: Event,
     @Ctx() ctx: ContextType
@@ -387,7 +387,7 @@ export class EventResolver {
     return patrol ?? undefined;
   }
 
-  @FieldResolver((returns) => User)
+  @FieldResolver(returns => User)
   async creator(
     @Root() event: Event,
     @Ctx() ctx: ContextType
@@ -395,7 +395,7 @@ export class EventResolver {
     return (await ctx.UserModel.findById(event.creator?._id)) ?? undefined;
   }
 
-  @FieldResolver((returns) => Location, { nullable: true })
+  @FieldResolver(returns => Location, { nullable: true })
   location(@Root() event: Event): Location | null {
     if (event.locationPoint && event.locationPoint.coordinates.length == 2) {
       return {
@@ -407,7 +407,7 @@ export class EventResolver {
     return null;
   }
 
-  @FieldResolver((returns) => Location, { nullable: true })
+  @FieldResolver(returns => Location, { nullable: true })
   meetLocation(@Root() event: Event): Location | null {
     if (
       event.meetLocationPoint &&
@@ -423,75 +423,75 @@ export class EventResolver {
   }
 }
 
-@Resolver((of) => Roster)
+@Resolver(of => Roster)
 export class RosterResolver {
-  @FieldResolver((returns) => [User])
+  @FieldResolver(returns => [User])
   async yes(@Root() roster: Roster, @Ctx() ctx: ContextType): Promise<User[]> {
     const event = await ctx.EventModel.findById(roster.eventId);
     if (!event) {
-      throw new GraphQLError('No such event', {
+      throw new GraphQLError("No such event", {
         extensions: {
-          code: 'NOT_FOUND',
+          code: "NOT_FOUND",
         },
       });
     }
-    return getDocuments((await event.populate('roster.yes')).roster.yes);
+    return getDocuments((await event.populate("roster.yes")).roster.yes);
   }
 
-  @FieldResolver((returns) => [User])
+  @FieldResolver(returns => [User])
   async no(@Root() roster: Roster, @Ctx() ctx: ContextType): Promise<User[]> {
     const event = await ctx.EventModel.findById(roster.eventId);
     if (!event) {
-      throw new GraphQLError('No such event', {
+      throw new GraphQLError("No such event", {
         extensions: {
-          code: 'NOT_FOUND',
+          code: "NOT_FOUND",
         },
       });
     }
-    return getDocuments((await event.populate('roster.no')).roster.no);
+    return getDocuments((await event.populate("roster.no")).roster.no);
   }
 
-  @FieldResolver((returns) => [User])
+  @FieldResolver(returns => [User])
   async maybe(
     @Root() roster: Roster,
     @Ctx() ctx: ContextType
   ): Promise<User[]> {
     const event = await ctx.EventModel.findById(roster.eventId);
     if (!event) {
-      throw new GraphQLError('No such event', {
+      throw new GraphQLError("No such event", {
         extensions: {
-          code: 'NOT_FOUND',
+          code: "NOT_FOUND",
         },
       });
     }
-    return getDocuments((await event.populate('roster.maybe')).roster.maybe);
+    return getDocuments((await event.populate("roster.maybe")).roster.maybe);
   }
 
-  @FieldResolver((returns) => [User])
+  @FieldResolver(returns => [User])
   async noResponse(
     @Root() roster: Roster,
     @Ctx() ctx: ContextType
   ): Promise<User[]> {
     const event = await ctx.EventModel.findById(roster.eventId);
     if (!event) {
-      throw new GraphQLError('No such event', {
+      throw new GraphQLError("No such event", {
         extensions: {
-          code: 'NOT_FOUND',
+          code: "NOT_FOUND",
         },
       });
     }
-    await event.populate('troop');
+    await event.populate("troop");
     const troop = getDocument(event.troop);
     const invited = new Set(
-      troop.patrols.flatMap((p) => p.members.map((u) => u._id.toString()))
+      troop.patrols.flatMap(p => p.members.map(u => u._id.toString()))
     );
     const responded = new Set(
       roster.yes
         .concat(roster.no)
         .concat(roster.maybe)
-        .map((u) => u._id.toString())
+        .map(u => u._id.toString())
     );
-    const notResponded = [...invited].filter((u) => !responded.has(u));
+    const notResponded = [...invited].filter(u => !responded.has(u));
     return await ctx.UserModel.find({ _id: { $in: notResponded } });
   }
 }
