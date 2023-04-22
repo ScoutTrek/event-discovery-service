@@ -86,7 +86,7 @@ class AddEventInput {
 
 @InputType()
 class UpdateEventInput {
-  @Field(type => User, { nullable: true })
+  @Field(type => ID, { nullable: true })
   creator?: mongoose.Types.ObjectId;
   @Field(type => EVENT_TYPE, { nullable: true })
   type?: EVENT_TYPE;
