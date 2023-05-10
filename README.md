@@ -9,6 +9,20 @@
 
 ## Tech
 
+* Typescript
 * Apollo Server
 * Mongoose + Atlas MongoDB Database
 * Google Cloud App Engine
+
+Note: Important libraries include type-graphql and typegoose, which help with types for graphql and mongoose respectively
+
+
+## Setting up on local
+1. Clone the repo to your local using `https://github.com/sandboxnu/ScoutTrek-Backend.git`
+2. Get the .env file (reach out to a ScoutTrek developer) and add it to the root directory
+3. Reach out to a ScoutTrek developer for MongoDB and Google Cloud invite. Check notion for 
+instructions on setting up Google Cloud. 
+4. In the terminal, run `yarn install`
+5. Install [MongoDB](https://www.mongodb.com/docs/manual/installation/)
+6. Run `yarn start` to start the server
+7. Make sure you have `ScoutTrek-Frontend` set up as well -- see the [readme](https://github.com/sandboxnu/ScoutTrek-Frontend#readme) to begin developing
